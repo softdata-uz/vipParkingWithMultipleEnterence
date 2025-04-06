@@ -1,0 +1,201 @@
+.multipleEnterence {
+    height: 100vh;
+    background: #FCFCFC;
+}
+
+.multipleEnterence_header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.multipleEnterence_header_right {
+    display: flex;
+    align-items: center;
+}
+
+.multipleEnterence_header_right_inner a {
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0 10px;
+}
+
+.multipleEnterence_header_right_inner {
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.multipleEnterence_header_right_inner:first-child {
+    border-radius: 8px;
+    border: 1px solid #E9EAEB;
+    background: #FFF;
+    margin-right: 10px;
+}
+
+.multipleEnterence_header_right_inner:last-child {
+    border-radius: 8px;
+    border: 1px solid #E9EAEB;
+    background: #17B26A;
+    padding: 0;
+}
+
+.multipleEnterence_header_right_inner h2 {
+    color: #182230;
+    text-align: center;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.multipleEnterence_header_right_inner span {
+    color: #FFF;
+
+    /* Text md/Semibold */
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px; /* 150% */
+    margin-left: 5px;
+}
+
+.multipleEnterence_body {
+    height: calc(100vh - 80px);
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 24px;
+    box-sizing: border-box;
+}
+.multipleEnterence_body_card{
+    padding: 30px;
+    border-radius: 12px;
+    background: #FFF;
+    display: grid;
+    grid-template-rows: 1.5fr 1fr;
+    grid-gap: 10px;
+}
+.multipleEnterence_body_card_information{
+    border-radius: 8px;
+    display: grid;
+    grid-template-rows: .5fr 1fr 1fr 1fr 1fr 1fr;
+    grid-gap: 5px;
+}
+.multipleEnterence_body_card_information_corridor{
+    display: flex;
+    padding: 12px 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 35px;
+    color: #FFF;
+    text-align: center;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px; /* 120% */
+    text-transform: uppercase;
+}
+.corridor_green{
+    background: #17B26A;
+}
+.corridor_warning{
+    background: #F79009;
+}
+.corridor_blue{
+    background: #4E5BA6;
+}
+.multipleEnterence_body_card_information_inner {
+    border-bottom: 1px solid #E9EAEB;
+    padding: 12px 0;
+    box-sizing: border-box;
+}
+
+.multipleEnterence_body_card_information_inner p {
+    color: #000;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px;
+}
+
+.multipleEnterence_body_card_information_inner p img {
+    transform: scale(1.5);
+}
+
+.multipleEnterence_body_card_information_inner span {
+    color: #445164;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px;
+}
+.multipleEnterence_body_card_information_inner:nth-child(5){
+    border-bottom: 0;
+}
+.multipleEnterence_body_card_information_alert {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+
+    font-family: Inter;
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 44px;
+}
+
+.activeS {
+    color: #067647;
+    background: #DCFAE6;
+}
+
+.noActiveS {
+    color: #D92D20;
+    background: #FEE4E2;
+}
+.notActive {
+    background: #F5F5F5;
+}
+
+
+
+
+.multipleEnterence_body_card_img{
+    background: green;
+    border-radius: 8px;
+}
+.multipleEnterence_body_card_img {
+    border-radius: 12px;
+    background: #F5F5F5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.multipleEnterence_body_card_img .car_img_full {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    border-radius: 8px;
+    /*object-fit: fill;*/
+}

@@ -1,0 +1,109 @@
+.newViewPage_body_inner_new {
+    border-radius: 12px;
+    border: 1px solid #E9EAEB;
+    background: #FFF;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-gap: 15px;
+    padding: 15px;
+}
+
+.newViewPage_body_inner_new_car {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 15px;
+}
+
+.newViewPage_body_inner_new_car_information {
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-gap: 5px;
+}
+
+.newViewPage_body_inner_new_car_information .newViewPage_body_inner_data_information_left_inner:nth-child(3) {
+    border-bottom: 0;
+}
+
+.newViewPage_body_inner_new_car_information_alert {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+
+    font-family: Inter;
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 44px;
+}
+
+.newViewPage_body_inner_new_car_img {
+    border-radius: 12px;
+    background: #F5F5F5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.newViewPage_body_inner_new_car_img .car_img_full {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    border-radius: 12px;
+    /*object-fit: fill;*/
+}
+
+.newViewPage_body_inner_new_car_img_inner {
+    text-align: center;
+}
+
+.newViewPage_body_inner_new_car_img_inner p {
+    color: #9A9EA3;
+    text-overflow: ellipsis;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 24px;
+    margin-top: 10px;
+}
+
+.newViewPage_body_inner_new_user {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 15px;
+}
+
+.newViewPage_body_inner_new_user_information {
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-gap: 5px;
+}
+
+.newViewPage_body_inner_new_user_information .newViewPage_body_inner_data_information_left_inner:nth-child(3) {
+    border-bottom: 0;
+}
+
+.newViewPage_body_inner_new_user_img {
+    background: #F5F5F5;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 15px;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.newViewPage_body_inner_new_user_img_inner {
+    position: relative;
+}
+
+.newViewPage_body_inner_new_user_img_inner img {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    position: absolute;
+    object-fit: cover;
+}

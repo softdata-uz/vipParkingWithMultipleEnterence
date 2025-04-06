@@ -1,0 +1,139 @@
+.report_content_top_filter {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border-radius: 5px;
+    padding: 8px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+.report_content_top_filter img {
+    margin-right: 5px;
+}
+.report_content_top_filter p {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 19px;
+    color: #000000;
+}
+.user_list_top_right{
+    display: flex;
+    align-items: center;
+}
+.download_buttons{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+}
+.download_btn{
+    display: flex;
+   align-items: center;
+    height: 40px;
+    background: #FFFFFF;
+    border: 1px solid #EAEAEA;
+    border-radius: 5px;
+    padding:0 15px;
+    margin-left: 15px;
+
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 19px;
+    color: #000000;
+    cursor: pointer;
+}
+.download_btn:hover{
+    border: 1px solid #29B85D;
+    color: #29B85D;
+}
+.download_btn img{
+    margin-right: 5px;
+}
+.download_btn_pdf{
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: #FFFFFF;
+    border: 1px solid #EAEAEA;
+    border-radius: 5px;
+    padding:0 15px;
+    margin-left: 15px;
+
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 19px;
+    color: #000000;
+    cursor: pointer;
+}
+.download_btn_pdf img{
+    margin-right: 5px;
+}
+.download_btn_pdf:hover{
+    border: 1px solid #920000;
+    color: #920000;
+}
+
+
+/*---table---*/
+.table_user_cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    grid-column-gap: 5px;
+}
+.table_user_cell_img{
+    border-radius: 20px;
+    margin-right: 5px;
+    max-width: 40px;
+    max-height: 40px;
+}
+.table_user_cell .ant-image-mask {
+    max-width: 40px;
+    max-height: 40px;
+    border-radius: 100px;
+}
+.table_report_cell{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-column-gap: 5px;
+}
+.report_section{
+    width: 100%;
+    height: calc(100vh - 130px);
+    display: grid;
+    grid-template-rows: 1fr 50px;
+    border-radius: 3px;
+}
+.report_table{
+    overflow: auto;
+}
+
+.report_content_pagination{
+    display: flex;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 10px!important;
+}
+.content_total {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    margin-right: 10px !important;
+    display: flex;
+    align-items: center;
+}
+
+
+.terminla_report_true{
+    color: #29b85d;
+}
+.terminla_report_false{
+    color: #AC0000;
+}
