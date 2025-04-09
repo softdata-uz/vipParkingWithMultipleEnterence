@@ -15,12 +15,13 @@
     display: flex;
     align-items: center;
 }
-.setting_top_left_link{
+
+.setting_top_left_link {
     display: flex;
     align-items: center;
 }
 
-.setting_top_left_tabs{
+.setting_top_left_tabs {
     margin-left: 10px;
 }
 
@@ -134,59 +135,121 @@
     height: calc(100% - 45px);
     border-radius: 10px;
     overflow-y: auto;
+
+}
+
+.setting_body_cameras {
+    display: grid;
+    grid-template-columns: 4fr 1fr;
+    grid-gap: 15px;
+    height: calc(100vh - 125px);
+    position: relative;
+    background: #EAEAEA;
+}
+
+.setting_body_cameras_inner {
+    height: 100%;
+    background: #FFFFFF;
+    border-radius: 8px;
+}
+
+.setting_body_cameras_inner_table {
+    height: calc(100% - 62px);
+    overflow-y: auto;
+}
+
+.setting_body_cameras_inner_bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 20px;
+}
+
+.setting_body_cameras_group {
+    overflow-y: auto;
+    height: 100%;
+    background: #FFFFFF;
+    border-radius: 8px;
+}
+
+.setting_body_cameras_group_table {
+    height: calc(100% - 62px);
+    overflow-y: auto;
+}
+
+.setting_body_cameras_group_add {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+}
+
+.setting_body_cameras_group_add .setting_top_right_add {
+    width: 100%;
 }
 
 
-.ant-tabs-nav{
-    position: absolute!important;
-    top: -1px!important;
+.ant-tabs-nav {
+    position: absolute !important;
+    top: -1px !important;
     left: 250px !important;
 }
-.ant-tabs-nav-list{
-height: 40px!important;
+
+.ant-tabs-nav-list {
+    height: 40px !important;
 }
+
 .ant-tabs-tab {
-    background: #FFFFFF!important;
-    border: 1px solid #EAEAEA!important;
-    border-radius: 5px!important;
+    background: #FFFFFF !important;
+    border: 1px solid #EAEAEA !important;
+    border-radius: 5px !important;
     font-family: 'Open Sans';
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
     line-height: 19px;
     color: #000000;
-    margin: 0 5px!important;
+    margin: 0 5px !important;
 }
-.ant-tabs-tab:hover{
-    color: #000000!important;
+
+.ant-tabs-tab:hover {
+    color: #000000 !important;
 }
-.ant-tabs-tab-active{
-    background: #FFFFFF!important;
-    border: 1px solid #29B85D!important;
-    border-radius: 5px!important;
+
+.ant-tabs-tab-active {
+    background: #FFFFFF !important;
+    border: 1px solid #29B85D !important;
+    border-radius: 5px !important;
 
 }
-.ant-tabs-tab-active .ant-tabs-tab-btn{
-    color: #29B85D!important;
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #29B85D !important;
 }
-.ant-tabs-ink-bar{
-    display: none!important;
+
+.ant-tabs-ink-bar {
+    display: none !important;
 }
-.ant-tabs-nav:before{
-    display: none!important;
+
+.ant-tabs-nav:before {
+    display: none !important;
 }
-.tabPaneIcon{
+
+.tabPaneIcon {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 3px 0;
 
 }
-.tabPaneIcon span{
+
+.tabPaneIcon span {
     margin-left: 5px;
 }
 
-.settin_pagination{
+.settin_pagination {
     background: white;
     width: 100%;
     position: absolute;
@@ -197,38 +260,47 @@ height: 40px!important;
     align-items: center;
     border-radius: 10px;
 }
-.settin_pagination_inner{
+
+.settin_pagination_inner {
     display: flex;
     align-items: center;
     margin-right: 10px;
 }
 
-.ant-select-selection-search{
+.setting_body_cameras_inner_bottom .settin_pagination_inner {
+    margin-right: 0;
+}
+
+.ant-select-selection-search {
     display: flex;
     align-items: center;
 }
-.ant-select-selection-search::placeholder{
+
+.ant-select-selection-search::placeholder {
 
 }
-.ant-form-item-control-input-content{
-    height: 40px!important;
+
+.ant-form-item-control-input-content {
+    height: 40px !important;
 }
+
 .ant-input-affix-wrapper {
     height: 100% !important;
     display: flex;
     align-items: center;
     /*ant-input-password ant-input-affix-wrapper-status-error css-dev-only-do-not-override-1hyej8k*/
 }
-#wrap_password{
-    background: transparent!important;
-    height: 95%!important;
+
+#wrap_password {
+    background: transparent !important;
+    height: 95% !important;
 }
 
-#wrap_password:active{
-    background: transparent!important;
-    height: 95%!important;
+#wrap_password:active {
+    background: transparent !important;
+    height: 95% !important;
 }
 
-.ant-select-selection-search .ant-select-selection-search-input{
-    margin-top: 15px!important;
+.ant-select-selection-search .ant-select-selection-search-input {
+    margin-top: 15px !important;
 }

@@ -1,0 +1,34 @@
+.group_list_modal{
+    width: 450px;
+}
+.group_list_modal_title{
+    padding: 10px 0;
+}
+.group_list_modal_title p{
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 24px;
+    color: black;
+    text-align: center;
+}
+.group_list_modal_body{
+    height: 500px;
+    overflow-y: auto;
+    padding: 0 20px;
+    padding-bottom: 10px;
+}
+.group_list_modal_body_inner{
+    padding: 10px;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    background: #F5F5F5;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+.group_list_modal_body_inner:hover{
+    color: #29B85D;
+}
