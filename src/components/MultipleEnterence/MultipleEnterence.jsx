@@ -6,8 +6,9 @@ import {Link} from "react-router-dom";
 import enterIcon from "../../images/new/log-in-02.png";
 import carFlag from "../../images/new/Group 55888 (4).png";
 import carImg from '../../images/new/11012023_162101(712)_full_image 1.png';
-import addGroupIcon from '../../images/managmentImg.svg';
+import addGroupIcon from '../../images/Illustration.png';
 import emptyIcon from '../../images/new/Group.png';
+import plusIcon from '../../images/plus.png';
 
 import GroupListModal from "./GroupListModal";
 import axios from "axios";
@@ -240,10 +241,11 @@ const MultipleEnterence = () => {
                             <div className="multipleEnterence_body_group">
                                 <div className='multipleEnterence_body_group_inner'>
                                     <img src={addGroupIcon}/>
-                                    <p>Iltimos guruhni tanlang</p>
+                                    <p>Guruh topilmadi</p>
+                                    <span>Guruh shakllantirilgan bo‘lsa qo‘shish talab etiladi</span>
                                     <div className="multipleEnterence_body_group_inner_add"
                                          onClick={() => openSelectGroup(viewerId)}>
-                                        {"Tanlang"}
+                                       <img src={plusIcon}/> Qo’shish
                                     </div>
                                 </div>
                             </div>

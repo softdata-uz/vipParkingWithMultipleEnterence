@@ -7,7 +7,7 @@
 // let local= "10.31.170.211:11000";
 
 // javohir aka
-let local= "172.27.24.41:11000";
+// let local= "172.27.24.41:11000";
 
 // let local= "127.0.0.1:11000";
 
@@ -15,7 +15,7 @@ let local= "172.27.24.41:11000";
 
 
 // builds
-// let local= "localhost:11000";
+let local= "localhost:11000";
 // let local = "10.51.170.211:11000"
 
 export const ip = `http://${local}`;
