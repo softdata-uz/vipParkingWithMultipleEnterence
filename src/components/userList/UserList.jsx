@@ -379,6 +379,7 @@ const UserList = (props) => {
 
                         {/*</div>*/}
 
+>>>>>>> 15a85bf2c68c8068382fc6bbf09297774052da4b
                     </div>
                 </div>
                 <div className="user_list_body">

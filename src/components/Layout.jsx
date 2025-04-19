@@ -66,9 +66,12 @@ const Layout = (props) => {
                             {/*                                                className={`${pathName === "/" ? "layout_header_link_inner_link active" : "layout_header_link_inner_link"}`}>*/}
                             {/*    <AiOutlineAppstore className="Icon"/>Asosiy oyna</Link></div>*/}
                             {/*<div className="layout_header_link_vertical"></div>*/}
-                            <div className="layout_header_link_inner"><Link to="/user-list"
-                                                                            className={`${pathName === "/user-list" ? "layout_header_link_inner_link active" : "layout_header_link_inner_link"}`}>
-                                <BsPeople className="Icon"/>Xodimlar</Link></div>
+                            <div className="layout_header_link_inner">
+                                <Link to="/employees" className={`${pathName === "/employees" ? "layout_header_link_inner_link active" : "layout_header_link_inner_link"}`}>
+                                <BsPeople className="Icon"/>
+                                    Xodimlar
+                                </Link>
+                            </div>
                             <div className="layout_header_link_vertical"></div>
 
                             <div className="layout_header_link_inner"><Link to="/status"
