@@ -6,6 +6,7 @@ import Status from "../components/status/Status";
 import Report from "../components/report/Report";
 import Setting from "../components/setting/Setting";
 import TerminalReport from '../components/terminalReport/TerminalReport';
+import DatabaseBlack from "../components/employees/database/DatabaseBlack";
 
 const RootPage = (props) => {
     const {setPathName} = props;
@@ -14,12 +15,13 @@ const RootPage = (props) => {
 
     return (
         <Routes>
-            <Route path="/user-list" element={<UserList/>}/>
+            {/*<Route path="/user-list" element={<UserList/>}/>*/}
+            <Route path="/employees" element={<DatabaseBlack/>}/>
             <Route path="/status" element={<Status/>}/>
             <Route path="/report" element={<Report/>}/>
             <Route path="/terminal-report" element={<TerminalReport/>}/>
             <Route path="/setting" element={<Setting/>}/>
-            <Route path='*' element={<Navigate to="/user-list"/>}/>
+            <Route path='*' element={<Navigate to="/employees"/>}/>
         </Routes>
     );
 };

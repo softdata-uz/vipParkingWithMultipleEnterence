@@ -271,7 +271,7 @@ const UserList = (props) => {
                     <Link to="/" className="user_list_top_left_prev"><img src={prev}/></Link>
                     <div className="user_list_top_left_text">
                         <span>Asosiy »</span>
-                        <p>Xodimlar</p>
+                        <p>Xodimlar</p>8888
                     </div>
                 </div>
                 <div className="user_list_top_right">

@@ -58,7 +58,9 @@ input[type=number] {
     border-radius: 30px;
 }
 
-
+:where(.css-dev-only-do-not-override-1d4w9r2).ant-form-item{
+    margin-bottom: 12px!important;
+}
 .ant-input:hover{
     border-color: #29b85d;
 }

@@ -1,0 +1,101 @@
+.database_modalBlack {
+    box-sizing: border-box;
+    width: 500px;
+    padding-bottom: 15px;
+}
+.database_modalBlack_top {
+    padding: 15px;
+}
+.database_modalBlack_top h2 {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 27px;
+    color: #000000;
+}
+
+.database_modalBlack_form {
+    /*display: grid;*/
+    /*grid-template-columns: 1fr 1fr 0.5fr;*/
+    /*grid-gap: 10px;*/
+    padding: 0 15px;
+}
+
+.database_modalBlack_form_inner1 {
+    /*display: grid;*/
+    /*grid-template-rows: 1fr 1fr;*/
+    /*grid-gap: 10px;*/
+}
+
+.database_modalBlack_form_inner1_input {
+    /*height: 80px;*/
+    /*background: red;*/
+}
+.database_modalBlack_form_inner1_input span {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+    color: #252525;
+}
+
+.database_modalBlack_form_inner1_input .ant-input-affix-wrapper {
+    border-radius: 5px!important;
+    height: 40px!important;
+    font-weight: 600!important;
+}
+
+.database_modalBlack_form_inner1_input .ant-input{
+    font-weight: 600;
+    /*height: 30px!important;*/
+}
+.database_modalBlack_form_inner1_input .ant-select-selector {
+    height: 40px !important;
+}
+
+.database_modalBlack_form_inner1_input .ant-select-selection-placeholder {
+    color: #bfbfbf !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.database_modalBlack_form_inner1_input .ant-select-selection-item {
+    display: flex !important;
+    align-items: center !important;
+    font-weight: 600!important;
+}
+
+.database_modalBlack_line {
+    height: 1px;
+    background: #E2E6ED;
+    width: 100%;
+    margin:10px 0;
+}
+
+.database_modalBlack_buttons {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+}
+
+.database_modalBlack_buttons button {
+    background: #E2E6ED;
+    border: 1px solid #E2E6ED;
+    border-radius: 5px;
+    padding: 0 10px;
+    margin: 0 5px;
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    color: #888D97;
+}
+
+.database_modalBlack_buttons button:last-child {
+    margin-right: 0;
+    background: #FFFFFF;
+}
