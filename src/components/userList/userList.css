@@ -262,9 +262,6 @@ margin-right: 5px;
 .upload_button{
     width: 100% !important;
 }
-
-
-
 .upload_button_icon {
     display: flex;
     align-items: center;
@@ -484,12 +481,4 @@ margin-right: 5px;
     background: #FFFFFF;
     border-radius: 10px;
     /*padding: 10px;*/
-}
-
-.table_model{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
 }

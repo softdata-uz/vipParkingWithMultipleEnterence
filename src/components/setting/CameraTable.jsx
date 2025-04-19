@@ -71,21 +71,34 @@ const CameraTable = (props) => {
             align: 'center',
             render: (text, record) => (
                 <div>
-                    {record?.type === 'camera' ? "Kamera" : record?.type === 'terminal' ? "Terminal" : "Boshqalar"}
+                    {record?.type === 'dahua' ? "Dahua" : record?.type === 'hikvision' ? "Hikvision" : "Boshqalar"}
                 </div>
             )
         },
-
         {
-            title: 'Markasi',
-            dataIndex: 'brand',
-            key: 'brand',
+            title: 'Guruh',
+            dataIndex: 'camera_group',
+            key: 'camera_group',
             ellipsis: true,
             // sorter: true,
             align: 'center',
             render: (text, record) => (
                 <div>
-                    {record?.brand === 'hikvision' ? 'Hikvision' : record?.brand === 'dahua' ? "Dahua" : "Boshqalar"}
+                    {record?.camera_group?.name}
+                </div>
+            )
+        },
+        {
+            title: 'Kanal',
+            dataIndex: 'channel',
+            key: 'channel',
+            ellipsis: true,
+            // sorter: true,
+            align: 'center',
+            render: (text, record) => (
+                <div>
+                    {record?.channel}
+                    {/*{record?.brand === 'hikvision' ? 'Hikvision' : record?.brand === 'dahua' ? "Dahua" : "Boshqalar"}*/}
                 </div>
             )
         },

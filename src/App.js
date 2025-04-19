@@ -26,7 +26,6 @@ function App() {
                 );
                 // console.log(data)
                 const user = data?.user;
-
                 if (user) {
                     dispatch(getMeAction(data?.user));
                 } else {

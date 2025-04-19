@@ -40,8 +40,7 @@ const Report = (props) => {
 
 
     const getReportData = async (paramsObj) => {
-        await axios
-            .get(`${ip}/api/vehicle_log/${reportPaginationLimit}/${reportPaginationCurrent}`,
+        await axios.get(`${ip}/api/vehicle_log/${reportPaginationLimit}/${reportPaginationCurrent}`,
                 {
                     headers: {'x-access-token': localStorage.getItem('vipparking-token')},
                     params: paramsObj
@@ -58,8 +57,8 @@ const Report = (props) => {
                         position: item.position,
                         vehicle_number: item.vehicle_number,
                         // the_date: moment(item.the_date).format('DD.MM.YYYY, HH:mm:ss'),
-                        entering_time: moment(item.entering_time).format('DD.MM.YYYY, HH:mm:ss'),
-                        exiting_time: moment(item.exiting_time).format('DD.MM.YYYY, HH:mm:ss'),
+                        entering_time: item.entering_time ? moment(item.entering_time).format('DD.MM.YYYY, HH:mm:ss') : "",
+                        exiting_time: item.exiting_time ? moment(item.exiting_time).format('DD.MM.YYYY, HH:mm:ss') : "",
                         id: item.id
                     }
                 ));
@@ -101,6 +100,53 @@ const Report = (props) => {
 
             })
     }
+
+    // excel pdf example
+
+    const downloadReportExcel = async () => {
+        try {
+            const response = await axios.post(`${ip}/api/report/vehicle_log/excel`, filterInitialValue,
+                {
+                    headers: {'x-access-token': localStorage.getItem('vipparking-token'),},
+                    responseType: 'blob', // Important for handling binary data
+                }
+            );
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'report.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (error) {
+            console.error('Error downloading the report:', error);
+        }
+    };
+
+    const downloadReport = async () => {
+        axios.post(`${ip}/api/report/vehicle_log/pdf`,
+            filterInitialValue,
+            {
+                headers: { 'x-access-token': localStorage.getItem('vipparking-token')},
+                responseType: 'blob'
+            }
+        )
+            .then((res) => {
+                const blob = new Blob([res.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'report.pdf'; // File name
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            })
+            .catch((error) => {
+                console.error('Error downloading the PDF report:', error);
+            });
+    }
+
+    // excel pdf example
 
 
     const reportPaginationOnchange = (e = 1, option) => {
@@ -157,12 +203,12 @@ const Report = (props) => {
                             <p>Filterlash</p>
                         </div>
                         <div className="download_buttons">
-                            <button onClick={() => getExcelReport('excel', filterInitialValue)}
+                            <button onClick={downloadReportExcel}
                                     className="download_btn">
                                 <img src={exel}/>
                                 Yuklash
                             </button>
-                            <button onClick={() => getExcelReport('pdf', filterInitialValue)}
+                            <button onClick={downloadReport}
                                     className="download_btn_pdf">
                                 <img src={pdf}/>
                                 Yuklash

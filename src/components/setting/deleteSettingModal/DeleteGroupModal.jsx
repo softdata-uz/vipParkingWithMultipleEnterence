@@ -6,23 +6,26 @@ import {message} from "antd";
 
 import '../../userList/userList.css';
 
-const DeleteCameraModal = (props) => {
+const DeleteGroupModal = (props) => {
 
     const {
-        deleteOpenCamera,
-        setDeleteOpenCamera,
-        deleteDataCamera,
-        setDeleteDataCamera,
-        getCameraData
+        deleteOpenGroup,
+        setDeleteOpenGroup,
+        deleteDataGroup,
+        setDeleteDataGroup,
+        getGroupData
     } = props;
 
-    const deleteCamera = () =>{
-        axios.delete(`${ip}/api/cameras/${deleteDataCamera.id}`,
+    const deleteGroup = () => {
+        axios.delete(`${ip}/api/camera-group/${deleteDataGroup.id}`,
             {headers: {'x-access-token': localStorage.getItem('vipparking-token')}})
             .then((res) => {
-                setDeleteOpenCamera(false);
-                getCameraData();
+                setDeleteOpenGroup(false);
+                getGroupData();
                 message.success("O'chirildi !", 5);
+            })
+            .catch((err)=>{
+                message.error("Biriktirilgan kamerani birinchi o'chirish kerak!")
             })
     }
 
@@ -30,30 +33,28 @@ const DeleteCameraModal = (props) => {
         <div>
             <Modal
                 centered
-                open={deleteOpenCamera}
-                onOk={() => setDeleteOpenCamera(false)}
-                onCancel={() => setDeleteOpenCamera(false)}
+                open={deleteOpenGroup}
+                onOk={() => setDeleteOpenGroup(false)}
+                onCancel={() => setDeleteOpenGroup(false)}
                 width={300}>
                 <div className="delete_modal">
                     <h3>Haqiqatdan ham o'chirasizmi ?</h3>
                     <div className="delete_modal_button">
                         <div className="">
                             <button type="button" className="delete_modal_button_left"
-                                    onClick={() => setDeleteOpenCamera(false)}>Yo'q
+                                    onClick={() => setDeleteOpenGroup(false)}>Yo'q
                             </button>
                         </div>
                         <div>
                             <button type="submit" className="delete_modal_button_right"
-
-                                onClick={()=>deleteCamera()} >Ha
-
-                        </button>
+                                    onClick={() => deleteGroup()}>Ha
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </Modal>
         </div>
-</Modal>
-</div>
-);
+    );
 };
 
-export default DeleteCameraModal;
+export default DeleteGroupModal;

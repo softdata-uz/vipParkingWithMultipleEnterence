@@ -12,7 +12,7 @@ import {ip} from "../../ip";
 import nobody from "../../images/nobody.svg";
 import {message} from "antd";
 import {useSelector, useDispatch} from "react-redux";
-import './userList.css';
+// import 'userList.css';
 
 const UserListTable = (props) => {
 
@@ -71,10 +71,10 @@ const UserListTable = (props) => {
             render: (text, record) => (
                 <div className='table_user_cell'>
                     {
-                        record.staff_image ?
+                        record.image ?
                             <Image
                                 className="table_user_cell_img"
-                                src={`${ip}/staff/${record.staff_image}`}
+                                src={`${ip}/staff/${record.image}`}
                                 preview={{
                                     mask: (
                                         <AiOutlineUser size={20}/>
@@ -132,58 +132,53 @@ const UserListTable = (props) => {
             )
         },
         {
-            title: "Eshiklar soni",
-            dataIndex: 'door_ip',
-            key: 'door_ip',
+            title: "Telefon raqami",
+            dataIndex: 'enter_time',
+            key: 'enter_time',
             ellipsis: true,
             // sorter: true,
             align: 'center',
             render: (text, record) => (
                 <div>
-                    {record?.door_ip ? record.door_ip.length : "..."}
+                    {record?.tel ? record.tel : "..."}
                 </div>
             )
         },
-        {
-            title: 'Mashina modeli',
-            dataIndex: 'vehicle_model',
-            key: 'vehicle_model',
-            align: 'center',
-            render: (text, record) => (
-                <div className='table_model'>
-                    {
-                        record.vehicle_image ?
-                            <Image
-                                className="table_user_cell_img"
-                                src={`${ip}/staff/${record.vehicle_image}`}
-                                preview={{
-                                    mask: (
-                                        <AiOutlineUser size={20}/>
-                                    ),
-                                    maskClassName: 'customize-mask',
-                                }}
-                            />
-                            :
-                            <Image
-                                className="table_user_cell_img"
-                                src={nobody}
-
-                                preview={{
-                                    mask: (
-                                        <AiOutlineUser size={20}/>
-                                    ),
-                                    maskClassName: 'customize-mask',
-                                }}
-                            />
-                    }
-
-                    {
-                        record.vehicle_model ?
-                            <p>{record.vehicle_model}</p> : "..."
-                    }
-                </div>
-            ),
-        },
+        // {
+        //     title: 'Mashina rasmi',
+        //     dataIndex: 'img',
+        //     key: 'img',
+        //     align: 'center',
+        //     render: (text, record) => (
+        //         <div className=''>
+        //             {
+        //                 record.vehicle_image ?
+        //                     <Image
+        //                         className="table_user_cell_img"
+        //                         src={`${ip}/staff/${record.vehicle_image}`}
+        //                         preview={{
+        //                             mask: (
+        //                                 <AiOutlineUser size={20}/>
+        //                             ),
+        //                             maskClassName: 'customize-mask',
+        //                         }}
+        //                     />
+        //                     :
+        //                     <Image
+        //                         className="table_user_cell_img"
+        //                         src={nobody}
+        //
+        //                         preview={{
+        //                             mask: (
+        //                                 <AiOutlineUser size={20}/>
+        //                             ),
+        //                             maskClassName: 'customize-mask',
+        //                         }}
+        //                     />
+        //             }
+        //         </div>
+        //     ),
+        // },
         {
             title: 'Tahrir',
             dataIndex: '',

@@ -84,10 +84,10 @@ const Layout = (props) => {
                                 <TbFileText className="Icon"/>Hisobot</Link></div>
                             <div className="layout_header_link_vertical"></div>
 
-                            <div className="layout_header_link_inner"><Link to="/terminal-report"
-                                                                            className={`${pathName === "/terminal-report" ? "layout_header_link_inner_link active" : "layout_header_link_inner_link"}`}>
-                                <TbFileText className="Icon"/>Terminal hisoboti</Link></div>
-                            <div className="layout_header_link_vertical"></div>
+                            {/*<div className="layout_header_link_inner"><Link to="/terminal-report"*/}
+                            {/*                                                className={`${pathName === "/terminal-report" ? "layout_header_link_inner_link active" : "layout_header_link_inner_link"}`}>*/}
+                            {/*    <TbFileText className="Icon"/>Terminal hisoboti</Link></div>*/}
+                            {/*<div className="layout_header_link_vertical"></div>*/}
 
                             <div className="layout_header_link_inner"><Link to="/setting"
                                                                             className={`${pathName === "/setting" ? "layout_header_link_inner_link active" : "layout_header_link_inner_link"}`}>

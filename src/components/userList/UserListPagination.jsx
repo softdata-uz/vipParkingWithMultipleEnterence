@@ -8,7 +8,7 @@ const UserListPagination = (props) => {
         staffPaginationCurrent,
         staffPaginationLimit,
         staffPaginationOnchange
-    } = props;
+    }=props
 
     return<Pagination
         dropdownRender = {false}
