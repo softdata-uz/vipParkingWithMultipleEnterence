@@ -410,7 +410,6 @@ const MultipleEnterence = () => {
                 getEventDataByViewerId={getEventDataByViewerId}
                 setDataGroupViewer={setDataGroupViewer}
             />
-
         </div>
     );
 };

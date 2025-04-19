@@ -165,6 +165,7 @@ const Setting = (props) => {
             })
     }
 
+
     const getGroupData = async (paramsObj) => {
         await axios.get(`${ip}/api/camera-group`,
             {
