@@ -30,6 +30,7 @@ import DatabaseAddPagination from "./addModal/DatabaseAddPagination";
 import AddDeleteModal from "./deleteModal/AddDeleteModal";
 import {Link} from "react-router-dom";
 import prev from "../../../images/Vector.png";
+import Testp from "./addModal/Testp";
 
 const CheckboxGroup = Checkbox.Group;
 
@@ -86,32 +87,31 @@ const DatabaseAdd = (props) => {
         image: ""
     });
 
-    // console.log(listInitialValues)
-    // img
 
 
     const getListGroup = async (e) => {
-        // console.log(e?.target.name);
-        const response = await axios.get(`${ip}/api/staff/${categoryId.id}/${listPaginationLimit}/${listPaginationCurrent}`, {
-            // params: {searched_data : id.target.value},
-            headers: {'x-access-token': localStorage.getItem('vipparking-token')}
-        })
-        const {data} = response;
-        // console.log(response.data)
-        const count = data.count;
-        setListTotal(count)
-        const newData = data.data.map((item, index) => (
-            {
+        try {
+            const response = await axios.get(`${ip}/api/staff/${categoryId.id}/${listPaginationLimit}/${listPaginationCurrent}`, {
+                headers: {'x-access-token': localStorage.getItem('vipparking-token')}
+            });
+            const { data } = response;
+            const count = data.count;
+            setListTotal(count);
+
+            const newData = data.data.map((item, index) => ({
                 ...item,
-                from_date: moment(item.from_date),
-                to_date: moment(item.to_date),
-            }
-        ))
+                from_date: item.from_date ? moment(item.from_date) : null,
+                to_date: item.to_date ? moment(item.to_date) : null,
+            }));
 
-        setDataList(newData)
-    }
+            setDataList(newData);
+        } catch (error) {
+            console.error("getListGroup error: ", error);
+            message.error("Xodimlar ro'yxatini yuklashda xatolik yuz berdi!");
+        }
+    };
 
-    // console.log(dataList)
+
 
     useEffect(() => {
         if (searched === false && pageChange === false) {
@@ -173,7 +173,7 @@ const DatabaseAdd = (props) => {
 
 
     const editCamera = (value) => {
-        console.log(value)
+        // console.log(value)
         setListInitialValues({
             ...value,
             edit: true
@@ -686,6 +686,8 @@ const DatabaseAdd = (props) => {
                     </div>
                 </div>
             </div>
+
+            {/*<Testp/>*/}
 
             <AddModal
                 isModalOpen={isModalOpen}
