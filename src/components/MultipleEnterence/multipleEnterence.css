@@ -405,3 +405,34 @@
     font-weight: 500;
     line-height: 35px;
 }
+
+
+
+
+
+
+
+@media only screen and (max-width: 1540px) {
+    .multipleEnterence_body {
+        height: calc(100vh - 80px);
+        padding: 12px;
+        grid-gap: 12px;
+    }
+    .multipleEnterence_body_card_information_inner {
+        padding: 2px 0;
+    }
+    .multipleEnterence_body_card_information_inner span {
+        font-size: 12px;
+        line-height: 20px;
+    }
+    .multipleEnterence_body_card_information_inner p {
+        font-size: 16px;
+        line-height: 20px;
+    }
+}
+
+
+
+
+
+

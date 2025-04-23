@@ -7,8 +7,7 @@ import axios from 'axios';
 import { ip } from "../../../../ip";
 import modalImg from '../../../../images/gallery-add.png';
 import { CiImageOn } from "react-icons/ci";
-import dayjs from 'dayjs'; // <- YANGI
-import 'antd/dist/reset.css';
+import dayjs from 'dayjs';
 import './addModal.css';
 
 const AddModal = (props) => {
