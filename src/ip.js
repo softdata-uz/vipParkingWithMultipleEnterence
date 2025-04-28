@@ -17,7 +17,7 @@ let local= "192.168.10.132:11000";
 
 
 // builds
-// let local= "localhost:12000";
+// let local= "localhost:11000";
 // let local = "10.51.170.211:11000"
 
 export const ip = `http://${local}`;

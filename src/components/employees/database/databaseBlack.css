@@ -17,6 +17,7 @@
     justify-content: space-between;
     align-items: center;
 }
+
 .parking_statistcs_top {
     display: flex;
     align-items: center;
@@ -79,8 +80,9 @@
 .parking_database_black_body_topButtons_progress .ant-progress-outer {
     padding: 0 !important;
 }
-.parking_database_black_body_topButtons_left .disabledButtons{
-    pointer-events: none!important;
+
+.parking_database_black_body_topButtons_left .disabledButtons {
+    pointer-events: none !important;
 }
 
 .parking_database_black_body_topButtons_left button {
@@ -117,10 +119,12 @@
 .parking_database_black_body_topButtons_left button:hover {
     border: 1px solid #04B400;
 }
-.parking_database_black_body_topButtons_left button:hover .parking_database_black_body_topButtons_left_buttonText{
+
+.parking_database_black_body_topButtons_left button:hover .parking_database_black_body_topButtons_left_buttonText {
     color: #04B400;
 }
-.parking_database_black_body_topButtons_left button:hover .parking_database_black_body_topButtons_left_buttonText img{
+
+.parking_database_black_body_topButtons_left button:hover .parking_database_black_body_topButtons_left_buttonText img {
     filter: invert(38%) sepia(93%) saturate(1017%) hue-rotate(84deg) brightness(101%) contrast(107%);
 }
 
@@ -130,21 +134,22 @@
 }
 
 .parking_database_black_body_topButtons_left .deleteButton {
-    border: 1px solid #DC1B31!important;
-    border-radius: 5px!important;
+    border: 1px solid #DC1B31 !important;
+    border-radius: 5px !important;
 }
-.parking_database_black_body_topButtons_left .deleteButton:active{
-    background: #FFDEDE!important;
+
+.parking_database_black_body_topButtons_left .deleteButton:active {
+    background: #FFDEDE !important;
 }
 
 .parking_database_black_body_topButtons_left .deleteButton .parking_database_black_body_topButtons_left_buttonText {
-    color: #DC1B31!important;
+    color: #DC1B31 !important;
 }
 
 .parking_database_black_body_topButtons_left .deleteButton:hover {
-    border: 1px solid #DC1B31!important;
-    border-radius: 5px!important;
-    background: #FFDEDE!important;
+    border: 1px solid #DC1B31 !important;
+    border-radius: 5px !important;
+    background: #FFDEDE !important;
 }
 
 .parking_database_black_body_topButtons_left .deleteButton img {
@@ -152,16 +157,16 @@
 }
 
 .parking_database_black_body_topButtons_left .filterButton {
-    border: 1px solid #106BEA!important;
+    border: 1px solid #106BEA !important;
     border-radius: 5px;
 }
 
 .parking_database_black_body_topButtons_left .filterButton .parking_database_black_body_topButtons_left_buttonText {
-    color: #106BEA!important;
+    color: #106BEA !important;
 }
 
 .parking_database_black_body_topButtons_left .filterButton:hover {
-    border: 1px solid #106BEA!important;
+    border: 1px solid #106BEA !important;
     border-radius: 5px;
     background: rgba(18, 116, 255, 0.22) !important;
 }
@@ -366,12 +371,13 @@
 }
 
 .parking_database_black_body_cards_body_card_footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background: #E2E6ED;
     border-radius: 0px 0px 5px 5px;
     padding: 10px;
     bottom: 0;
-    display: flex;
-    align-items: center;
     font-family: 'Open Sans';
     font-style: normal;
     font-weight: 600;
@@ -380,11 +386,22 @@
     cursor: pointer;
 }
 
-.parking_database_black_body_cards_body_card_footer span {
-
+.camera_length {
+display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    color: #252525;
 }
 
-
+.unverified{
+    display: flex;
+    align-items: center;
+}
 
 .parking_database_black_body_cards_body_card_inner1_top .ant-checkbox-wrapper {
     position: absolute;
@@ -402,7 +419,154 @@
     overflow: auto;
 }
 
+.parking_database_black_body_cards_body_card_footer_camButton_inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 19px;
+    color: #FFFFFF;
+    background: #636C79;
+    border-radius: 5px;
+    height: 35px;
+    padding: 0 5px;
+}
 
+.parking_database_black_body_cards_body_card_footer_camButton_inner:hover {
+    background: black;
+}
+
+
+/*camera list*/
+.camera_lists{
+    padding: 10px;
+    width: 400px;
+}
+.camera_lists_title h2{
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 19px;
+    color: black;
+    text-align: center;
+    margin: 5px 0!important;
+}
+.camera_lists_body{
+    background-color: #F8F8F8;
+    border-radius: 5px;
+    margin-top: 15px;
+    padding: 10px 10px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+.camera_lists_body_line{
+    background-color: #E7E7E7;
+    height: 1px;
+    width: 100%;
+    margin: 5px 0;
+}
+.camera_lists_inner{
+    height: 35px;
+    margin-top: 5px;
+    /*background-color: red;*/
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+    color: black;
+    padding: 0 5px;
+    cursor: pointer;
+}
+.camera_lists_inner:hover{
+    background-color: #E2E6ED;
+    color: #29B85D;
+}
+.camera_lists_body .ant-checkbox-wrapper{
+
+}
+.sdd{
+    display: flex;
+gap: 10px;
+    padding-top: 15px;
+}
+.sdd_ip{
+    margin-left: 20px;
+    color: #b6afaf !important;
+}
+.camera_lists_body .ant-checkbox-wrapper span{
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 19px;
+    color: black;
+}
+.camera_lists_body .ant-checkbox-wrapper:hover span{
+    color: #29B85D;
+}
+.camera_lists_body .ant-progress-text{
+    margin-bottom: 8px;
+    font-family: "Open Sans";
+    font-weight: 600;
+}
+.camera_lists_body .ant-slider-rail{
+    background-color: #888D97;
+    margin-bottom: 8px;
+}
+.camera_lists_body .ant-slider-track{
+    background-color: #29B85D!important;
+}
+.camera_lists_body .ant-slider-handle{
+    border: 1px solid #29B85D;
+}
+
+
+.camera_lists_body_button{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+.camera_lists_body_button .camera_lists_body_button_submit{
+    background: #ABFCC8;
+    color: #00752A;
+    border-radius: 5px;
+    font-family: "Open Sans";
+    font-weight: 600;
+    font-size: 14px;
+    width: 100%;
+    height: 35px;
+    margin-left: 5px;
+    border: none;
+}
+.camera_lists_body_button .camera_lists_body_button_submit:hover{
+    background:#29B85D;
+    color: white;
+}
+.camera_lists_body_button .camera_lists_body_button_cancel{
+    background: #FFDEDE;
+    color: #AC0000;
+    border-radius: 5px;
+    font-family: "Open Sans";
+    font-weight: 600;
+    font-size: 14px;
+    width: 100%;
+    height: 35px;
+    margin-right: 5px;
+    border: none;
+}
+.camera_lists_body_button .camera_lists_body_button_cancel:hover{
+    background:#DC1B31;
+    color: white;
+}
 
 
 @media only screen and (max-width: 1540px) {
@@ -411,14 +575,16 @@
         overflow-y: auto;
 
     }
+
     .parking_database_black_body_cards_body {
         height: calc(100% - 45px);
         overflow-y: auto;
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr!important;
+        grid-template-columns: 1fr 1fr 1fr 1fr !important;
         grid-template-rows: 1fr 1fr 1fr;
         grid-gap: 15px;
     }
+
     .parking_database_black_body_cards_body_20 {
         width: 100%;
         height: 91%;

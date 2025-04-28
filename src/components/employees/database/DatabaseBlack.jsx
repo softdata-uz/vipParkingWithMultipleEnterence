@@ -6,12 +6,11 @@ import icon9 from '../../../images/parkingModul/database/Group (2).svg';
 import carIcon from '../../../images/parkingModul/database/directions_car.png';
 import notCheck from '../../../images/parkingModul/database/Vector (24).png';
 
-import {Checkbox, Dropdown, Form, Menu, Progress, Slider} from "antd";
+import {Checkbox, Dropdown, Form, Menu, message, Progress, Slider} from "antd";
 import burger from "../../../images/parkingModul/database/Vector (23).png";
 import {useSelector} from "react-redux";
 import {useTranslation} from "react-i18next";
 
-import './databaseBlack.css';
 import DatabaseAdd from "./DatabaseAdd";
 import editIcon from "../../../images/parkingModul/database/Vector (25).png";
 import deleteIcon from "../../../images/parkingModul/database/Vector (26).png";
@@ -28,6 +27,10 @@ import AddDeleteModal from "./deleteModal/AddDeleteModal";
 import Modal from "react-modal";
 import {Link} from "react-router-dom";
 import prev from "../../../images/Vector.png";
+
+import './databaseBlack.css';
+import AddCameraModal from "./AddCameraModal";
+
 
 const CheckboxGroup = Checkbox.Group;
 
@@ -69,12 +72,16 @@ const DatabaseBlack = () => {
     })
     const [percent, setPercent] = useState(0);
 
+
+    // console.log(selectedIps)
+
+
     const getTestGroup = () => {
         axios.get(`${ip}/api/staff-group/${testPaginationLimit}/${testPaginationCurrent}`, {
             headers: {'x-access-token': localStorage.getItem('vipparking-token')}
         })
             .then((res) => {
-                // console.log(res)
+                console.log(res.data.data)
                 setTestTotal(res.data.count);
                 setDataTest(res.data.data);
                 setPercent(res.data.percent)
@@ -203,10 +210,23 @@ const DatabaseBlack = () => {
     const [catId , setCatId] = useState('')
     const [cameraData , setCameraData] = useState([]);
 
+    const [selectedIps, setSelectedIps] = useState([]);
+
+    const changeCheckbox = (e, item) => {
+        const { checked } = e.target;
+        const ip = item.ip_address;
+
+        if (checked) {
+            setSelectedIps(prev => [...prev, ip]);
+        } else {
+            setSelectedIps(prev => prev.filter(address => address !== ip));
+        }
+    };
+
     const openModalCamera = (category_id) => {
         setOpenCamModal(!openCamModal);
         setCatId(category_id);
-        axios.get(`${ip}/face-recognation-service/api/cameralist/${category_id}`,
+        axios.get(`${ip}/api/all/cameras`,
             {headers: {'x-access-token': localStorage.getItem('vipparking-token')}})
             .then((res)=>{
                 // console.log(res)
@@ -214,29 +234,33 @@ const DatabaseBlack = () => {
             })
     }
 
+
     const onFinish = (values) => {
-        console.log('Success:', values);
 
-
-        axios.post(`${ip}/face-recognation-service/api/category/cameras/${catId}`,
+        axios.put(`${ip}/api/update-camera/staff-group/${catId}`,
             {
-                // headers: {'x-access-token': localStorage.getItem('vipparking-token')}
+                cameras: selectedIps
+            },
+            {
+                headers: { 'x-access-token': localStorage.getItem('vipparking-token') }
+            }
+        )
+            .then((res) => {
+                setOpenCamModal(false);
+                getTestGroup()
+                console.log(res);
             })
-            .then((res)=>{
-                console.log(res)
-            })
+            .catch((error) => {
+                console.error(error);
+                message.error(error.response.data.msg);
+            });
     };
+
 
     const onFinishFailed = (errorInfo) => {
         console.log('Failed:', errorInfo);
     };
-    const [openListCam , setOpenListCam] = useState(false);
 
-    const changeCheckbox = (checked) =>{
-        console.log(checked)
-    }
-
-    // camera biriktirish
 
     return (
         <div>
@@ -315,6 +339,7 @@ const DatabaseBlack = () => {
                             <div className={screenSize.width < 1500 ? "parking_database_black_body_cards_body" : "parking_database_black_body_cards_body_20"}>
                                 {
                                     dataTest?.map((item, index) => {
+                                        console.log(item)
                                         const isChecked = checkedList?.some(check => check === item.id)
                                         return (
                                             <div className={`parking_database_black_body_cards_body_card ${isDarkMode && 'darkModeCard darkModeBorder'}`} key={index}
@@ -330,7 +355,6 @@ const DatabaseBlack = () => {
                                                         >
                                                             <span className={`${isDarkMode && 'darkModeColor'}`}>{item.name}</span>
                                                         </Checkbox>
-                                                        {/*<span style={{marginLeft: "10px"}}>{item[`name_${lang}`]}</span>*/}
                                                     </div>
                                                     <div className="" onClick={event => event.stopPropagation()}>
                                                         <Dropdown overlay={<WidgetMenu value={item}/>}
@@ -355,11 +379,25 @@ const DatabaseBlack = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className={`parking_database_black_body_cards_body_card_footer ${isDarkMode && 'darkModeLayautBg'}`}
+
+
+                                                {/*----footer---*/}
+
+                                                <div className='parking_database_black_body_cards_body_card_footer'
                                                      onClick={event => event.stopPropagation()}>
 
-                                                </div>
+                                                    <div className='camera_length'>
+                                                        <BiCctv/>
+                                                        {item.cameras.length}
+                                                    </div>
 
+                                                    <div className="parking_database_black_body_cards_body_card_footer_camButton"
+                                                         onClick={()=>openModalCamera(item.id)}>
+                                                        <div className="parking_database_black_body_cards_body_card_footer_camButton_inner">
+                                                            <BiCctv style={{marginRight: "5px"}}/>{t("Biriktirish")}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )
                                     })
@@ -367,6 +405,10 @@ const DatabaseBlack = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/*<AddCameraModal*/}
+                    {/*    getTestGroup={getTestGroup}*/}
+                    {/*/>*/}
 
                     <Modal
                         isOpen={openCamModal}
@@ -395,13 +437,15 @@ const DatabaseBlack = () => {
                                                 <div>
                                                     <div className="sdd">
                                                         <Form.Item name={item.name} value={index}>
-                                                            <Checkbox name={item.name} defaultChecked={item.added} onChange={changeCheckbox}>
-                                                                <BiCctv style={{marginRight: "5px"}}/>{item.name}
+                                                            <Checkbox
+                                                                name={item.name}
+                                                                defaultChecked={item.added}
+                                                                onChange={(e) => changeCheckbox(e, item)}
+                                                            >
+                                                                <BiCctv style={{marginRight: "5px"}} />
+                                                                {item.name}
+                                                                <span className='sdd_ip'>{item.ip_address}</span>
                                                             </Checkbox>
-                                                        </Form.Item>
-                                                        {/*<Progress percent={item.similarity}/>*/}
-                                                        <Form.Item name={item.name}>
-                                                            <Slider defaultValue={item.similarity}/>
                                                         </Form.Item>
                                                     </div>
                                                     <div className="camera_lists_body_line"></div>
