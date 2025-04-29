@@ -223,20 +223,39 @@ const DatabaseBlack = () => {
         }
     };
 
+
+
+
     const openModalCamera = (category_id) => {
-        setOpenCamModal(!openCamModal);
+        setOpenCamModal(true);
         setCatId(category_id);
-        axios.get(`${ip}/api/all/cameras`,
-            {headers: {'x-access-token': localStorage.getItem('vipparking-token')}})
-            .then((res)=>{
-                // console.log(res)
-                setCameraData(res?.data?.data)
-            })
-    }
+
+        // 1. Barcha kameralarni olish
+        axios.get(`${ip}/api/all/cameras`, {
+            headers: { 'x-access-token': localStorage.getItem('vipparking-token') }
+        }).then((res) => {
+            setCameraData(res?.data?.data);
+        });
+
+        // 2. Tanlangan kameralarni `getTestGroup()`dan topish
+        axios.get(`${ip}/api/staff-group/${testPaginationLimit}/${testPaginationCurrent}`, {
+            headers: { 'x-access-token': localStorage.getItem('vipparking-token') }
+        }).then((res) => {
+            const groups = res?.data?.data || [];
+            const currentGroup = groups.find(group => group.id === category_id);
+
+            if (currentGroup && currentGroup.cameras) {
+                const selected = currentGroup.cameras.map(cam => cam.ip_address);
+                setSelectedIps(selected);
+            } else {
+                setSelectedIps([]);
+            }
+        });
+    };
+
 
 
     const onFinish = (values) => {
-
         axios.put(`${ip}/api/update-camera/staff-group/${catId}`,
             {
                 cameras: selectedIps
@@ -248,7 +267,7 @@ const DatabaseBlack = () => {
             .then((res) => {
                 setOpenCamModal(false);
                 getTestGroup()
-                console.log(res);
+                // console.log(res);
             })
             .catch((error) => {
                 console.error(error);
@@ -339,7 +358,7 @@ const DatabaseBlack = () => {
                             <div className={screenSize.width < 1500 ? "parking_database_black_body_cards_body" : "parking_database_black_body_cards_body_20"}>
                                 {
                                     dataTest?.map((item, index) => {
-                                        console.log(item)
+                                        // console.log(item)
                                         const isChecked = checkedList?.some(check => check === item.id)
                                         return (
                                             <div className={`parking_database_black_body_cards_body_card ${isDarkMode && 'darkModeCard darkModeBorder'}`} key={index}
@@ -437,14 +456,15 @@ const DatabaseBlack = () => {
                                                 <div>
                                                     <div className="sdd">
                                                         <Form.Item name={item.name} value={index}>
+
                                                             <Checkbox
                                                                 name={item.name}
-                                                                defaultChecked={item.added}
+                                                                checked={selectedIps.includes(item.ip_address)}
                                                                 onChange={(e) => changeCheckbox(e, item)}
                                                             >
-                                                                <BiCctv style={{marginRight: "5px"}} />
+                                                                <BiCctv style={{ marginRight: "5px" }} />
                                                                 {item.name}
-                                                                <span className='sdd_ip'>{item.ip_address}</span>
+                                                                <span className="sdd_ip">{item.ip_address}</span>
                                                             </Checkbox>
                                                         </Form.Item>
                                                     </div>

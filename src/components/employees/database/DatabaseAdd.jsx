@@ -30,10 +30,8 @@ import DatabaseAddPagination from "./addModal/DatabaseAddPagination";
 import AddDeleteModal from "./deleteModal/AddDeleteModal";
 import {Link} from "react-router-dom";
 import prev from "../../../images/Vector.png";
-import Testp from "./addModal/Testp";
 
 const CheckboxGroup = Checkbox.Group;
-
 
 
 const DatabaseAdd = (props) => {
@@ -79,7 +77,7 @@ const DatabaseAdd = (props) => {
     const [listInitialValues, setListInitialValues] = useState({
         fullname: "",
         position: '',
-        tel:'',
+        tel: '',
         staff_group_id: "",
         from_date: "",
         to_date: "",
@@ -88,13 +86,12 @@ const DatabaseAdd = (props) => {
     });
 
 
-
     const getListGroup = async (e) => {
         try {
             const response = await axios.get(`${ip}/api/staff/${categoryId.id}/${listPaginationLimit}/${listPaginationCurrent}`, {
                 headers: {'x-access-token': localStorage.getItem('vipparking-token')}
             });
-            const { data } = response;
+            const {data} = response;
             const count = data.count;
             setListTotal(count);
 
@@ -110,7 +107,6 @@ const DatabaseAdd = (props) => {
             message.error("Xodimlar ro'yxatini yuklashda xatolik yuz berdi!");
         }
     };
-
 
 
     useEffect(() => {
@@ -152,7 +148,7 @@ const DatabaseAdd = (props) => {
         setListInitialValues({
             fullname: "",
             position: '',
-            tel:'',
+            tel: '',
             staff_group_id: "",
             from_date: "",
             to_date: "",
@@ -401,8 +397,7 @@ const DatabaseAdd = (props) => {
                                        className={fileState.uploaded ? `excel_upload_file parking_database_body_topButtons_excel ${isDarkMode && 'darkModeBorder'}` : `parking_database_body_topButtons_excel ${isDarkMode && 'darkModeBorder'}`}>
                                     <div className="parking_database_body_topButtons_excel_inner">
                                         <img src={exel}/>
-                                        <div
-                                            className={`${isDarkMode && 'darkModeColor'}`}>{fileState.uploaded ? t("Yuborish") : t("Import")}</div>
+                                        <div className={`${isDarkMode && 'darkModeColor'}`}>Import</div>
                                     </div>
                                     {
                                         fileState.uploaded ?
@@ -412,8 +407,9 @@ const DatabaseAdd = (props) => {
                                                    style={{display: 'none'}}/>
                                     }
                                 </label>
-                                {fileState.uploaded ? <div className="excel_exit" onClick={cencelExcel}
-                                ><MdOutlineCancel style={{fontSize: "20px"}}/>{t("Bekor qilish")}</div> : ""}
+                                {/*{fileState.uploaded ? <div className="excel_exit" onClick={cencelExcel}>*/}
+                                {/*    <MdOutlineCancel style={{fontSize: "20px"}}/>{t("Bekor qilish")}*/}
+                                {/*</div> : ""}*/}
                             </div>
 
                             <button type="button" className={checkedList.length > 0 ?
@@ -498,7 +494,7 @@ const DatabaseAdd = (props) => {
                                                         type="checkbox"
                                                     />
 
-                                                    <img src={`${ip}/staff/${item.image}`} />
+                                                    <img src={`${ip}/staff/${item.image}`}/>
 
                                                 </div>
                                                 <div className="parking_database_body_cards_body_card_inner1_bottom">
