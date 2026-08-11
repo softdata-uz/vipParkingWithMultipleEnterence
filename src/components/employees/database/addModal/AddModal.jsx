@@ -191,7 +191,8 @@ const AddModal = (props) => {
                         <div className="user_list_modal_form_input">
                             <span>Boshlanish sanasi</span>
                             <DatePicker
-                                value={formik.values.from_date}
+                                // value={formik.values.from_date}
+                                value={formik.values.from_date ? moment(formik.values.from_date) : null}
                                 onChange={(date) => formik.setFieldValue('from_date', date ? date : null)}
                                 format="YYYY-MM-DD"
                                 size="large"
@@ -200,8 +201,6 @@ const AddModal = (props) => {
                                 inputReadOnly={true}
                                 allowClear={false}
                             />
-
-
                             {formik.touched.from_date && formik.errors.from_date &&
                                 <div className="error">{formik.errors.from_date}</div>}
                         </div>

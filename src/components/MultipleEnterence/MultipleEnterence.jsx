@@ -19,6 +19,44 @@ import socketIOClient from "socket.io-client";
 import {Checkbox, Input} from "antd";
 import moment from "moment";
 
+/* ====================================================================
+ *  Oynalar soni uchun cheklovlar.
+ *
+ *  Ilgari `Number(e.target.value)` to'g'ridan-to'g'ri saqlanardi:
+ *    - input tozalansa  -> Number("")  = 0
+ *    - harf yozilsa     -> Number("a") = NaN
+ *  Ikkala holatda ham Array.from({length: val}) BO'SH massiv qaytaradi,
+ *  ya'ni ekranda bironta oyna qolmaydi. Ustiga bu qiymat localStorage'ga
+ *  darhol yozilardi — sahifa qayta yuklansa ham bo'sh ekran ochilardi.
+ * ================================================================== */
+const MIN_VIEWERS = 1;
+const MAX_VIEWERS = 12;   // ekran sig'imiga qarab o'zgartirsa bo'ladi
+const DEFAULT_VIEWERS = 3;
+
+const clampViewerCount = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return DEFAULT_VIEWERS;
+    return Math.min(Math.max(Math.trunc(num), MIN_VIEWERS), MAX_VIEWERS);
+};
+
+const buildViewerIds = (count) =>
+    Array.from({length: count}, (_, i) => i + 1);
+
+// JSON.parse buzilgan qiymatda xato tashlaydi va sahifa umuman ochilmay
+// qoladi — shuning uchun try/catch va turni tekshirish
+const readStoredViewerIds = () => {
+    try {
+        const stored = JSON.parse(localStorage.getItem("viewerIds"));
+        if (Array.isArray(stored)) {
+            const ids = stored.map(Number).filter(Number.isFinite);
+            if (ids.length > 0) return ids.slice(0, MAX_VIEWERS);
+        }
+    } catch (e) {
+        // buzilgan qiymat — default'ga tushamiz
+    }
+    return buildViewerIds(DEFAULT_VIEWERS);
+};
+
 const MultipleEnterence = () => {
 
     const [time, setTime] = useState(new Date());
@@ -44,34 +82,11 @@ const MultipleEnterence = () => {
     const [groupData, setGroupData] = useState([]);
 
 
-    const [dataGroupViewer, setDataGroupViewer] = useState({
-        // 1 : {},
-        // 2 : {},
-        // 3 : {},
-    });
+    const [dataGroupViewer, setDataGroupViewer] = useState({});
 
     const getGroupData = async () => {
         try {
             const response = await axios.get(`${ip}/api/all/camera-group`);
-
-            // const { data } = response;
-            // const newData = data.data.map((item, index) => ({
-            //     ...item,
-            //     key: index + 1,
-            //     name: item.name,
-            //     viewer: item.viewer
-            // }));
-
-            // const groupedData = {};
-            // newData.forEach(item => {
-            //     if (item.viewer !== 0) {
-            //         groupedData[item.viewer] = item;
-            //     }
-            // });
-            //
-            // setDataGroupViewer(groupedData);
-
-            // setGroupData(newData);
 
             const {data} = response.data;
 
@@ -93,62 +108,32 @@ const MultipleEnterence = () => {
     }, []);
 
 
-    // const [eventDataObj, setEventDataObj] = useState({});
-    //
-    // const getEventDataByViewerId = async (viewerId) => {
-    //     try {
-    //         const response = await axios.get(`http://127.0.0.1:11000/api/temp/${viewerId}`);
-    //         setEventDataObj((prev) => ({
-    //             ...prev,
-    //             [viewerId]: response.data.data,
-    //         }));
-    //     } catch (error) {
-    //         console.error(`Error fetching data for viewer ${viewerId}:`, error);
-    //     }
-    // };
-    //
-    // useEffect(() => {
-    //     // Dastlab yuklab olish
-    //     [1, 2, 3].forEach(getEventDataByViewerId);
-    //     // Socket ulanish
-    //     const socket = socketIOClient(ip);
-    //     socket.on("new_data", (viewerId) => {
-    //         getEventDataByViewerId(viewerId);
-    //     });
-    //
-    //     return () => {
-    //         socket.disconnect();
-    //     };
-    // }, []);
-
     const [eventDataObj, setEventDataObj] = useState({});
 
-    // const viewerIds = [1, 2 ,3]; // 4 tagacha card ko‘rsatish
-    const [viewerCount, setViewerCount] = useState(() => {
-        const storedCount = localStorage.getItem("viewerCount");
-        return storedCount ? Number(storedCount) : 3;
-    });
+    // Qo'llanilgan oynalar ro'yxati (localStorage'dan)
+    const [viewerIds, setViewerIds] = useState(readStoredViewerIds);
 
-    const [viewerIds, setViewerIds] = useState(() => {
-        const storedIds = localStorage.getItem("viewerIds");
-        return storedIds ? JSON.parse(storedIds) : [1, 2, 3];
-    });
+    // Input'dagi QORALAMA qiymat — foydalanuvchi yozayotganda vaqtincha
+    // bo'sh bo'lishi mumkin. Haqiqiy qiymatga faqat "Saqlash" bosilganda
+    // aylanadi, shuning uchun yarim yozilgan son ekranni buzmaydi.
+    const [viewerCount, setViewerCount] = useState(() => String(viewerIds.length));
 
     const handleSetViewerIds = () => {
-        const newIds = Array.from({ length: viewerCount }, (_, i) => i + 1);
+        const count = clampViewerCount(viewerCount);
+        const newIds = buildViewerIds(count);
+
+        setViewerCount(String(count));   // input'ni tuzatilgan qiymatga qaytaramiz
         setViewerIds(newIds);
 
-        // localStorage'ga saqlash
-        localStorage.setItem("viewerCount", viewerCount);
+        // Ikkalasi BIRGA yoziladi. Ilgari `viewerCount` har bosishda alohida
+        // saqlanardi — natijada qayta yuklaganda input 5 ni ko'rsatib,
+        // ekranda 3 ta oyna turishi mumkin edi.
+        localStorage.setItem("viewerCount", String(count));
         localStorage.setItem("viewerIds", JSON.stringify(newIds));
     };
 
 
-
     const getEventDataByViewerId = async (viewerId) => {
-
-        // console.log("ishladi "+viewerId)
-
         try {
             const response = await axios.get(`${ip}/api/temp/${viewerId}`);
             setEventDataObj((prev) => ({
@@ -160,8 +145,16 @@ const MultipleEnterence = () => {
         }
     };
 
+    // Oynalar ro'yxati o'zgarganda ham qayta yuklanadi — ilgari deps [] edi,
+    // shuning uchun "Saqlash" bosib oyna qo'shilganda yangi oynalar sahifa
+    // yangilanmaguncha "Guruh topilmadi" bo'lib turardi
     useEffect(() => {
         viewerIds.forEach(getEventDataByViewerId);
+    }, [viewerIds]);
+
+    // Socket alohida: bir marta ulanadi va oynalar soni o'zgarganda
+    // uzilib-ulanmaydi (server viewerId ni o'zi yuboradi)
+    useEffect(() => {
         const socket = socketIOClient(ip);
         socket.on("enter", (viewerId) => {
             getEventDataByViewerId(viewerId);
@@ -185,7 +178,6 @@ const MultipleEnterence = () => {
         axios.put(`${ip}/api/viewer/camera-group/${deleteViewerNum}`, {viewer: 0})
             .then((res) => {
                 viewerIds.forEach(getEventDataByViewerId);
-                // getEventDataByViewerId(screenViewerNum);
                 getGroupData();
                 setDeleteViewerNum(null);
             })
@@ -209,15 +201,21 @@ const MultipleEnterence = () => {
                             <RiDeleteBin6Line size={22}/><p>O'chirish</p>
                         </div>}
                         <div className="multipleEnterence_header_right_input">
-                                <p>Oynalar sonini kiriting : </p>
-                                <Input placeholder="Oynalar sonini"
-                                       value={viewerCount}
-                                       onChange={(e) => {
-                                           const val = Number(e.target.value);
-                                           setViewerCount(val);
-                                           localStorage.setItem("viewerCount", val); // shu yerda saqlaymiz
-                                       }}
-                                />
+                            <p>Oynalar sonini kiriting : </p>
+                            <Input placeholder="Oynalar sonini"
+                                   value={viewerCount}
+                                   maxLength={2}
+                                   onChange={(e) => {
+                                       const raw = e.target.value;
+                                       // yozayotganda faqat raqamga ruxsat,
+                                       // bo'sh qiymat ham mumkin
+                                       if (raw === "" || /^\d+$/.test(raw)) {
+                                           setViewerCount(raw);
+                                       }
+                                   }}
+                                   onPressEnter={handleSetViewerIds}
+                                   onBlur={() => setViewerCount(String(clampViewerCount(viewerCount)))}
+                            />
                             <div className="multipleEnterence_header_right_input_button" onClick={handleSetViewerIds}>Saqlash</div>
                         </div>
                     </div>
@@ -238,14 +236,14 @@ const MultipleEnterence = () => {
                     // 3: Umuman yo'q bo‘lsa
                     if (!data) {
                         return (
-                            <div className="multipleEnterence_body_group">
+                            <div className="multipleEnterence_body_group" key={viewerId}>
                                 <div className='multipleEnterence_body_group_inner'>
                                     <img src={addGroupIcon}/>
                                     <p>Guruh topilmadi</p>
                                     <span>Guruh shakllantirilgan bo‘lsa qo‘shish talab etiladi</span>
                                     <div className="multipleEnterence_body_group_inner_add"
                                          onClick={() => openSelectGroup(viewerId)}>
-                                       <img src={plusIcon}/> Qo’shish
+                                        <img src={plusIcon}/> Qo’shish
                                     </div>
                                 </div>
                             </div>
@@ -255,7 +253,7 @@ const MultipleEnterence = () => {
                     // 2: Data bor, ammo bo‘sh array
                     if (data.length === 0) {
                         return (
-                            <div className="multipleEnterence_body_empty">
+                            <div className="multipleEnterence_body_empty" key={viewerId}>
                                 <div className="multipleEnterence_body_card_information_groupName">
                                     <div className="multipleEnterence_body_card_information_groupName_left">
                                         <Checkbox onChange={(e) => onChange(e, dataGroupViewer[viewerId]?.id)}></Checkbox>
@@ -276,12 +274,8 @@ const MultipleEnterence = () => {
                     // 1: Ma'lumot mavjud
                     const vehicle = data[0].vehicle_data;
                     const staff = data[0].staff_data;
-                    // const storedData = localStorage.getItem("viewerData");
-                    // if (storedData) {
-                    //     setDataGroupViewer(JSON.parse(storedData));
-                    // }
                     return (
-                        <div className="multipleEnterence_body_card">
+                        <div className="multipleEnterence_body_card" key={viewerId}>
                             <div className="multipleEnterence_body_card_information">
                                 <div className="multipleEnterence_body_card_information_groupName">
                                     <div className="multipleEnterence_body_card_information_groupName_left">
@@ -322,83 +316,6 @@ const MultipleEnterence = () => {
                         </div>
                     );
                 })}
-                {/*<div className="multipleEnterence_body_group">*/}
-                {/*    <div className='multipleEnterence_body_group_inner'>*/}
-                {/*        <img src={addGroupIcon}/>*/}
-                {/*        <p>Iltimos guruhni tanlang</p>*/}
-                {/*        <div className="multipleEnterence_body_group_inner_add" onClick={()=>setOpenGroup(true)}>*/}
-                {/*            {"Tanlang"}*/}
-                {/*        </div>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-
-                {/*<div className="multipleEnterence_body_empty">*/}
-                {/*    <div className="multipleEnterence_body_empty_inner">*/}
-                {/*        <img src={emptyIcon}/>*/}
-                {/*        <p>Ma’lumot topilmadi</p>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-
-                {/*<div className="multipleEnterence_body_card">*/}
-                {/*    <div className="multipleEnterence_body_card_information">*/}
-                {/*        <div className="multipleEnterence_body_card_information_corridor corridor_green"><p>1-yo‘lak</p></div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p></div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p></div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p></div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner">*/}
-                {/*            <span>Avtomobilning davlat raqami</span>*/}
-                {/*            <p>XX X XXX XX <img src={carFlag}/></p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_alert activeS">Kirishga ruxsat</div>*/}
-                {/*    </div>*/}
-                {/*    <div className="multipleEnterence_body_card_img">*/}
-                {/*        <img src={carImg} className="car_img_full"/>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-
-
-                {/*<div className="multipleEnterence_body_card">*/}
-                {/*    <div className="multipleEnterence_body_card_information">*/}
-                {/*        <div className="multipleEnterence_body_card_information_corridor corridor_warning">*/}
-                {/*            <p>1-yo‘lak</p></div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner">*/}
-                {/*            <span>Avtomobilning davlat raqami</span>*/}
-                {/*            <p>XX X XXX XX <img src={carFlag}/></p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_alert activeS">Kirishga ruxsat</div>*/}
-                {/*    </div>*/}
-                {/*    <div className="multipleEnterence_body_card_img">*/}
-                {/*        <img src={carImg} className="car_img_full"/>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
-
-
-                {/*<div className="multipleEnterence_body_card">*/}
-                {/*    <div className="multipleEnterence_body_card_information">*/}
-                {/*        <div className="multipleEnterence_body_card_information_corridor corridor_blue"><p>1-yo‘lak</p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner"><span>Salom</span><p>Salom</p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_inner">*/}
-                {/*            <span>Avtomobilning davlat raqami</span>*/}
-                {/*            <p>XX X XXX XX <img src={carFlag}/></p>*/}
-                {/*        </div>*/}
-                {/*        <div className="multipleEnterence_body_card_information_alert activeS">Kirishga ruxsat</div>*/}
-                {/*    </div>*/}
-                {/*    <div className="multipleEnterence_body_card_img">*/}
-                {/*        <img src={carImg} className="car_img_full"/>*/}
-                {/*    </div>*/}
-                {/*</div>*/}
             </div>
 
             <GroupListModal

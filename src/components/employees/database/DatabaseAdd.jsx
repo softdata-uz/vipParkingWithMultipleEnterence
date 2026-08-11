@@ -162,7 +162,6 @@ const DatabaseAdd = (props) => {
         setIsModalOpen(true);
     }
 
-
     // delete card
     const [deleteModal, setDeleteModal] = useState(false);
     const deleteDataList = () => {
@@ -170,7 +169,6 @@ const DatabaseAdd = (props) => {
             setDeleteModal(true);
         }
     }
-
 
     const editCamera = (value) => {
         console.log(value)

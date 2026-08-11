@@ -694,7 +694,7 @@ const Setting = (props) => {
                                         <Select.Option disabled value="">
                                             <span style={{color: "#bfbfbf"}}>Tanlang</span>
                                         </Select.Option>
-                                        <Select.Option value="king">King</Select.Option>
+                                        {/*<Select.Option value="king">King</Select.Option>*/}
                                         <Select.Option value="superadmin">Super Admin</Select.Option>
                                         <Select.Option value="admin">Admin</Select.Option>
                                         <Select.Option value="operator">Operator</Select.Option>

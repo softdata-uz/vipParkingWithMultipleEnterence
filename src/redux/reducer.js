@@ -1,9 +1,43 @@
-
 import { ActionType } from "./constants";
 import storage from "../services/storage";
 
 const token = storage.local.get("token");
 const user = storage.local.get("user");
+
+/**
+ * Logout paytida SAQLANIB QOLADIGAN kalitlar.
+ *
+ * Muammo: LOGIN_FAILURE da window.localStorage.clear() chaqirilardi va u
+ * BUTUN localStorage'ni tozalardi — token/user bilan birga ekran
+ * sozlamalari ham o'chib ketardi. Shuning uchun tizimdan chiqib qayta
+ * kirganda MultipleEnterence sahifasidagi oynalar soni default (3) ga
+ * qaytib qolardi.
+ *
+ * Yangi kalit qo'shilsa — faqat shu ro'yxatga yoziladi.
+ * Manba: src/components/.../MultipleEnterence.jsx
+ */
+const PRESERVED_KEYS = ["viewerCount", "viewerIds"];
+
+/**
+ * clear() ning o'zi o'zgarmaydi — qolgan barcha kalitlar avvalgidek
+ * o'chiriladi, shuning uchun loyihaning boshqa qismlariga ta'sir qilmaydi.
+ * Faqat yuqoridagi ro'yxatdagi kalitlar tozalashdan oldin olinib,
+ * keyin joyiga qaytariladi.
+ */
+const clearStorageExceptPreserved = () => {
+    const preserved = [];
+
+    PRESERVED_KEYS.forEach((key) => {
+        const value = window.localStorage.getItem(key);
+        if (value !== null) preserved.push([key, value]);
+    });
+
+    window.localStorage.clear();
+
+    preserved.forEach(([key, value]) => {
+        window.localStorage.setItem(key, value);
+    });
+};
 
 const initialState = {
     user,
@@ -46,7 +80,7 @@ export const Reducer = (state = initialState, action) => {
             };
         }
         case ActionType.LOGIN_FAILURE:
-            window.localStorage.clear();
+            clearStorageExceptPreserved();
             return {
                 ...state,
                 user: {},
