@@ -169,7 +169,7 @@
     cursor: pointer;
     margin-bottom: 5px;
     display: flex;
-    align-items: center;
+    align-items: center!important;
     border-radius: 7px;
     padding: 8px 10px;
     box-sizing: border-box;
@@ -182,7 +182,7 @@
 .contentHeader_inner:last-child {
     color: red;
     margin-bottom: 0px;
-}
+    }
 
 .layout_header_user {
     /*margin-left: 10px;*/

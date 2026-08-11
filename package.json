@@ -11,6 +11,8 @@
     "@testing-library/user-event": "^13.5.0",
     "antd": "^5.24.7",
     "axios": "^1.2.1",
+    "baseline-browser-mapping": "^2.11.13",
+    "caniuse-lite": "^1.0.30001809",
     "dayjs": "^1.11.13",
     "formik": "^2.4.6",
     "moment": "^2.29.4",

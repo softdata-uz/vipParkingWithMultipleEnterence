@@ -34,7 +34,6 @@ import prev from "../../../images/Vector.png";
 const CheckboxGroup = Checkbox.Group;
 
 
-
 const DatabaseAdd = (props) => {
 
     const {
@@ -78,7 +77,7 @@ const DatabaseAdd = (props) => {
     const [listInitialValues, setListInitialValues] = useState({
         fullname: "",
         position: '',
-        tel:'',
+        tel: '',
         staff_group_id: "",
         from_date: "",
         to_date: "",
@@ -86,32 +85,29 @@ const DatabaseAdd = (props) => {
         image: ""
     });
 
-    // console.log(listInitialValues)
-    // img
-
 
     const getListGroup = async (e) => {
-        // console.log(e?.target.name);
-        const response = await axios.get(`${ip}/api/staff/${categoryId.id}/${listPaginationLimit}/${listPaginationCurrent}`, {
-            // params: {searched_data : id.target.value},
-            headers: {'x-access-token': localStorage.getItem('vipparking-token')}
-        })
-        const {data} = response;
-        // console.log(response.data)
-        const count = data.count;
-        setListTotal(count)
-        const newData = data.data.map((item, index) => (
-            {
+        try {
+            const response = await axios.get(`${ip}/api/staff/${categoryId.id}/${listPaginationLimit}/${listPaginationCurrent}`, {
+                headers: {'x-access-token': localStorage.getItem('vipparking-token')}
+            });
+            const {data} = response;
+            const count = data.count;
+            setListTotal(count);
+
+            const newData = data.data.map((item, index) => ({
                 ...item,
-                from_date: moment(item.from_date),
-                to_date: moment(item.to_date),
-            }
-        ))
+                from_date: item.from_date ? moment(item.from_date) : null,
+                to_date: item.to_date ? moment(item.to_date) : null,
+            }));
 
-        setDataList(newData)
-    }
+            setDataList(newData);
+        } catch (error) {
+            console.error("getListGroup error: ", error);
+            message.error("Xodimlar ro'yxatini yuklashda xatolik yuz berdi!");
+        }
+    };
 
-    // console.log(dataList)
 
     useEffect(() => {
         if (searched === false && pageChange === false) {
@@ -152,7 +148,7 @@ const DatabaseAdd = (props) => {
         setListInitialValues({
             fullname: "",
             position: '',
-            tel:'',
+            tel: '',
             staff_group_id: "",
             from_date: "",
             to_date: "",
@@ -171,7 +167,7 @@ const DatabaseAdd = (props) => {
     }
 
     const editCamera = (value) => {
-        console.log(value)
+        // console.log(value)
         setListInitialValues({
             ...value,
             edit: true
@@ -399,8 +395,7 @@ const DatabaseAdd = (props) => {
                                        className={fileState.uploaded ? `excel_upload_file parking_database_body_topButtons_excel ${isDarkMode && 'darkModeBorder'}` : `parking_database_body_topButtons_excel ${isDarkMode && 'darkModeBorder'}`}>
                                     <div className="parking_database_body_topButtons_excel_inner">
                                         <img src={exel}/>
-                                        <div
-                                            className={`${isDarkMode && 'darkModeColor'}`}>{fileState.uploaded ? t("Yuborish") : t("Import")}</div>
+                                        <div className={`${isDarkMode && 'darkModeColor'}`}>Import</div>
                                     </div>
                                     {
                                         fileState.uploaded ?
@@ -410,8 +405,9 @@ const DatabaseAdd = (props) => {
                                                    style={{display: 'none'}}/>
                                     }
                                 </label>
-                                {fileState.uploaded ? <div className="excel_exit" onClick={cencelExcel}
-                                ><MdOutlineCancel style={{fontSize: "20px"}}/>{t("Bekor qilish")}</div> : ""}
+                                {/*{fileState.uploaded ? <div className="excel_exit" onClick={cencelExcel}>*/}
+                                {/*    <MdOutlineCancel style={{fontSize: "20px"}}/>{t("Bekor qilish")}*/}
+                                {/*</div> : ""}*/}
                             </div>
 
                             <button type="button" className={checkedList.length > 0 ?
@@ -496,7 +492,7 @@ const DatabaseAdd = (props) => {
                                                         type="checkbox"
                                                     />
 
-                                                    <img src={`${ip}/staff/${item.image}`} />
+                                                    <img src={`${ip}/staff/${item.image}`}/>
 
                                                 </div>
                                                 <div className="parking_database_body_cards_body_card_inner1_bottom">
@@ -684,6 +680,8 @@ const DatabaseAdd = (props) => {
                     </div>
                 </div>
             </div>
+
+            {/*<Testp/>*/}
 
             <AddModal
                 isModalOpen={isModalOpen}

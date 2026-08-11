@@ -19,7 +19,7 @@ const AddDeleteModal = (props) => {
     } = props;
 
     const deleteAdd = () => {
-        axios.delete(`${ip}/api/delete/vehicle_list`,
+        axios.delete(`${ip}/api/delete/staff`,
             {
                 data: checkedList,
                 headers: {'x-access-token': localStorage.getItem('vipparking-token')}
