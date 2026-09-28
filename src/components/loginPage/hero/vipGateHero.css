@@ -1,0 +1,345 @@
+/* ============================================================================
+   VIP kirish darvozasi (VipGateHero.jsx) — hozircha ishlatilmaydi, login'da
+   Monitoring'dagi ParkingHero turibdi. Qaytarish: Login.js da ParkingHero -> VipGateHero.
+   Bosqichlar: data-phase = idle | approach | scan | result | exit
+   Natija:     data-verdict = allow | deny,  faol polosa: data-lane = 0 | 1
+   ========================================================================== */
+
+.vg {
+    --vg-neon: #3dffb0;
+    --vg-allow: #3dffb0;
+    --vg-deny: #ff6b5e;
+    --vg-scan: #fdd46b;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.vg-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* --- HUD --- */
+.vg-arc {
+    fill: none;
+    stroke: url(#vg-ring);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.vg-dashed {
+    fill: none;
+    stroke: rgba(0, 229, 139, 0.3);
+    stroke-width: 0.8;
+    stroke-dasharray: 4 5;
+}
+
+.vg-rot {
+    animation: hud-spin 24s linear infinite;
+}
+
+.vg-rot--reverse {
+    animation-duration: 40s;
+    animation-direction: reverse;
+}
+
+/* --- joylar, yo'l --- */
+.vg-lot path,
+.vg-road path {
+    fill: none;
+    stroke: rgba(61, 255, 176, 0.38);
+    stroke-width: 1;
+}
+
+.vg-road path:first-child {
+    stroke-dasharray: 5 4;
+}
+
+.vg-road .vg-stopline {
+    stroke: rgba(255, 255, 255, 0.5);
+    stroke-width: 1.4;
+}
+
+.vg-island {
+    fill: rgba(61, 255, 176, 0.08);
+    stroke: rgba(61, 255, 176, 0.35);
+    stroke-width: 0.8;
+}
+
+.vg-lot-label,
+.vg-lane-label {
+    font-family: var(--font-family);
+    font-size: 6px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-anchor: middle;
+    fill: rgba(61, 255, 176, 0.5);
+}
+
+.vg-lane-label {
+    font-size: 6px;
+    transition: fill 0.3s ease;
+}
+
+.vg[data-lane="0"] .vg-lane-label--0,
+.vg[data-lane="1"] .vg-lane-label--1 {
+    fill: var(--vg-neon);
+}
+
+/* --- mashina --- */
+.vg-car-body {
+    fill: rgba(0, 229, 139, 0.12);
+    stroke: var(--vg-neon);
+    stroke-width: 1.1;
+    transition: stroke 0.25s ease, fill 0.25s ease;
+}
+
+.vg-car-glass {
+    fill: rgba(61, 255, 176, 0.28);
+}
+
+.vg-car-line {
+    fill: none;
+    stroke: rgba(61, 255, 176, 0.5);
+    stroke-width: 0.8;
+}
+
+.vg-car-light {
+    fill: #eafff5;
+}
+
+.vg-car-shape--parked {
+    opacity: 0.35;
+}
+
+.vg-car {
+    --y: 180px;
+    transform: translate(var(--x), var(--y));
+    filter: drop-shadow(0 0 3px rgba(0, 229, 139, 0.55));
+    transition: transform 1.4s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.4s ease;
+}
+
+.vg-beam {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.vg[data-phase="approach"] .vg-beam,
+.vg[data-phase="exit"][data-verdict="allow"] .vg-beam {
+    opacity: 1;
+}
+
+.vg[data-phase="idle"] .vg-car {
+    --y: 250px;
+    opacity: 0;
+    transition: none;
+}
+
+/* ruxsat: shlagbaum ochilgach bo'sh VIP joyga kiradi */
+.vg[data-phase="exit"][data-verdict="allow"] .vg-car {
+    --y: 69px;
+    opacity: 0;
+    transition: transform 1.3s cubic-bezier(0.45, 0, 0.25, 1) 0.35s, opacity 0.3s ease 1.45s;
+}
+
+/* taqiq: orqaga qaytadi */
+.vg[data-phase="exit"][data-verdict="deny"] .vg-car {
+    --y: 250px;
+    opacity: 0;
+    transition: transform 1.2s cubic-bezier(0.5, 0, 0.75, 0) 0.15s, opacity 0.4s ease 1s;
+}
+
+.vg[data-phase="result"][data-verdict="allow"] .vg-car .vg-car-body {
+    stroke: var(--vg-allow);
+    fill: rgba(61, 255, 176, 0.22);
+}
+
+.vg[data-phase="result"][data-verdict="deny"] .vg-car .vg-car-body,
+.vg[data-phase="exit"][data-verdict="deny"] .vg-car .vg-car-body {
+    stroke: var(--vg-deny);
+    fill: rgba(255, 107, 94, 0.16);
+}
+
+/* skaner chizig'i va aniqlash ramkasi */
+.vg-scanline rect {
+    fill: var(--vg-scan);
+}
+
+.vg-scanline {
+    opacity: 0;
+}
+
+.vg[data-phase="scan"] .vg-scanline {
+    opacity: 1;
+    animation: vg-scanline 0.7s ease-in-out infinite alternate;
+}
+
+.vg-detect {
+    fill: none;
+    stroke: var(--vg-scan);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    opacity: 0;
+    transition: opacity 0.25s ease, stroke 0.25s ease;
+}
+
+.vg[data-phase="scan"] .vg-detect,
+.vg[data-phase="result"] .vg-detect {
+    opacity: 1;
+}
+
+.vg[data-phase="result"][data-verdict="allow"] .vg-detect { stroke: var(--vg-allow); }
+.vg[data-phase="result"][data-verdict="deny"] .vg-detect { stroke: var(--vg-deny); }
+
+/* kamera nuri — faqat faol polosada */
+.vg-cone {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.vg[data-lane="0"][data-phase="scan"] .vg-cone--0,
+.vg[data-lane="1"][data-phase="scan"] .vg-cone--1 {
+    animation: vg-cone 0.7s ease-in-out infinite alternate;
+}
+
+.vg-camera rect {
+    fill: #0a2a1d;
+    stroke: var(--vg-neon);
+    stroke-width: 0.9;
+}
+
+.vg-camera-lens {
+    fill: var(--vg-neon);
+}
+
+/* taqiq signali */
+.vg-alarm {
+    fill: none;
+    stroke: var(--vg-deny);
+    stroke-width: 1.5;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.vg[data-phase="result"][data-verdict="deny"] .vg-alarm {
+    animation: vg-alarm 0.65s ease-out 2;
+}
+
+/* --- shlagbaum: strela ustun atrofida tepaga buriladi --- */
+.vg-barrier {
+    transition: transform 0.7s cubic-bezier(0.5, 0, 0.3, 1);
+}
+
+.vg[data-lane="0"][data-phase="exit"][data-verdict="allow"] .vg-barrier--0,
+.vg[data-lane="1"][data-phase="exit"][data-verdict="allow"] .vg-barrier--1 {
+    transform: rotate(var(--open));
+}
+
+.vg-arm {
+    stroke: #f2fff8;
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.vg-arm-stripes {
+    stroke: var(--vg-deny);
+    stroke-width: 3;
+    stroke-dasharray: 5 5;
+}
+
+.vg-post {
+    fill: #0a2a1d;
+    stroke: var(--vg-neon);
+    stroke-width: 1;
+}
+
+.vg-led {
+    fill: var(--vg-deny);
+    transition: fill 0.3s ease;
+}
+
+.vg[data-lane="0"][data-phase="exit"][data-verdict="allow"] .vg-led--0,
+.vg[data-lane="1"][data-phase="exit"][data-verdict="allow"] .vg-led--1 {
+    fill: var(--vg-allow);
+}
+
+/* --- natija yorlig'i: raqam va ro'yxat --- */
+.vg-tag {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.vg[data-phase="scan"] .vg-tag,
+.vg[data-phase="result"] .vg-tag {
+    opacity: 1;
+}
+
+.vg-tag-box {
+    fill: rgba(2, 24, 16, 0.92);
+    stroke: var(--vg-scan);
+    stroke-width: 1;
+    transition: stroke 0.25s ease;
+}
+
+.vg[data-phase="result"][data-verdict="allow"] .vg-tag-box { stroke: var(--vg-allow); }
+.vg[data-phase="result"][data-verdict="deny"] .vg-tag-box { stroke: var(--vg-deny); }
+
+.vg-tag-plate {
+    fill: #f5fffa;
+}
+
+.vg-tag-plate-sep {
+    stroke: #0a1510;
+    stroke-width: 0.6;
+}
+
+.vg-tag-plate-text {
+    font-family: var(--font-family);
+    font-size: 9px;
+    font-weight: 800;
+    fill: #0a1510;
+    font-variant-numeric: tabular-nums;
+}
+
+.vg-tag-status {
+    font-family: var(--font-family);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    fill: var(--vg-scan);
+}
+
+.vg[data-phase="result"][data-verdict="allow"] .vg-tag-status { fill: var(--vg-allow); }
+.vg[data-phase="result"][data-verdict="deny"] .vg-tag-status { fill: var(--vg-deny); }
+
+@keyframes vg-scanline {
+    from { transform: translateY(-19px); }
+    to { transform: translateY(19px); }
+}
+
+@keyframes vg-cone {
+    from { opacity: 0.35; }
+    to { opacity: 1; }
+}
+
+@keyframes vg-alarm {
+    0% { opacity: 1; transform: scale(0.5); }
+    100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes hud-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vg * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

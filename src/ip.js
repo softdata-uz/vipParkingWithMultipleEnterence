@@ -1,4 +1,4 @@
-// let local= "192.168.10.136:11000";
+let local= "192.168.10.136:11000";
 
 
 // for build ip samarkand city
@@ -19,7 +19,7 @@
 // let local = "10.51.170.211:11000"
 
 
-let local= "172.27.24.140:11000";
+// let local= "172.27.24.140:11000";
 export const ip = `http://${local}`;
 
 

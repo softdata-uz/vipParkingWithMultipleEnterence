@@ -1,150 +1,158 @@
-import React, {useState, useEffect} from 'react';
-import {Formik, Form, Field, ErrorMessage} from 'formik';
+import React, {useState} from 'react';
+import {ConfigProvider, Form, Input} from 'antd';
 import {useDispatch} from "react-redux";
-import * as Yup from 'yup';
+import {useTranslation} from "react-i18next";
+import {Link} from "react-router-dom";
 import axios from 'axios';
-import {Alert} from "antd";
+import {TbAlertCircle, TbArrowLeft, TbListCheck, TbLock, TbScan, TbUser, TbDoorEnter} from "react-icons/tb";
 
 import {ip} from '../../ip';
+import {LoginSuccess} from "../../redux/action/action";
+import {useTheme} from "../../context/ThemeContext";
+import {PrefsSwitch} from "../common/PrefsSwitch";
+import {APP_VERSION} from "../../version";
+import ParkingHero from "./hero/ParkingHero";
+import HeroBackdrop from "./hero/SystemModules";
 
-import loginImg from '../../images/photo.jpg';
-import loginIcon from '../../images/password.svg';
-import lickIcon from '../../images/lock.svg';
-import logo from '../../images/vplogo.svg';
-
-import {getMeAction, LoginSuccess} from "../../redux/action/action";
-
+import logoDark from '../../images/logo_dark.svg';
+import logoLight from '../../images/logo_light.svg';
 import './login.css';
-import {IoMdArrowBack} from "@react-icons/all-files/io/IoMdArrowBack";
-import {Link} from "react-router-dom";
+
+/* Forma maydonlari — "Kirish" tugmasi bilan bir xil: 48px, 16px (login.css: --login-control) */
+const FORM_THEME = {token: {controlHeight: 48, fontSize: 16}};
+
+const FEATURES = [
+    {Icon: TbScan, title: "Davlat raqamini aniqlash", text: "Kameralar orqali avtomatik tanish (LPR)"},
+    {Icon: TbListCheck, title: "Oq va qora ro'yxat", text: "Ruxsat berilgan va taqiqlangan avtomobillar"},
+    {Icon: TbDoorEnter, title: "Bir nechta kirish", text: "Barcha kirish-chiqish nuqtalari bitta ekranda"},
+];
 
 const Login = () => {
-
-
+    const {t, i18n} = useTranslation();
     const dispatch = useDispatch();
-    const [errorDiv, setErrorDiv] = useState(false)
+    const {theme} = useTheme();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [lang, setLang] = useState(localStorage.getItem('i18nextLng') || i18n.language || 'uz');
 
+    const onChangeLanguage = (next) => {
+        setLang(next);
+        i18n.changeLanguage(next);
+        localStorage.setItem('i18nextLng', next);
+    };
 
-    const initialValues = {
-        login: '',
-        password: ''
-    }
-
-    const validationSchema = Yup.object({
-        login: Yup.string().required('Login kiritilmagan ...'),
-        password: Yup.string().required('Parol kiritilmagan...'),
-    });
-
-    const onSubmit = (values) => {
-        axios.post(`${ip}/api/sign-in`, {
-            login: values.login,
-            password: values.password
-        })
-            .then(res => {
-                localStorage.setItem('vipparking-token', res?.data?.accessToken);
-                dispatch(LoginSuccess(res?.data));
-                // console.log(res)
-            })
-            .catch((error) => {
-                // console.log(error)
-                    if (error && error.request && error.request.status !== 200) {
-                        setErrorDiv(true)
-                    }
-                }
-            )
-    }
+    const onFinish = async (values) => {
+        if (loading) return;
+        setLoading(true);
+        setError('');
+        try {
+            const res = await axios.post(`${ip}/api/sign-in`, {
+                login: values.login.trim(),
+                password: values.password
+            });
+            localStorage.setItem('vipparking-token', res?.data?.accessToken);
+            dispatch(LoginSuccess(res?.data));
+        } catch (err) {
+            // javob kelmagan bo'lsa — server bilan aloqa yo'q
+            setError(err?.response
+                ? t("Login yoki parol noto'g'ri")
+                : t("Server bilan bog'lanib bo'lmadi"));
+            setLoading(false);
+        }
+    };
 
     return (
-
-        <div className="login_page">
-            <div className="page_left">
-                <div className="page_left_img">
-                    <img className="left_img" src={loginImg} alt=""/>
+        <div className="login">
+            <aside className="login_left theme-dark">
+                <HeroBackdrop/>
+                <div className="login_hero">
+                    <ParkingHero/>
                 </div>
-            </div>
+                <div className="login_left_content">
+                    <h2>{t("VIP avtoturargoh")}<br/>{t("kirish nazorati")}</h2>
+                    <p>{t("Raqamni aniqlash, oq va qora ro'yxatlar, joriy holat va hisobotlar — bitta tizimda.")}</p>
+                    <ul className="login_features">
+                        {FEATURES.map(({Icon, title, text}) => (
+                            <li key={title}>
+                                <span className="login_features_icon"><Icon size={24} strokeWidth={1.7}/></span>
+                                <div>
+                                    <b>{t(title)}</b>
+                                    <span>{t(text)}</span>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </aside>
 
-            <div className="page_right">
-
-                    <div className="page_right_back">
-                        <Link to="/"><IoMdArrowBack /><span style={{marginLeft: 5}}>Orqaga</span></Link>
+            <section className="login_right">
+                <header className="login_right_top">
+                    <img className="login_right_logo" src={theme === 'dark' ? logoDark : logoLight} alt="Soft Data"/>
+                    <div className="login_right_actions">
+                        <Link to="/" className="login_back" title={t("Kirish ekraniga qaytish")}>
+                            <TbArrowLeft size={17}/>
+                            <span>{t("Orqaga")}</span>
+                        </Link>
+                        <PrefsSwitch compact lang={lang} onChangeLanguage={onChangeLanguage}/>
                     </div>
-                <div className="rihgt_inner">
-                    <div className="vipparking_logo">
-                        <img src={logo} alt="logo"/>
-                    </div>
-                    <div className="titles">
-                        <div className="title">VIP PARKING TIZIMIGA KIRISH</div>
-                    </div>
+                </header>
 
-
-                    <div className="login_forms">
-
-                        {errorDiv && <div className="error_message">
-                            <Alert message="Login yoki Parolda xatolik!" type="error" showIcon/>
+                <div className="login_right_body">
+                    <div className="login_right_inner">
+                        <div className="login_right_inner_text">
+                            <h1>{t("Tizimga kirish")}</h1>
+                            <p>{t("Davom etish uchun ma'lumotlarni kiriting")}</p>
                         </div>
-                        }
 
-                        <Formik
-                            initialValues={initialValues}
-                            onSubmit={onSubmit}
-                            validationSchema={validationSchema}
-                        >
-                            {
-                                formik => {
-                                    return <Form>
-                                        <div className="login_page_inputs">
-                                            <div className="login_inputs_wrapper">
-                                                <div className="login_control">
-                                                    <label className="login_label">Login</label>
-                                                    <div className="login_input">
-                                                        <img className="login_icon" src={loginIcon} alt=""/>
-                                                        <Field
-                                                            type="login"
-                                                            id="login"
-                                                            name="login"
-                                                            placeholder="Loginni kiriting"
-                                                            autoComplete="off"
-                                                        />
-                                                        <ErrorMessage name="login" component='div'
-                                                                      style={{color: 'red'}} className="error"/>
-                                                    </div>
-                                                </div>
-                                                <div className="login_control">
-                                                    <label className="login_label">Parol</label>
-                                                    <div className="parol_input">
-                                                        <img className="login_icon" src={lickIcon} alt=""/>
-                                                        <Field
-                                                            type="password"
-                                                            id="password"
-                                                            name="password"
-                                                            placeholder="Parolni kiriting"
-                                                            autoComplete="off"
-                                                        />
-                                                        <ErrorMessage name="password" component='div'
-                                                                      style={{color: 'red'}} className="error"/>
-                                                    </div>
+                        <ConfigProvider theme={FORM_THEME}>
+                            <Form
+                                name="login_form"
+                                className="login_right_inner_form"
+                                layout="vertical"
+                                requiredMark={(label, {required}) => <>{label}{required && <span className="login_req">*</span>}</>}
+                                initialValues={{login: '', password: ''}}
+                                onFinish={onFinish}
+                                onValuesChange={() => error && setError('')}
+                                autoComplete="off"
+                            >
+                                <Form.Item name="login" label={t("Login")}
+                                           rules={[{required: true, whitespace: true, message: t("Login kiriting")}]}>
+                                    <Input prefix={<TbUser size={18}/>} placeholder={t("Kiriting")}
+                                           autoComplete="username" autoFocus/>
+                                </Form.Item>
 
-                                                </div>
-                                            </div>
-                                        </div>
+                                <Form.Item name="password" label={t("Parol")}
+                                           rules={[{required: true, message: t("Parol kiriting")}]}>
+                                    <Input.Password prefix={<TbLock size={18}/>} placeholder="••••••••"
+                                                    autoComplete="current-password"/>
+                                </Form.Item>
 
+                                {error && (
+                                    <div className="login_error" role="alert">
+                                        <TbAlertCircle size={16}/>
+                                        <span>{error}</span>
+                                    </div>
+                                )}
 
-                                        <button
-                                            type='submit'
-                                            className="in_button"
-                                        >
-                                            Tizimga kirish
-                                        </button>
-                                    </Form>
-                                }
-                            }
-                        </Formik>
+                                <button type="submit" className="login_submit" disabled={loading}>
+                                    {loading && <span className="login_spinner" aria-hidden="true"/>}
+                                    <span>{t("Kirish")}</span>
+                                </button>
+                            </Form>
+                        </ConfigProvider>
+
+                        <div className="login_right_inner_alert">
+                            <TbLock size={15}/>
+                            <span>{t("Parolni tiklash uchun administratorga murojaat qiling")}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <footer className="login_right_footer">
+                    <span>{t("Versiya")} {APP_VERSION}</span>
+                </footer>
+            </section>
         </div>
-
-
     );
 };
 

@@ -1,0 +1,406 @@
+/* Modal — "Green" design system (BioControl .ds-modal) anatomiyasida.
+   src/components/common/ModalShell.jsx bilan ishlatiladi. */
+
+/* z-index: antd ochiluvchi ro'yxatlari (1050) va Loader (500) modal ustida qolishi kerak */
+.dsm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--gutter);
+    background: var(--bg-overlay);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 180ms ease;
+}
+
+.dsm-overlay--open {
+    opacity: 1;
+}
+
+.dsm-overlay--closing {
+    opacity: 0;
+}
+
+.dsm {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    max-height: calc(100vh - var(--gutter) * 2);
+    max-height: calc(100dvh - var(--gutter) * 2);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-3xl);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    outline: none;
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.dsm--sm {
+    max-width: 420px;
+}
+
+/* VIP qo'shimchasi: ro'yxatli oynalar uchun kengroq */
+.dsm--lg {
+    max-width: 760px;
+}
+
+.dsm--open {
+    opacity: 1;
+    transform: none;
+}
+
+.dsm--closing {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dsm,
+    .dsm-overlay {
+        transition: none;
+    }
+}
+
+/* --- sarlavha --- */
+.dsm__header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-xl);
+    flex: none;
+    padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-2xl);
+}
+
+.dsm__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    /* header'dagi avatar va menyu ikonkalari bilan bir xil yumaloq-kvadrat */
+    border-radius: var(--radius-md);
+    background: var(--utility-brand-50);
+    color: var(--utility-brand-700);
+    box-shadow: inset 0 0 0 1px var(--utility-brand-200);
+}
+
+/* VIP qo'shimchasi: ogohlantirish (muddati tugayotganlar) */
+.dsm__icon--warning {
+    background: var(--utility-warning-50);
+    color: var(--utility-warning-700);
+    box-shadow: inset 0 0 0 1px var(--utility-warning-200);
+}
+
+.dsm__icon--danger {
+    background: var(--utility-error-50);
+    color: var(--utility-error-700);
+    box-shadow: inset 0 0 0 1px var(--utility-error-200);
+}
+
+.dsm__heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+    min-width: 0;
+    padding-top: 2px;
+}
+
+.dsm__title {
+    margin: 0;
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+}
+
+.dsm__subtitle {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--text-tertiary);
+}
+
+/* o'chirilayotgan obyekt nomi — matn ichida ajralib turadigan belgi */
+.dsm__name {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    height: 22px;
+    margin-right: 6px;
+    padding: 0 8px;
+    border-radius: var(--radius-sm);
+    background: var(--utility-error-50);
+    box-shadow: inset 0 0 0 1px var(--utility-error-200);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--utility-error-700);
+    vertical-align: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dsm__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    margin: -8px -8px 0 0;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--fg-quaternary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.dsm__close:hover {
+    background: var(--bg-primary_hover);
+    color: var(--text-primary);
+}
+
+.dsm__close:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+/* --- tana --- */
+.dsm__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--spacing-xs) var(--spacing-3xl) var(--spacing-3xl);
+}
+
+/* --- pastki qism --- */
+.dsm__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-lg);
+    flex: none;
+    padding: var(--spacing-xl) var(--spacing-3xl);
+    border-top: 1px solid var(--border-secondary);
+}
+
+/* Tasdiqlash oynasida tana yo'q — tugmalar teng kenglikda, chiziqsiz */
+.dsm--sm .dsm__footer {
+    border-top: 0;
+    padding-top: var(--spacing-md);
+}
+
+.dsm--sm .dsm__footer .dsm-btn {
+    flex: 1;
+}
+
+/* ==========================================================================
+   Tugmalar
+   ========================================================================== */
+
+.dsm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    height: 40px;
+    padding: 0 var(--spacing-xl);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.dsm-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.dsm-btn:disabled {
+    cursor: not-allowed;
+    background: var(--bg-disabled);
+    border-color: var(--border-disabled);
+    color: var(--text-disabled);
+    box-shadow: none;
+}
+
+.dsm-btn--sm {
+    height: 36px;
+    padding: 0 var(--spacing-lg);
+}
+
+.dsm-btn--primary {
+    background: var(--bg-brand-solid);
+    color: var(--text-on-brand);
+    box-shadow: var(--shadow-skeuomorphic);
+}
+
+.dsm-btn--primary:hover:not(:disabled) {
+    background: var(--bg-brand-solid_hover);
+}
+
+.dsm-btn--secondary {
+    background: var(--bg-primary);
+    border-color: var(--border-primary);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-xs);
+}
+
+.dsm-btn--secondary:hover:not(:disabled) {
+    background: var(--bg-primary_hover);
+    color: var(--text-primary);
+}
+
+.dsm-btn--secondary svg {
+    color: var(--fg-quaternary);
+}
+
+.dsm-btn--destructive {
+    background: var(--bg-error-solid);
+    color: var(--text-on-brand);
+    box-shadow: var(--shadow-skeuomorphic);
+}
+
+.dsm-btn--destructive:hover:not(:disabled) {
+    background: var(--bg-error-solid_hover);
+}
+
+.dsm-btn--destructive:focus-visible {
+    box-shadow: 0 0 0 4px var(--focus-ring-error);
+}
+
+/* ==========================================================================
+   Forma
+   ========================================================================== */
+
+.dsm-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-xl);
+}
+
+.dsm-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    min-width: 0;
+}
+
+.dsm-field--full {
+    grid-column: 1 / -1;
+}
+
+.dsm-label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+}
+
+.dsm-field .ant-form-item {
+    margin-bottom: 0;
+}
+
+.dsm-field .ant-form-item-explain-error {
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* bo'lim ajratgichi (masalan "Kirish ma'lumotlari" oldidan) */
+.dsm-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border-secondary);
+}
+
+/* --- rasm yuklash --- */
+.dsm-avatar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    padding-bottom: var(--spacing-2xl);
+    margin-bottom: var(--spacing-2xl);
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+.dsm-avatar__preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 72px;
+    height: 72px;
+    border-radius: var(--radius-lg);
+    background: var(--utility-brand-50);
+    color: var(--utility-brand-700);
+    box-shadow: inset 0 0 0 1px var(--utility-brand-200);
+    overflow: hidden;
+}
+
+.dsm-avatar__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dsm-avatar__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    min-width: 0;
+}
+
+/* Brauzerning "Выберите файл / Файл не выбран" matni chiqmasligi uchun —
+   `hidden` atributini global CSS qoidalari bosib ketishi mumkin */
+.dsm-avatar input[type="file"] {
+    display: none !important;
+}
+
+.dsm-avatar__hint {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--text-tertiary);
+}
+
+@media (max-width: 560px) {
+    .dsm-form {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dsm__header,
+    .dsm__body,
+    .dsm__footer {
+        padding-left: var(--spacing-xl);
+        padding-right: var(--spacing-xl);
+    }
+
+    .dsm__footer {
+        flex-direction: column-reverse;
+    }
+
+    .dsm__footer .dsm-btn {
+        width: 100%;
+    }
+}

@@ -16,7 +16,8 @@ const user = storage.local.get("user");
  * Yangi kalit qo'shilsa — faqat shu ro'yxatga yoziladi.
  * Manba: src/components/.../MultipleEnterence.jsx
  */
-const PRESERVED_KEYS = ["viewerCount", "viewerIds"];
+// theme / i18nextLng — foydalanuvchi tanlagan mavzu va til (ThemeContext, i18n)
+const PRESERVED_KEYS = ["viewerCount", "viewerIds", "theme", "i18nextLng"];
 
 /**
  * clear() ning o'zi o'zgarmaydi — qolgan barcha kalitlar avvalgidek

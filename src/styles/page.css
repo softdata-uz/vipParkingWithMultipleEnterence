@@ -1,0 +1,547 @@
+/* ============================================================================
+   Sahifa qobig'i — Monitoring loyihasidagi components/admin/admin.css (sahifa qismi) bilan bir xil.
+   Tuzilma (barcha sahifalarda):
+     .admin                     — sahifa, layout_body ni to'liq egallaydi
+       .admin_header            — sarlavha + soni | qidiruv + asosiy tugma
+       .admin_body              — oq panel
+         .admin_toolbar         — (ixtiyoriy) tanlash va ommaviy amallar qatori
+         .admin_body_table      — skroll bo'ladigan kontent (jadval yoki kartalar)
+         .admin_body_pagination — PASTDA: "Jami: N" + pagination
+   ========================================================================== */
+
+.admin {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    font-family: var(--font-family);
+}
+
+.admin_header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xl);
+    min-height: 60px;
+    padding-bottom: var(--spacing-md);
+}
+
+.admin_header_left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    min-width: 0;
+}
+
+.admin_header_left p {
+    font-family: var(--font-family);
+    font-weight: var(--weight-semibold);
+    font-size: 20px;
+    line-height: 30px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin_header_right {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: 10px;
+}
+
+.admin_header_search {
+    display: flex;
+    align-items: center;
+    width: 280px;
+    height: 40px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+    padding: 0 12px;
+    color: var(--fg-quaternary);
+    transition: border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.admin_header_search:focus-within {
+    border-color: var(--border-brand);
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.admin_header_search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    margin-left: 8px;
+    font-family: var(--font-family);
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.admin_header_search input::placeholder {
+    color: var(--text-placeholder);
+}
+
+/* asosiy (yashil) tugma */
+.admin_header_add {
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-xl);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--bg-brand-solid);
+    box-shadow: var(--shadow-skeuomorphic);
+    font-family: var(--font-family);
+    font-weight: var(--weight-semibold);
+    font-size: 14px;
+    color: var(--text-on-brand);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+
+.admin_header_add:hover {
+    background: var(--bg-brand-solid_hover);
+}
+
+.admin_header_add:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+/* ikkilamchi (oq) tugma — Yangilash, Import, Orqaga */
+.admin_header_btn {
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-lg);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xs);
+    font-family: var(--font-family);
+    font-weight: var(--weight-semibold);
+    font-size: 14px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.admin_header_btn svg {
+    flex: none;
+    color: var(--fg-quaternary);
+}
+
+.admin_header_btn:hover:not(:disabled) {
+    background: var(--bg-primary_hover);
+    color: var(--text-primary);
+}
+
+.admin_header_btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.admin_header_btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+/* faqat ikonkali kvadrat tugma */
+.admin_header_btn--icon {
+    width: 40px;
+    padding: 0;
+}
+
+/* "Yangilash" — so'rov davomida ikonka aylanadi */
+.admin_header_btn.is-spinning {
+    opacity: 1;
+    cursor: progress;
+}
+
+.admin_header_btn.is-spinning svg {
+    color: var(--fg-brand);
+    animation: page-spin .8s linear infinite;
+}
+
+@keyframes page-spin {
+    to { transform: rotate(360deg); }
+}
+
+.admin_body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
+}
+
+.admin_body_table {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* --- jadval (Monitoring App.css dagi ".ds-table" uslubi) — faqat yangi sahifalar panelida;
+   eski sahifalar index.css dagi global qoidalarda qoladi --- */
+.admin_body_table .ant-table-wrapper,
+.admin_body_table .ant-table {
+    background: transparent !important;
+}
+
+.admin_body_table .ant-table-thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: 44px;
+    padding: 0 16px !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-tertiary) !important;
+    font-family: var(--font-family);
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-secondary) !important;
+}
+
+.admin_body_table .ant-table-thead > tr > th::before {
+    display: none;
+}
+
+/* index.css dagi "@media (max-width: 1470px) .ant-table-cell { font-size: 12px !important }" ga qarshi */
+.admin_body_table .ant-table-tbody .ant-table-cell {
+    font-size: 14px !important;
+}
+
+.admin_body_table .ant-table-tbody > tr > td {
+    padding: 12px 16px !important;
+    background: var(--bg-primary) !important;
+    color: var(--text-secondary) !important;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-secondary) !important;
+    vertical-align: middle;
+    transition: background-color 0.12s ease;
+}
+
+.admin_body_table .ant-table-tbody > tr:hover > td {
+    background: var(--bg-primary_hover) !important;
+}
+
+.admin_body_table .ant-table-column-sorter-up.active,
+.admin_body_table .ant-table-column-sorter-down.active {
+    color: var(--fg-brand) !important;
+}
+
+.admin_body_table .ant-table-placeholder > td {
+    border-bottom: 0 !important;
+}
+
+.admin_body_table .ant-table-placeholder:hover > td {
+    background: var(--bg-primary) !important;
+}
+
+/* tanlash va ommaviy amallar qatori */
+.admin_toolbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+    min-height: 56px;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+.admin_toolbar_left,
+.admin_toolbar_right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    min-width: 0;
+}
+
+.admin_toolbar .ant-checkbox-wrapper {
+    font-size: 14px;
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+}
+
+.admin_toolbar_selected {
+    font-size: 14px;
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+/* ommaviy amal tugmasi (kichik) */
+.admin_toolbar_btn {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-lg);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xs);
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.admin_toolbar_btn svg {
+    flex: none;
+}
+
+.admin_toolbar_btn:hover:not(:disabled) {
+    background: var(--bg-primary_hover);
+    color: var(--text-primary);
+}
+
+.admin_toolbar_btn--danger {
+    border-color: var(--utility-error-200);
+    background: var(--utility-error-50);
+    color: var(--utility-error-700);
+}
+
+.admin_toolbar_btn--danger:hover:not(:disabled) {
+    background: var(--bg-error-primary);
+    color: var(--text-error);
+}
+
+.admin_toolbar_btn--brand {
+    border-color: var(--utility-brand-200);
+    background: var(--utility-brand-50);
+    color: var(--utility-brand-700);
+}
+
+.admin_toolbar_btn--brand:hover:not(:disabled) {
+    background: var(--bg-brand-secondary);
+    color: var(--utility-brand-700);
+}
+
+.admin_toolbar_btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.admin_toolbar_btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* --- segment tugmalar (filtrlar): Xodimlar turi, Hisobot davri va turi --- */
+
+.page_seg {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 36px;
+    padding: 3px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.page_seg_item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    padding: 0 var(--spacing-lg);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-quaternary);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.page_seg_item:hover:not(.is-active) {
+    color: var(--text-primary);
+}
+
+.page_seg_item.is-active {
+    background: var(--bg-primary);
+    border-color: var(--border-secondary);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-primary);
+}
+
+.page_seg_item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.page_seg_dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--fg-quaternary);
+}
+
+.page_seg_count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.page_seg_item.is-active .page_seg_count {
+    background: var(--utility-brand-50);
+    color: var(--utility-brand-700);
+}
+
+/* PASTKI panel: jami + pagination */
+.admin_body_pagination {
+    flex-shrink: 0;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+    background: transparent;
+    border-top: 1px solid var(--border-secondary);
+    padding: var(--spacing-md) var(--spacing-xl);
+}
+
+.admin_body_pagination p {
+    font-family: var(--font-family);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-tertiary);
+}
+
+.admin_body_pagination p b {
+    color: var(--text-primary);
+}
+
+.admin_body_pagination .ant-select-selector {
+    height: 32px !important;
+}
+
+.admin_body_pagination .ant-select-single {
+    height: 32px !important;
+}
+
+.admin_body_pagination .ant-select-arrow {
+    top: 50% !important;
+}
+
+/* --- kartalar to'ri, skeleton va bo'sh holat (Monitoring parking.css) --- */
+.page_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--page-card-min, 280px), 1fr));
+    align-content: start;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-2xl);
+}
+
+.page_skeleton_card {
+    height: var(--page-skeleton-h, 180px);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-brand-primary) 50%, var(--bg-tertiary) 75%);
+    background-size: 200% 100%;
+    animation: page-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes page-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.page_empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-8xl) 0;
+    color: var(--text-tertiary);
+}
+
+.page_empty_icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+    box-shadow: var(--shadow-xs);
+    color: var(--fg-quaternary);
+}
+
+.page_empty p {
+    font-size: 14px;
+    font-weight: var(--weight-medium);
+}
+
+.content-enter {
+    animation: content-enter 0.32s ease-out;
+}
+
+@keyframes content-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .content-enter,
+    .page_skeleton_card {
+        animation: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .admin_header {
+        flex-wrap: wrap;
+    }
+
+    .admin_header_search {
+        width: 200px;
+    }
+}

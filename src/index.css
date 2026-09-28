@@ -1,24 +1,110 @@
 @font-face {
-    font-family: Open Sans;
-    src: url("./fonts/OpenSans/OpenSans-Medium.ttf");
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-Thin.ttf") format("truetype");
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-ExtraLight.ttf") format("truetype");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-Light.ttf") format("truetype");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-ExtraBold.ttf") format("truetype");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Inter';
+    src: url("./fonts/Inter/Inter-Black.ttf") format("truetype");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
 }
 @font-face {
     font-family: 'Bebas Neue';
     src: url("./fonts/Bebas_Neue/BebasNeue-Regular.ttf");
 }
-@font-face {
-    font-family: 'Inter';
-    src: url("./fonts/Inter/Inter-Regular.ttf");
+
+
+/* ============================================================
+   DIZAYN TOKENLARI
+   Asosiy tizim: src/design-system/tokens.css (Monitoring loyihasidagi
+   "Green" / Untitled UI, yorug' va qorong'i rejim). Bu yerda faqat VIP
+   sahifalari ishlatadigan qisqa nomlar — semantik tokenlarga bog'langan,
+   shuning uchun mavzu almashganda o'zlari ham almashadi.
+============================================================ */
+/* .theme-light/.theme-dark ham sanaladi: aks holda bu qiymatlar :root da bir marta
+   hisoblanib, zonalar ichiga tayyor (boshqa mavzudagi) holatda meros bo'lib o'tadi */
+:root,
+.theme-light,
+.theme-dark {
+    --bg-page: var(--bg-secondary);
+    --bg-surface: var(--bg-primary);
+    --border: var(--border-secondary);
+    --ring-brand: 0 0 0 4px var(--focus-ring);
+    --header-height: var(--topbar-height); /* 72px — Monitoring bilan bir xil */
 }
 
+/* rangi berilmagan matnlar zonaning o'z standart rangini olsin (html'ning qorong'i
+   rangini meros qilmasin) — CanvasText shu element color-scheme'iga qarab hisoblanadi */
+.theme-light,
+.theme-dark {
+    color: CanvasText;
+}
 
 ::-webkit-scrollbar {
-    width: 5px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #29B85D;
+    background: var(--scrollbar-thumb);
     border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
 }
 
 body{
@@ -37,6 +123,16 @@ h1, h2, h3, h4, h5, h6, p{
     box-sizing: border-box;
 }
 
+/* butun dastur bo'ylab yagona shrift */
+body,
+input,
+textarea,
+select,
+button,
+[class*="ant-"] {
+    font-family: 'Inter', sans-serif;
+}
+
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -50,13 +146,6 @@ input[type=number] {
 }
 
 
-::-webkit-scrollbar{
-    width: 5px;
-}
-::-webkit-scrollbar-thumb{
-    background-color: #29b85d;
-    border-radius: 30px;
-}
 
 :where(.css-dev-only-do-not-override-1d4w9r2).ant-form-item{
     margin-bottom: 12px!important;
@@ -90,13 +179,16 @@ button{
     border: 1px solid #29b85d !important;
 }
 
-/*---checkbox---*/
+/*---checkbox--- o'lchami: ThemeContext (controlInteractiveSize: 20) */
+.ant-checkbox .ant-checkbox-inner {
+    border-radius: 6px;
+}
 .ant-checkbox-checked .ant-checkbox-inner {
-    background-color: #29b85d !important;
-    border-color: #29b85d !important;
+    background-color: var(--bg-brand-solid) !important;
+    border-color: var(--bg-brand-solid) !important;
 }
 .ant-checkbox-indeterminate .ant-checkbox-inner::after{
-    background-color: #29b85d!important;
+    background-color: var(--bg-brand-solid)!important;
 }
 
 .ant-input-affix-wrapper-focused{
@@ -162,19 +254,34 @@ a:hover {
 .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
     border: 1px solid #29b85d!important;
 }
+/* Pagination — Monitoring App.css dagi bilan bir xil: chegarali tugmalar, faoli brend fonida.
+   Barcha sahifalarda pagination pastki panelda (styles/page.css: .admin_body_pagination) */
+.ant-pagination .ant-pagination-item,
+.ant-pagination .ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination .ant-pagination-next .ant-pagination-item-link {
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    font-weight: 500;
+}
+.ant-pagination .ant-pagination-item a {
+    color: var(--text-secondary);
+}
 .ant-pagination-item-active {
-    border-color: #29b85d!important;
+    background: var(--bg-brand-solid) !important;
+    border-color: var(--bg-brand-solid) !important;
+}
+.ant-pagination-item-active a,
+.ant-pagination-item-active:hover a {
+    color: var(--text-on-brand) !important;
 }
 .ant-pagination-item:hover {
-    border-color: #29b85d!important;
+    border-color: var(--border-primary) !important;
 }
-.ant-pagination-next:hover .ant-pagination-item-link {
-    color: #29b85d!important;
-    border-color: #29b85d!important;
-}
+.ant-pagination-next:hover .ant-pagination-item-link,
 .ant-pagination-prev:hover .ant-pagination-item-link {
-    color: #29b85d!important;
-    border-color: #29b85d!important;
+    color: var(--fg-brand) !important;
+    border-color: var(--fg-brand) !important;
 }
 .ant-pagination-prev, .ant-pagination-next, .ant-pagination-jump-prev, .ant-pagination-jump-next {
     line-height: 0px!important;
@@ -392,6 +499,3 @@ button{
     border-radius: 10px;
 }
 
-.ant-pagination-item-active a{
-    color:#25b864!important;
-}

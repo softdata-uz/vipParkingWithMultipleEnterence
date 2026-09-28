@@ -1,0 +1,38 @@
+/* Monitoring loyihasidagi styles/tokens.css dan — header menyusi va keyinchalik admin jadvallari */
+/* Role badges — shared across Admin/Operator tables (.ds-badge ko'rinishida) */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.role-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.role-badge--king {
+  background: var(--utility-warning-50);
+  border-color: var(--utility-warning-200);
+  color: var(--utility-warning-700);
+}
+.role-badge--superadmin {
+  background: var(--utility-brand-50);
+  border-color: var(--utility-brand-200);
+  color: var(--utility-brand-700);
+}
+.role-badge--admin,
+.role-badge--operator {
+  background: var(--utility-gray-50);
+  border-color: var(--utility-gray-200);
+  color: var(--utility-gray-700);
+}

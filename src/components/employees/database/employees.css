@@ -1,0 +1,759 @@
+/* ============================================================================
+   Xodimlar — guruh kartalari (DatabaseBlack.jsx), xodim kartalari (DatabaseAdd.jsx),
+   kamera biriktirish oynasi (CameraAssignModal.jsx).
+   Uslub Monitoring'dagi parking_card bilan bir xil; faqat semantik tokenlar — yorug'/qorong'i avtomatik.
+   ========================================================================== */
+
+.emp_grid {
+    --page-card-min: 300px;
+    --page-skeleton-h: 196px;
+}
+
+.emp_grid--staff {
+    --page-card-min: 320px;
+    --page-skeleton-h: 232px;
+}
+
+
+/* ---------- muddati tugayotganlar tugmasi (filtrlar yonida) ---------- */
+
+.emp_expiry {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 var(--spacing-md) 0 var(--spacing-lg);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.emp_expiry svg {
+    flex: none;
+    color: var(--fg-quaternary);
+}
+
+.emp_expiry:hover:not(:disabled) {
+    background: var(--bg-primary_hover);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+.emp_expiry:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.emp_expiry:disabled {
+    cursor: default;
+    opacity: .7;
+}
+
+.emp_expiry_count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* tugayotganlar bor — sariq */
+.emp_expiry.is-warning {
+    border-color: var(--utility-warning-200);
+    background: var(--utility-warning-50);
+    color: var(--utility-warning-700);
+}
+
+.emp_expiry.is-warning svg {
+    color: var(--utility-warning-700);
+}
+
+.emp_expiry.is-warning .emp_expiry_count {
+    background: var(--fg-warning);
+    color: var(--base-white);
+}
+
+/* muddati o'tganlar soni — qizil matn, ajratgich bilan */
+.emp_expiry_expired {
+    padding-left: 8px;
+    margin-left: 2px;
+    border-left: 1px solid var(--border-secondary);
+    font-weight: var(--weight-medium);
+    color: var(--text-error);
+}
+
+
+/* ---------- muddatlar oynasi (ExpiringModal) ---------- */
+
+.exp_tabs {
+    display: inline-flex;
+    margin-bottom: var(--spacing-lg);
+}
+
+.exp_empty {
+    padding: var(--spacing-4xl) 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-tertiary);
+}
+
+.exp_list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 56vh;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.exp_row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    width: 100%;
+    height: auto;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    font-family: var(--font-family);
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.exp_row:hover {
+    background: var(--bg-primary_hover);
+    border-color: var(--border-primary);
+}
+
+.exp_row:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.exp_row_main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.exp_row_name {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exp_row_group {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exp_row .ds-badge {
+    flex: none;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.exp_row_arrow {
+    flex: none;
+    color: var(--fg-quinary);
+}
+
+.exp_row:hover .exp_row_arrow {
+    color: var(--fg-brand);
+}
+
+
+/* ---------- breadcrumb (guruh ichida) ---------- */
+
+.emp_crumb {
+    font-size: 20px;
+    line-height: 30px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-quaternary);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+.emp_crumb:hover {
+    color: var(--text-primary);
+}
+
+.emp_title_skeleton {
+    display: block;
+    width: 140px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+}
+
+.emp_crumb_sep {
+    font-size: 20px;
+    color: var(--border-primary);
+}
+
+
+/* ---------- guruh kartasi ---------- */
+
+.emp_card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-2xl);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.emp_card:hover {
+    border-color: var(--utility-brand-200);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.emp_card:focus-visible {
+    outline: none;
+    border-color: var(--border-brand);
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.emp_card.is-selected,
+.emp_staff.is-selected {
+    border-color: var(--border-brand);
+    box-shadow: 0 0 0 1px var(--border-brand), var(--shadow-xs);
+}
+
+.emp_card_top {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+    min-width: 0;
+}
+
+.emp_card_check {
+    display: flex;
+    padding-top: 14px;
+}
+
+.emp_card_top .tc-actions {
+    flex: none;
+    margin: -4px -6px 0 0;
+}
+
+.emp_card_icon {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    background: var(--utility-success-50);
+    border: 1px solid var(--utility-success-200);
+    color: var(--utility-success-700);
+}
+
+
+.emp_card_heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.emp_card_name {
+    max-width: 100%;
+    margin: 0;
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.emp_card_type,
+.emp_staff .ds-badge,
+.admin_header_left .ds-badge {
+    height: 24px;
+    padding: 0 10px;
+    font-size: 13px;
+}
+
+.emp_card_stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.emp_card_stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    font-size: 13px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.emp_card_stat svg {
+    flex: none;
+    color: var(--fg-quaternary);
+}
+
+.emp_card_stat b {
+    font-size: 16px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.emp_card_bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-top: auto;
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-secondary);
+}
+
+.emp_card_cam_btn {
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-lg);
+    border: 1px solid var(--utility-brand-200);
+    border-radius: var(--radius-md);
+    background: var(--utility-brand-50);
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--utility-brand-700);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+
+.emp_card_cam_btn:hover {
+    background: var(--bg-brand-secondary);
+}
+
+.emp_card_cam_btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.emp_card_open {
+    display: flex;
+    flex: none;
+    color: var(--fg-quinary);
+    transition: color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.emp_card:hover .emp_card_open {
+    color: var(--fg-brand);
+    transform: translateX(2px);
+}
+
+
+/* ---------- xodim kartasi ---------- */
+
+.emp_staff {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xs);
+    transition: border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.emp_staff:hover {
+    border-color: var(--border-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Excel importdan kelgan, hali tasdiqlanmagan yozuv */
+.emp_staff.is-pending {
+    border-style: dashed;
+    border-color: var(--utility-warning-200);
+    background: linear-gradient(0deg, var(--utility-warning-50), var(--utility-warning-50)), var(--bg-primary);
+}
+
+.emp_staff_top {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    min-width: 0;
+}
+
+.emp_staff_top .tc-actions {
+    flex: none;
+    align-self: flex-start;
+    margin: -4px -6px 0 auto;
+}
+
+.emp_staff_photo {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-secondary);
+    color: var(--fg-quaternary);
+}
+
+.emp_staff_photo img,
+.emp_staff_photo .ant-image,
+.emp_staff_photo .ant-image-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* bosilsa katta ko'rinish — hoverda lupa belgisi */
+.emp_staff_photo--zoom {
+    cursor: zoom-in;
+}
+
+.emp_staff_photo--zoom .ant-image-mask {
+    border-radius: inherit;
+    background: rgba(10, 13, 18, .45);
+    color: #FFFFFF;
+    font-size: 0;
+}
+
+.emp_staff_photo--zoom .ant-image-mask svg {
+    width: 18px;
+    height: 18px;
+}
+
+.emp_staff_heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.emp_staff_heading .emp_staff_status {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+.emp_staff_name {
+    margin: 0;
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.emp_staff_plate {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    min-width: 0;
+}
+
+.emp_staff_meta {
+    display: grid;
+    /* Boshqarma | Telefon; ruxsat muddati — butun qator */
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--spacing-md) var(--spacing-xl);
+    margin-top: auto;
+    margin: 0;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.emp_staff_meta_full {
+    grid-column: 1 / -1;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-secondary);
+}
+
+.emp_staff_meta dt {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--text-quaternary);
+}
+
+.emp_staff_meta dd {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 2px 0 0;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: var(--weight-medium);
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.emp_staff_meta dd svg {
+    flex: none;
+    color: var(--fg-quaternary);
+}
+
+.emp_pending_note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: var(--weight-medium);
+    color: var(--utility-warning-700);
+    white-space: nowrap;
+}
+
+
+/* ---------- kamera biriktirish oynasi ---------- */
+
+.cam_assign_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+.cam_assign_count {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.cam_assign_count b {
+    color: var(--text-primary);
+}
+
+.cam_assign_list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 52vh;
+    overflow-y: auto;
+}
+
+.cam_assign_item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.cam_assign_item:hover {
+    background: var(--bg-primary_hover);
+}
+
+.cam_assign_item.is-checked {
+    border-color: var(--utility-brand-200);
+    background: var(--utility-brand-50);
+}
+
+.cam_assign_icon {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-secondary);
+    background: var(--bg-primary);
+    color: var(--fg-quaternary);
+}
+
+.cam_assign_item.is-checked .cam_assign_icon {
+    color: var(--fg-brand);
+}
+
+.cam_assign_text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cam_assign_name {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cam_assign_ip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.cam_assign_skeleton {
+    height: 52px;
+    margin-bottom: var(--spacing-sm);
+    border-radius: var(--radius-md);
+}
+
+/* xodim oynasidagi raqam maydoni */
+.staff_plate_input {
+    font-weight: var(--weight-semibold);
+    letter-spacing: .06em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .emp_card:hover {
+        transform: none;
+    }
+}
+
+
+/* ============================================================================
+   Guruh turlari ranglari (groupTypes.jsx):
+   Oq ro'yxat — yashil, Qora ro'yxat — qora, Qidirilmoqda — qizil
+   ========================================================================== */
+
+:root {
+    --grp-black-bg: #101828;
+    --grp-black-border: #101828;
+    --grp-black-fg: #FFFFFF;
+}
+
+/* qorong'i rejimda qora belgi fondan ajralib turishi uchun aniq chegara */
+:root[data-theme="dark"] {
+    --grp-black-bg: #000000;
+    --grp-black-border: rgba(255, 255, 255, .28);
+    --grp-black-fg: #FFFFFF;
+}
+
+/* belgi (badge) */
+.grp_badge--white {
+    background: var(--utility-success-50);
+    border-color: var(--utility-success-200);
+    color: var(--utility-success-700);
+}
+
+.grp_badge--black {
+    background: var(--grp-black-bg);
+    border-color: var(--grp-black-border);
+    color: var(--grp-black-fg);
+}
+
+.grp_badge--wanted {
+    background: var(--utility-error-50);
+    border-color: var(--utility-error-200);
+    color: var(--utility-error-700);
+}
+
+.grp_badge--unknown {
+    background: var(--utility-gray-50);
+    border-color: var(--utility-gray-200);
+    color: var(--utility-gray-700);
+}
+
+/* kartadagi ikonka qutisi */
+.emp_card_icon.grp_icon--white {
+    background: var(--utility-success-50);
+    border-color: var(--utility-success-200);
+    color: var(--utility-success-700);
+}
+
+.emp_card_icon.grp_icon--black {
+    background: var(--grp-black-bg);
+    border-color: var(--grp-black-border);
+    color: var(--grp-black-fg);
+}
+
+.emp_card_icon.grp_icon--wanted {
+    background: var(--utility-error-50);
+    border-color: var(--utility-error-200);
+    color: var(--utility-error-700);
+}
+
+.emp_card_icon.grp_icon--unknown {
+    background: var(--utility-gray-50);
+    border-color: var(--utility-gray-200);
+    color: var(--utility-gray-700);
+}
+
+/* filtr tugmasi va tanlash ro'yxatidagi nuqta */
+.grp_dot--white { background: var(--fg-success); }
+.grp_dot--wanted { background: var(--fg-error); }
+.grp_dot--black {
+    background: var(--grp-black-bg);
+    box-shadow: 0 0 0 1px var(--grp-black-border);
+}
+
+.grp_option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}

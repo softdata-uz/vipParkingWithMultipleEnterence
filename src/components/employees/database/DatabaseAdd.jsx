@@ -1,706 +1,469 @@
-import React, {useEffect, useState} from 'react';
-
-import {Checkbox, Dropdown, Menu, message} from 'antd';
-import {useSelector} from "react-redux";
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Checkbox, Image, message} from "antd";
 import {useTranslation} from "react-i18next";
-import icon1 from '../../../images/parkingModul/database/Vector (3).svg';
-import icon2 from '../../../images/parkingModul/database/Vector (4).svg';
-import icon5 from '../../../images/parkingModul/database/Vector (7).svg';
-import icon6 from '../../../images/parkingModul/database/Vector (8).svg';
-import icon7 from '../../../images/parkingModul/database/Vector (9).svg';
-import flag from '../../../images/parkingModul/database/Group 55888 (2).png';
-import burger from '../../../images/parkingModul/database/Vector (23).png';
-import editIcon from '../../../images/parkingModul/database/Vector (25).png';
-import deleteIcon from '../../../images/parkingModul/database/Vector (26).png';
-import exel from '../../../images/exel.svg';
-import uzbFlag from "../../../images/uzbFlag.png";
-
-
-import {MdOutlineCancel, MdOutlinePersonOutline} from "react-icons/md";
-
-import moment from "moment";
-
-import AddModal from "./addModal/AddModal";
-
-import './database.css';
-import './databaseBlack.css';
 import axios from "axios";
+import {useNavigate, useParams} from "react-router-dom";
 import {ip} from "../../../ip";
-import DatabaseAddPagination from "./addModal/DatabaseAddPagination";
-import AddDeleteModal from "./deleteModal/AddDeleteModal";
-import {Link} from "react-router-dom";
-import prev from "../../../images/Vector.png";
+import {
+    AlertCircleIcon,
+    ArrowLeftIcon,
+    BriefcaseIcon,
+    CalendarIcon,
+    CheckIcon,
+    EditIcon,
+    InboxIcon,
+    PlusIcon,
+    RefreshIcon,
+    SearchIcon,
+    TrashIcon,
+    UploadCloudIcon,
+    UserIcon,
+} from "../../../design-system/icons";
+import {ConfirmDeleteModal} from "../../common/ModalShell";
+import PagePagination from "../../common/PagePagination";
+import PlateNumber from "../../common/PlateNumber";
+import useFitGrid, {gridStyle, useGridPaging} from "../../../hooks/useFitGrid";
+import {formatDate as fmt, periodBadge, periodStatus} from "../../../utils/staffPeriod";
+import StaffModal from "./StaffModal";
+import {normalizePlate} from "./staffIndex";
+import {GroupTypeBadge} from "./groupTypes";
 
-const CheckboxGroup = Checkbox.Group;
+import '../../../design-system/ui.css';
+import '../../../styles/table-cells.css';
+import '../../../styles/page.css';
+import './employees.css';
 
+/* Guruh ichidagi xodimlar (avtomobillar).
+   API: GET  /api/staff/:groupId/:limit/:page?searched_data= -> {data, count}
+        DELETE /api/delete/staff — body: [id]
+        POST /api/excel/staff/:groupId — Excel import (yozuvlar accepted=false bo'lib keladi)
+        PUT  /api/update/vehicle_list — {data: [id]} tanlangan import yozuvlarini tasdiqlash */
 
-const DatabaseAdd = (props) => {
+// ustunlar soni kartaning eng kichik kengligidan hisoblanadi; sahifada 2 qator
+const CARD = {minWidth: 320, rows: 2};
+const auth = () => ({'x-access-token': localStorage.getItem('vipparking-token')});
 
-    const {
-        pageChange,
-        setPageChange,
-        categoryId,
-        setCategoryId,
-        getTestGroup
-    } = props;
+/* Jami xodimlar soni (qidiruvsiz). /api/staff javobidagi `count` guruhniki emas — barcha guruhlar
+   bo'yicha umumiy. Shuning uchun: sahifa to'lmagan bo'lsa (oxirgi sahifa) — aniq hisoblanadi,
+   aks holda — guruhning o'z item_count qiymati. */
+const staffTotal = ({rows, page, limit, groupCount}) => {
+    if (rows < limit) return (page - 1) * limit + rows;
+    return Math.max(page * limit, Number(groupCount) || 0);
+};
 
-    const isDarkMode = useSelector(state => state.theme.theme_data);
+const SEARCH_ALL = 1000;   // qidiruvda guruhning barcha xodimlari olinadi
+
+// qidiruv: F.I.Sh, boshqarma, telefon (bo'shliqsiz) va raqam (bo'shliqsiz, katta harf)
+const matchesSearch = (s, query) => {
+    const q = query.toLowerCase();
+    const compact = normalizePlate(query);
+    return [s.fullname, s.position].some(v => (v || '').toLowerCase().includes(q))
+        || normalizePlate(s.vehicle_number).includes(compact)
+        || (s.tel || '').replace(/\s+/g, '').includes(query.replace(/\s+/g, ''));
+};
+
+/* Sahifa: /employees/:groupId. Guruh manzildagi id bo'yicha yuklanadi — sahifa yangilanganda (F5) ham
+   shu guruhda qoladi. Alohida "bitta guruh" API yo'q, shuning uchun ro'yxatdan topiladi. */
+const DatabaseAdd = () => {
     const {t} = useTranslation();
-    const lang = localStorage.getItem('i18nextLng');
+    const {groupId} = useParams();
+    const navigate = useNavigate();
+    const [group, setGroup] = useState(null);
 
-
-    const [checkedList, setCheckedList] = useState([]);
-    const [dataList, setDataList] = useState([]);
-    const [listTotal, setListTotal] = useState(null);
-    const [screenSize, setScreenSize] = useState({
-        width: window.innerWidth,
-        height: window.innerHeight,
-    });
-    const handleResize = () => {
-        setScreenSize({
-            width: window.innerWidth,
-            height: window.innerHeight,
-        });
-    };
-
-    useEffect(() => {
-        window.addEventListener('resize', handleResize);
-
-        // Clean up the event listener on component unmount
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
-
-    const [listPaginationLimit, setListPaginationLimit] = useState(screenSize.width < 1500 ? 12 : 20);
-    const [listPaginationCurrent, setListPaginationCurrent] = useState(1);
-    const [listInitialValues, setListInitialValues] = useState({
-        fullname: "",
-        position: '',
-        tel: '',
-        staff_group_id: "",
-        from_date: "",
-        to_date: "",
-        vehicle_number: "",
-        image: ""
-    });
-
-
-    const getListGroup = async (e) => {
-        try {
-            const response = await axios.get(`${ip}/api/staff/${categoryId.id}/${listPaginationLimit}/${listPaginationCurrent}`, {
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')}
-            });
-            const {data} = response;
-            const count = data.count;
-            setListTotal(count);
-
-            const newData = data.data.map((item, index) => ({
-                ...item,
-                from_date: item.from_date ? moment(item.from_date) : null,
-                to_date: item.to_date ? moment(item.to_date) : null,
-            }));
-
-            setDataList(newData);
-        } catch (error) {
-            console.error("getListGroup error: ", error);
-            message.error("Xodimlar ro'yxatini yuklashda xatolik yuz berdi!");
-        }
-    };
-
-
-    useEffect(() => {
-        if (searched === false && pageChange === false) {
-            getListGroup()
-        }
-        getTestGroup();
-    }, [listPaginationLimit, listPaginationCurrent, listTotal]);
-
-
-    const listPaginationOnchange = (e = 1, option) => {
-        setListPaginationCurrent(e)
-        setListPaginationLimit(option)
-    }
-    useEffect(() => {
-
-    }, [listPaginationLimit, listPaginationCurrent,]);
-
-
-    // chek group
-
-
-    const onChange = (list) => {
-        const isChecked = checkedList.some(item => item === list.id)
-        if (isChecked) {
-            const filterChecked = checkedList.filter(item => item !== list.id)
-            setCheckedList(filterChecked);
-        } else {
-            setCheckedList(prev => [...prev, list.id]);
-        }
-    };
-    const onCheckAllChange = (e) => {
-        setCheckedList(dataList.length === checkedList.length ? [] : dataList.map(item => item.id));
-    };
-    // chek group
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const showModal = () => {
-        setListInitialValues({
-            fullname: "",
-            position: '',
-            tel: '',
-            staff_group_id: "",
-            from_date: "",
-            to_date: "",
-            vehicle_number: "",
-            image: ""
-        });
-        setIsModalOpen(true);
-    }
-
-    // delete card
-    const [deleteModal, setDeleteModal] = useState(false);
-    const deleteDataList = () => {
-        if (checkedList.length > 0) {
-            setDeleteModal(true);
-        }
-    }
-
-    const editCamera = (value) => {
-        // console.log(value)
-        setListInitialValues({
-            ...value,
-            edit: true
-        });
-        setIsModalOpen(true);
-    }
-
-    function WidgetMenu(props) {
-        const deleteForButton = () => {
-            checkedList.push(props.value.id);
-            if (checkedList.length > 0) {
-                setDeleteModal(true);
-            }
-        }
-
-        return (
-            <Menu {...props}>
-                <Menu.Item>
-                    <div className="parking_database_dropEdit" onClick={() => editCamera(props.value)}>
-                        <div className="icon"><img src={editIcon} style={{width: "16px"}}/></div>
-                        <span>{t("Tahrirlash")}</span>
-                    </div>
-                </Menu.Item>
-                <Menu.Item>
-                    <div className="parking_database_dropDelete" onClick={() => deleteForButton()}>
-                        <div className="icon"><img src={deleteIcon} style={{width: "12px"}}/></div>
-                        <span>{t("O'chirish")}</span>
-                    </div>
-                </Menu.Item>
-            </Menu>
-        );
-    }
-
-    const upDate = () => {
-        getListGroup();
-        // window.location.reload(false);
-    }
-
-    const [searched, setSearched] = useState(false);
-    const searchList = (e) => {
-        setSearched(true);
-        const formData = {
-            searched_data: e.target.value,
-        }
-        const fd = new FormData();
-        Object.keys(formData).forEach(i => fd.append(i, formData[i]));
-
-        axios.get(`${ip}/api/staff/${categoryId.id}/${listPaginationLimit}/${listPaginationCurrent}`,
-            {
-                params: {searched_data: e.target.value},
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')}
-            })
-            .then((response) => {
-                // console.log(response);
-                const {data} = response;
-                const count = data.count;
-                setListTotal(count)
-                const newData = data.data.map((item, index) => (
-                    {
-                        ...item,
-                        from_date: moment(item.from_date),
-                        to_date: moment(item.to_date),
-                    }
-                ))
-                setDataList(newData);
-            })
-    }
-
-
-// upload excel file
-    // img
-    const [fileState, setFileState] = useState({
-        initial: true,
-        uploaded: false,
-        requested: false,
-        check: false
-    });
-    const [filee, setFilee] = useState({});
-
-    const upload = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            // console.log('uploaded')
-            setFilee({...filee, excel: e.target.files[0]})
-            setFileState({
-                initial: false,
-                uploaded: true,
-                requested: false,
-                check: true
-            })
-        } else {
-            setFileState({
-                initial: true,
-                uploaded: false,
-                requested: false,
-                check: false
-            })
-        }
-
-        const formData = {
-            // file: filee.excel,
-            file: e.target.files[0],
-        }
-        const fd = new FormData();
-        Object.keys(formData).forEach(i => fd.append(i, formData[i]));
-
-        axios.post(`${ip}/api/excel/staff/${categoryId.id}`,
-            fd,
-            {
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')}
-            })
-            .then((res) => {
-                console.log(res)
-                getListGroup();
-                message.success(t(`${res.data.msg}`));
-            })
-            .catch(err => {
-                message.error(err.response.data.msg);
-                // console.log(err?.response?.data)
-            })
-    }
-    // img
-// upload excel file
-
-
-    const sendExcel = () => {
-
-        let excelId = Array.from(new Set(checkedList));
-
-        axios.put(`${ip}/api/update/vehicle_list`,
-            {
-                data: excelId
-            },
-            {
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')}
-            }
-        )
-            .then((res) => {
-                console.log(res)
-                getListGroup();
-                setCheckedList([]);
-                setFileState({
-                    initial: true,
-                    uploaded: false,
-                    requested: false,
-                    check: false
-                });
-            })
-    }
-
-    const cencelExcel = () => {
-        axios.get(`${ip}/api/cancel/vehicle_list`,
-            {
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')}
-            }
-        )
-            .then((res) => {
-                    console.log(res)
-                    getListGroup();
-                    setCheckedList([]);
-                    setFileState({
-                        initial: true,
-                        uploaded: false,
-                        requested: false,
-                        check: false
-                    })
+    const loadGroup = useCallback(() =>
+        axios.get(`${ip}/api/staff-group/1000/1`, {headers: auth()})
+            .then(({data}) => {
+                const found = (data?.data || []).find(g => String(g.id) === String(groupId));
+                if (found) {
+                    setGroup(found);
+                } else {
+                    message.error(t("Guruh topilmadi"));
+                    navigate('/employees', {replace: true});
                 }
-            )
-            .catch(err => console.log(err))
-    }
-
+            })
+            .catch(err => message.error(err?.response?.data?.msg || t("Xatolik"))),
+    [groupId, navigate, t]);
 
     useEffect(() => {
-        const handleResize = () => {
-            setScreenSize({
-                width: window.innerWidth,
-                height: window.innerHeight
-            });
-        };
+        setGroup(null);
+        loadGroup();
+    }, [loadGroup]);
 
-        window.addEventListener('resize', handleResize);
+    const onBack = () => navigate('/employees');
 
-        // Cleanup the event listener on component unmount
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
-
-    return (
-        <div>
-            <div className="parking_database">
-                <div className="parking_database_top">
-                    <div className="user_list_top_left">
-                        <Link to="/" className="user_list_top_left_prev"><img src={prev}/></Link>
-                        <div className="user_list_top_left_text">
-                            <span>Asosiy »</span>
-                            <p>Xodimlar</p>
-                        </div>
-                    </div>
-                    <div className="parking_database_top_pagination">
-                        <DatabaseAddPagination
-                            listPaginationLimit={listPaginationLimit}
-                            listPaginationCurrent={listPaginationCurrent}
-                            listPaginationOnchange={listPaginationOnchange}
-                            listTotal={listTotal}
-                            screenSize={screenSize}
-                        />
+    if (!group) {
+        return (
+            <div className="admin content-enter">
+                <div className="admin_header">
+                    <div className="admin_header_left">
+                        <button type="button" className="admin_header_btn admin_header_btn--icon" onClick={onBack}
+                                title={t("Orqaga")} aria-label={t("Orqaga")}>
+                            <ArrowLeftIcon size={18}/>
+                        </button>
+                        <span className="emp_crumb" onClick={onBack}>{t("Xodimlar")}</span>
+                        <span className="emp_crumb_sep">/</span>
+                        <span className="emp_title_skeleton"/>
                     </div>
                 </div>
-
-                <div className={`parking_database_body ${isDarkMode && 'darkModeBackground darkModeBorder'}`}>
-                    <div className="parking_database_body_topButtons">
-                        <div className="parking_database_body_topButtons_left">
-                            <button className={`${isDarkMode && 'darkModeBackground darkModeBorder'} `} type="button">
-                                <div className="parking_database_body_topButtons_left_buttonText"
-                                     onClick={() => setPageChange(true)}><img src={icon1}/>{t('Orqaga')}</div>
-                            </button>
-                            <button className={`${isDarkMode && 'darkModeBackground darkModeBorder'} `} type="button"
-                                    onClick={showModal}>
-                                <div className="parking_database_body_topButtons_left_buttonText"><img
-                                    src={icon2}/>{t('Qo‘shish')}</div>
-                            </button>
-
-                            <div className="excel">
-                                <label htmlFor='add_staff_img'
-                                       className={fileState.uploaded ? `excel_upload_file parking_database_body_topButtons_excel ${isDarkMode && 'darkModeBorder'}` : `parking_database_body_topButtons_excel ${isDarkMode && 'darkModeBorder'}`}>
-                                    <div className="parking_database_body_topButtons_excel_inner">
-                                        <img src={exel}/>
-                                        <div className={`${isDarkMode && 'darkModeColor'}`}>Import</div>
-                                    </div>
-                                    {
-                                        fileState.uploaded ?
-                                            <input onClick={sendExcel} id="add_staff_img" style={{display: 'none'}}/>
-                                            :
-                                            <input onChange={upload} type="file" id="add_staff_img"
-                                                   style={{display: 'none'}}/>
-                                    }
-                                </label>
-                                {/*{fileState.uploaded ? <div className="excel_exit" onClick={cencelExcel}>*/}
-                                {/*    <MdOutlineCancel style={{fontSize: "20px"}}/>{t("Bekor qilish")}*/}
-                                {/*</div> : ""}*/}
-                            </div>
-
-                            <button type="button" className={checkedList.length > 0 ?
-                                `deleteButton ${isDarkMode && 'darkModeBackground darkModeBorder'}`
-                                : `disabledButtons ${isDarkMode && 'darkModeBackground darkModeBorder'}`}
-                                    onClick={deleteDataList}>
-                                <div className="parking_database_body_topButtons_left_buttonText"><img
-                                    src={icon5}/>{t('O‘chirish')}</div>
-                            </button>
-                            <button className={`${isDarkMode && 'darkModeBackground darkModeBorder'} `} type="button"
-                                    onClick={upDate}>
-                                <div className="parking_database_body_topButtons_left_buttonText"><img
-                                    src={icon6}/>{t('Yangilash')}</div>
-                            </button>
-                            <div
-                                className={`parking_database_body_topButtons_left_search ${isDarkMode && 'darkModeInputBackgraund'}`}>
-                                <div
-                                    className={`parking_database_body_topButtons_left_search_text  ${isDarkMode && 'darkModeInputBackgraund'}`}>
-                                    <input className={` ${isDarkMode && 'darkModeInputBackgraund darkModeColor'}`}
-                                           placeholder={t("Izlash")} onChange={searchList}/>
-                                    <img src={icon7} style={{margin: "0"}}/>
-                                </div>
-                            </div>
-
-                        </div>
-                        {/*<div className="parking_database_body_topButtons_excel">*/}
-                        {/*<img src={exel}/>{t("Import")}*/}
-                        {/*</div>*/}
-                        <div className="parking_database_body_topButtons_right">
-
-
-                            <div className="parking_database_body_topButtons_right1">
-                                <MdOutlinePersonOutline className={`${isDarkMode && 'darkModeColor'}`}
-                                                        style={{marginRight: 2}} size={20}/>
-                                <span className={`${isDarkMode && 'darkModeColor'}`}>{categoryId.name}</span>
-                            </div>
-
-                            <div
-                                className={`parking_database_body_topButtons_right_line ${isDarkMode && 'darkModeLineBackground'}`}></div>
-                            <div className="parking_database_body_topButtons_right2">
-                                <span
-                                    className={`${isDarkMode && 'darkModeColor'}`}>{t('Ma’lumotlar soni:') + " " + listTotal}</span>
-                            </div>
-                            {/*<div className="parking_database_body_topButtons_right3">*/}
-                            {/*    <span>{t('Faol')}</span>*/}
-                            {/*</div>*/}
-                        </div>
-                    </div>
-
-                    <div className="parking_database_body_cards">
-                        <div className="parking_database_body_cards_head">
-                            <Checkbox
-                                indeterminate={dataList.length === checkedList.length ? false : checkedList.length > 0}
-                                onChange={onCheckAllChange}
-                                checked={dataList.length === checkedList.length && dataList.length !== 0}
-                            >
-                                {t("Barchasini belgilash")}
-                            </Checkbox>
-                        </div>
-
-                        <div
-                            className={screenSize.width < 1500 ? "parking_database_body_cards_body" : "parking_database_black_body_cards_body_20"}>
-                            {/*<div className="parking_database_body_cards_body">*/}
-                            {
-                                dataList?.map((item, index) => {
-                                    // console.log(item)
-                                    const tex = item?.vehicle_number;
-                                    const tt = item.vehicle_number;
-                                    const a = !isNaN(tt?.substr(2, 2));
-                                    const isChecked = checkedList?.some(check => check === item.id)
-
-                                    return (
-                                        <div
-                                            className={`${item.accepted === false ? `parking_database_body_cards_body_card_excel ${isDarkMode && 'darkModeCard darkModeBorder'}` : `parking_database_body_cards_body_card ${isDarkMode && 'darkModeCard darkModeBorder'}`}`}
-                                            key={index}>
-                                            <div className="parking_database_body_cards_body_card_inner1">
-                                                <div
-                                                    className={`parking_database_body_cards_body_card_inner1_top ${isDarkMode && 'darkModeBackground '}`}>
-                                                    <Checkbox
-                                                        checked={isChecked}
-                                                        onChange={() => onChange(item)}
-                                                        type="checkbox"
-                                                    />
-
-                                                    <img src={`${ip}/staff/${item.image}`}/>
-
-                                                </div>
-                                                <div className="parking_database_body_cards_body_card_inner1_bottom">
-                                                         <span className="vehicle_flag0">
-                                                             {
-                                                                 tex?.length === 8 ?
-                                                                     <div className="table2_inner">
-                                                                         {
-                                                                             a == false && tex?.length === 8 ?
-
-                                                                                 tex?.substr(0, 2)
-                                                                                 + " " + tex?.substr(2, 1) + " " +
-                                                                                 tex?.substr(3, 3) + " " +
-                                                                                 tex?.substr(6, tex?.length)
-                                                                                 :
-                                                                                 a == true && tex?.length === 8 ?
-                                                                                     tt?.substr(0, 2) + " " +
-                                                                                     tt?.substr(2, 3) + " " +
-                                                                                     tt?.substr(5, tt?.length)
-                                                                                     : item?.vehicle_number
-
-                                                                         }
-                                                                         {tex?.length === 8 ? <img src={flag}/> : ""}
-                                                                     </div>
-                                                                     :
-
-                                                                     tex?.substr(0, 3) === "PAA" ?
-                                                                         <div className="raqam_paa">
-                                                                             <div className="raqam_paa_inner">
-                                                                                 <div className="raqam_paa_inner_img">
-                                                                                     <img src={uzbFlag}/>
-                                                                                 </div>
-                                                                                 <div
-                                                                                     className="raqam_paa_inner_number">
-                                                                                     {
-                                                                                         tex?.substr(0, 3) + " " + tex?.substr(3, tex?.length)
-                                                                                     }
-                                                                                 </div>
-                                                                             </div>
-                                                                         </div>
-
-                                                                         :
-
-                                                                         /*/!*yashillar uchun CMD*!/*/
-                                                                         tex?.substr(0, 3) === "CMD" ?
-                                                                             <div className="raqam_cmd">
-                                                                                 <div className="raqam_cmd_inner">
-                                                                                     {
-                                                                                         tex?.substr(0, 3) + " " + tex?.substr(3, 2) + "-" +
-                                                                                         tex?.substr(5, tex?.length)
-                                                                                     }
-                                                                                 </div>
-                                                                             </div>
-
-                                                                             :
-
-                                                                             /*/!*yashillar uchun D*!/*/
-                                                                             !isNaN(tex?.substr(1, tex?.length)) && tex?.substr(0, 1) === "D" && tex?.length === 7 ?
-                                                                                 <div className="raqam_cmd">
-                                                                                     <div className="raqam_cmd_inner">
-                                                                                         {
-                                                                                             tex?.substr(0, 1) + " " + tex?.substr(1, tex.length)
-                                                                                         }
-                                                                                     </div>
-                                                                                 </div>
-
-                                                                                 :
-
-                                                                                 /*/!*yashillar uchun T*!/*/
-                                                                                 !isNaN(tex?.substr(1, tex?.length)) && tex?.substr(0, 1) === "T" && tex?.length === 7 ?
-                                                                                     <div className="raqam_cmd">
-                                                                                         <div
-                                                                                             className="raqam_cmd_inner">
-                                                                                             {
-                                                                                                 tex?.substr(0, 1) + " " + tex?.substr(1, tex?.length)
-                                                                                             }
-                                                                                         </div>
-                                                                                     </div>
-
-                                                                                     :
-
-                                                                                     /*/!*yashillar uchun X*!/*/
-                                                                                     !isNaN(tex?.substr(1, tex?.length)) && tex?.substr(0, 1) === "X" && tex?.length === 7 ?
-                                                                                         <div className="raqam_cmd">
-                                                                                             <div
-                                                                                                 className="raqam_cmd_inner">
-                                                                                                 {
-                                                                                                     tex?.substr(0, 1) + " " + tex?.substr(1, tex?.length)
-                                                                                                 }
-                                                                                             </div>
-                                                                                         </div>
-
-                                                                                         :
-
-                                                                                         /*/!*yashillar uchun ajaratilgan 01 ga oxshashlilar M*!/*/
-                                                                                         !isNaN(tex?.substr(3, tex?.length)) && tex?.length === 9 && tex?.substr(2, 1) === "M" ?
-                                                                                             <div className="raqam_cmd">
-                                                                                                 <div
-                                                                                                     className="raqam_cmd_inner">
-                                                                                                     {
-                                                                                                         tex?.substr(0, 2)
-                                                                                                         + " " + tex?.substr(2, 1) + " " + tex?.substr(3, tex?.length)
-                                                                                                     }
-                                                                                                 </div>
-                                                                                             </div>
-
-                                                                                             :
-
-                                                                                             /*/!*ko'klar uchun*!/*/
-                                                                                             tex?.length === 6 && tex?.substr(0, 1) === "U" ?
-                                                                                                 <div
-                                                                                                     className="raqam_blue">
-                                                                                                     <div
-                                                                                                         className="raqam_blue_inner">
-                                                                                                         {
-                                                                                                             tex?.substr(0, 2)
-                                                                                                             + " " + tex?.substr(2, tex?.length)
-                                                                                                         }
-                                                                                                     </div>
-                                                                                                 </div>
-
-                                                                                                 :
-
-                                                                                                 /*sariqlar uchun*/
-                                                                                                 !isNaN(tex?.substr(3, tex?.length)) && tex?.length === 9 && tex?.substr(2, 1) === "H" ?
-                                                                                                     <div
-                                                                                                         className="raqam_yellow">
-                                                                                                         <div
-                                                                                                             className="raqam_yellow_inner">
-                                                                                                             {
-                                                                                                                 tex?.substr(0, 2)
-                                                                                                                 + " " + tex?.substr(2, 1) + " " + tex?.substr(3, tex?.length)
-                                                                                                             }
-                                                                                                         </div>
-                                                                                                     </div>
-                                                                                                     :
-                                                                                                     <div
-                                                                                                         className="table2_inner">
-                                                                                                         {
-                                                                                                             item?.vehicle_number
-                                                                                                         }
-                                                                                                     </div>
-                                                             }
-                                                        </span>
-                                                </div>
-                                            </div>
-                                            <div className="parking_database_body_cards_body_card_inner2">
-                                                <div className="parking_database_body_cards_body_card_inner2_left">
-
-                                                    <div className={`textt ${isDarkMode && 'darkModeColor'}`}>
-                                                        {t("F.I.Sh")}: {item.fullname}
-                                                    </div>
-                                                    <div className={`textt ${isDarkMode && 'darkModeColor'}`}>
-                                                        {t("Boshqarma")}: {item.position}
-                                                    </div>
-
-                                                    <div className={`textt ${isDarkMode && 'darkModeColor'}`}>
-                                                        {t("Telefon")}: {item.tel}
-                                                    </div>
-
-
-                                                    <div
-                                                        className={`textt ${isDarkMode && 'darkModeColor'}`}>{t("Vaqt")}:
-                                                        {" " + moment(item.from_date).format("DD.MM.YYYY") + "  " +
-                                                            moment(item.to_date).format("DD.MM.YYYY")}
-                                                    </div>
-
-
-                                                </div>
-                                                <div className="parking_database_body_cards_body_card_inner2_right">
-                                                    <Dropdown overlay={<WidgetMenu value={item}/>}
-                                                              placement="bottomRight">
-                                                        <div className="burgerImg">
-                                                            <img src={burger} className="burgerImg"/>
-                                                        </div>
-                                                    </Dropdown>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )
-                                })
-                            }
-                        </div>
-
+                <div className="admin_body">
+                    <div className="page_grid emp_grid emp_grid--staff">
+                        {Array.from({length: 6}).map((_, i) => <div key={i} className="page_skeleton_card"/>)}
                     </div>
                 </div>
             </div>
+        );
+    }
 
-            {/*<Testp/>*/}
+    return <StaffList group={group} onBack={onBack} onGroupChanged={loadGroup}/>;
+};
 
-            <AddModal
-                isModalOpen={isModalOpen}
-                setIsModalOpen={setIsModalOpen}
-                getListGroup={getListGroup}
-                categoryId={categoryId}
-                listInitialValues={listInitialValues}
-                setListInitialValues={setListInitialValues}
+const StaffList = ({group, onBack, onGroupChanged}) => {
+    const {t} = useTranslation();
+    const [staff, setStaff] = useState(null);
+    const [total, setTotal] = useState(null);
+    const [selected, setSelected] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
+
+    // sahifa hajmi = ekranga sig'adigan kartalar (ustun × qator) yoki uning karralari
+    const grid = useFitGrid(CARD);
+    const {page, setPage, limit, sizeOptions, onChange: onPagingChange} = useGridPaging(grid.perPage);
+    const [search, setSearch] = useState('');
+    const [searchInput, setSearchInput] = useState('');
+
+    const [editStaff, setEditStaff] = useState(null);     // {} — yangi, {..} — tahrir
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const fileRef = useRef(null);
+    const requestIdRef = useRef(0);
+
+    // true — ma'lumot yangilandi; false — xato (xabar shu yerda ko'rsatiladi) yoki eskirgan so'rov
+    const load = useCallback(() => {
+        if (!limit) return Promise.resolve(false);      // to'r hali o'lchanmagan
+        const requestId = ++requestIdRef.current;
+        /* Qidiruv brauzerda: server searched_data ni faqat `count` ga qo'llaydi, ro'yxatni esa
+           filtrlamaydi (har qanday so'zga guruhning hamma xodimi qaytadi). Shuning uchun qidiruvda
+           guruhning barcha xodimlari olinib, F.I.Sh / raqam / boshqarma / telefon bo'yicha filtrlanadi. */
+        const url = search
+            ? `${ip}/api/staff/${group.id}/${SEARCH_ALL}/1`
+            : `${ip}/api/staff/${group.id}/${limit}/${page}`;
+        return axios.get(url, {params: {searched_data: ''}, headers: auth()})
+            .then(({data}) => {
+                if (requestId !== requestIdRef.current) return false;
+                let rows = data?.data || [];
+                if (search) {
+                    const matched = rows.filter(s => matchesSearch(s, search));
+                    rows = matched.slice((page - 1) * limit, page * limit);
+                    setTotal(matched.length);
+                } else {
+                    setTotal(staffTotal({rows: rows.length, page, limit, groupCount: group.item_count}));
+                }
+                setStaff(rows);
+                setSelected(prev => prev.filter(id => rows.some(s => s.id === id)));
+                return true;
+            })
+            .catch(err => {
+                if (requestId !== requestIdRef.current) return false;
+                setStaff(prev => prev ?? []);
+                message.error(err?.response?.data?.msg || t("Xodimlar ro'yxatini yuklashda xatolik"));
+                return false;
+            });
+    }, [group.id, group.item_count, limit, page, search, t]);
+
+    // qo'lda yangilash — ikonka aylanadi va natija xabar bilan bildiriladi
+    const refresh = async () => {
+        if (refreshing) return;
+        setRefreshing(true);
+        try {
+            // server tez javob bersa ham aylanish ko'rinsin — kamida 600ms
+            const [ok] = await Promise.all([load(), onGroupChanged(), new Promise(r => setTimeout(r, 600))]);
+            if (ok) message.success(t("Yangilandi"));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
+    // ma'lumot o'zgargach: guruh (item_count — "Jami" uchun) va ro'yxat qayta yuklanadi
+    const reload = () => {
+        onGroupChanged();
+        load();
+    };
+
+    useEffect(() => {
+        load();
+    }, [load]);
+
+    // qidiruv 400ms kechiktirib yuboriladi va 1-sahifadan boshlanadi
+    useEffect(() => {
+        const value = searchInput.trim();
+        if (value === search) return undefined;
+        const timer = setTimeout(() => {
+            setSearch(value);
+            setPage(1);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [searchInput, search]);
+
+    const onPageChange = (nextPage, nextSize) => {
+        onPagingChange(nextPage, nextSize);
+        setSelected([]);
+    };
+
+    const toggle = (id) => setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    const allChecked = staff?.length > 0 && selected.length === staff.length;
+    const toggleAll = () => setSelected(allChecked ? [] : (staff || []).map(s => s.id));
+
+    const pending = (staff || []).filter(s => s.accepted === false);
+    const selectedPending = selected.filter(id => pending.some(p => p.id === id));
+
+    const confirmDelete = async () => {
+        const {ids} = deleteTarget;
+        setBusy(true);
+        try {
+            await axios.delete(`${ip}/api/delete/staff`, {data: ids, headers: auth()});
+            message.success(t("O'chirildi"));
+            setDeleteTarget(null);
+            setSelected(prev => prev.filter(id => !ids.includes(id)));
+            if (staff && ids.length >= staff.length && page > 1) {
+                onGroupChanged();
+                setPage(page - 1);
+            } else {
+                reload();
+            }
+        } catch (err) {
+            message.error(err?.response?.data?.msg || t("Xatolik"));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const importExcel = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';           // xuddi shu faylni qayta tanlash mumkin bo'lsin
+        if (!file) return;
+        const fd = new FormData();
+        fd.append('file', file);
+        setBusy(true);
+        try {
+            const {data} = await axios.post(`${ip}/api/excel/staff/${group.id}`, fd, {headers: auth()});
+            message.success(data?.msg ? t(data.msg) : t("Fayl yuklandi"));
+            reload();
+        } catch (err) {
+            message.error(err?.response?.data?.msg || t("Xatolik"));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const acceptImported = async () => {
+        setBusy(true);
+        try {
+            await axios.put(`${ip}/api/update/vehicle_list`, {data: selectedPending}, {headers: auth()});
+            message.success(t("Tanlangan yozuvlar tasdiqlandi"));
+            setSelected([]);
+            reload();
+        } catch (err) {
+            message.error(err?.response?.data?.msg || t("Xatolik"));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const selectionName = (ids) => ids.length === 1
+        ? staff?.find(s => s.id === ids[0])?.fullname
+        : t("{{count}} ta xodim", {count: ids.length});
+
+    return (
+        <div className="admin content-enter">
+            <div className="admin_header">
+                <div className="admin_header_left">
+                    <button type="button" className="admin_header_btn admin_header_btn--icon" onClick={onBack}
+                            title={t("Orqaga")} aria-label={t("Orqaga")}>
+                        <ArrowLeftIcon size={18}/>
+                    </button>
+                    <span className="emp_crumb" onClick={onBack}>{t("Xodimlar")}</span>
+                    <span className="emp_crumb_sep">/</span>
+                    <p title={group.name}>{group.name}</p>
+                    <GroupTypeBadge type={group.type} t={t}/>
+                    {total != null && <span className="ds-badge ds-badge--gray page_count_badge">{total}</span>}
+                </div>
+                <div className="admin_header_right">
+                    <div className="admin_header_search">
+                        <SearchIcon size={18}/>
+                        <input type="text" placeholder={t("Izlash...")} value={searchInput}
+                               onChange={e => setSearchInput(e.target.value)}/>
+                    </div>
+                    <button type="button"
+                            className={`admin_header_btn admin_header_btn--icon${refreshing ? ' is-spinning' : ''}`}
+                            onClick={refresh} disabled={refreshing}
+                            title={t("Yangilash")} aria-label={t("Yangilash")}>
+                        <RefreshIcon size={18}/>
+                    </button>
+                    <button type="button" className="admin_header_btn" onClick={() => fileRef.current?.click()}
+                            disabled={busy} title={t("Excel fayldan import")}>
+                        <UploadCloudIcon size={18}/>{t("Import")}
+                    </button>
+                    <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} hidden/>
+                    <button type="button" className="admin_header_add" onClick={() => setEditStaff({})}>
+                        <PlusIcon size={20}/>{t("Xodim qo'shish")}
+                    </button>
+                </div>
+            </div>
+
+            <div className="admin_body">
+                <div className="admin_toolbar">
+                    <div className="admin_toolbar_left">
+                        <Checkbox checked={allChecked} indeterminate={selected.length > 0 && !allChecked}
+                                  onChange={toggleAll} disabled={!staff?.length}>
+                            {t("Barchasini belgilash")}
+                        </Checkbox>
+                        {selected.length > 0 && (
+                            <span className="admin_toolbar_selected">{t("Tanlangan")}: {selected.length}</span>
+                        )}
+                    </div>
+                    <div className="admin_toolbar_right">
+                        {pending.length > 0 && (
+                            <>
+                                <span className="emp_pending_note">
+                                    <AlertCircleIcon size={16}/>
+                                    {t("{{count}} ta import yozuvi tasdiqlanmagan", {count: pending.length})}
+                                </span>
+                                <button type="button" className="admin_toolbar_btn admin_toolbar_btn--brand"
+                                        disabled={!selectedPending.length || busy} onClick={acceptImported}>
+                                    <CheckIcon size={16}/>{t("Tanlanganlarni tasdiqlash")}
+                                </button>
+                            </>
+                        )}
+                        <button type="button" className="admin_toolbar_btn admin_toolbar_btn--danger"
+                                disabled={!selected.length}
+                                onClick={() => setDeleteTarget({ids: selected, name: selectionName(selected)})}>
+                            <TrashIcon size={18}/>{t("O'chirish")}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="admin_body_table" ref={grid.ref}>
+                    <div className="page_grid emp_grid emp_grid--staff" style={gridStyle(grid)}>
+                        {!staff && Array.from({length: grid.perPage || 6}).map((_, i) => (
+                            <div key={i} className="page_skeleton_card"/>
+                        ))}
+                        {staff?.length === 0 && (
+                            <div className="page_empty">
+                                <span className="page_empty_icon"><InboxIcon size={24}/></span>
+                                <p>{search ? t("Qidiruv bo'yicha hech narsa topilmadi") : t("Ma'lumot topilmadi")}</p>
+                            </div>
+                        )}
+                        {staff?.map(item => {
+                            const checked = selected.includes(item.id);
+                            const period = periodStatus(item.from_date, item.to_date);
+                            const statusBadge = periodBadge(period, t);
+                            return (
+                                <div key={item.id}
+                                     className={`emp_staff${checked ? ' is-selected' : ''}${item.accepted === false ? ' is-pending' : ''}`}>
+                                    <div className="emp_staff_top">
+                                        <Checkbox checked={checked} onChange={() => toggle(item.id)}
+                                                  aria-label={item.fullname}/>
+                                        <StaffPhoto item={item} t={t}/>
+                                        <div className="emp_staff_heading">
+                                            <h3 className="emp_staff_name" title={item.fullname}>{item.fullname || '—'}</h3>
+                                            <span className={`ds-badge ${statusBadge[0]} emp_staff_status`}>
+                                                <span className="ds-badge__dot"/>{statusBadge[1]}
+                                            </span>
+                                        </div>
+                                        <div className="tc-actions">
+                                            <button type="button" className="tc-icon-btn" onClick={() => setEditStaff(item)}
+                                                    title={t("Tahrirlash")} aria-label={t("Tahrirlash")}>
+                                                <EditIcon size={18}/>
+                                            </button>
+                                            <button type="button" className="tc-icon-btn tc-icon-btn--danger"
+                                                    onClick={() => setDeleteTarget({ids: [item.id], name: item.fullname})}
+                                                    title={t("O'chirish")} aria-label={t("O'chirish")}>
+                                                <TrashIcon size={18}/>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="emp_staff_plate">
+                                        <PlateNumber value={item.vehicle_number} size="lg"/>
+                                        {item.accepted === false && (
+                                            <span className="ds-badge ds-badge--warning">{t("Tasdiqlanmagan")}</span>
+                                        )}
+                                    </div>
+
+                                    <dl className="emp_staff_meta">
+                                        <div>
+                                            <dt>{t("Boshqarma")}</dt>
+                                            <dd title={item.position}>
+                                                <BriefcaseIcon size={14}/>{item.position || '—'}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>{t("Telefon")}</dt>
+                                            <dd>{item.tel || '—'}</dd>
+                                        </div>
+                                        <div className="emp_staff_meta_full">
+                                            <dt>{t("Ruxsat muddati")}</dt>
+                                            <dd>
+                                                <CalendarIcon size={14}/>
+                                                {fmt(item.from_date)} – {fmt(item.to_date)}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <PagePagination total={total} current={page} pageSize={limit} onChange={onPageChange}
+                                pageSizeOptions={sizeOptions}/>
+            </div>
+
+            <StaffModal
+                open={editStaff !== null}
+                staff={editStaff}
+                groupId={group.id}
+                onClose={() => setEditStaff(null)}
+                onSaved={(created) => {
+                    onGroupChanged();
+                    if (created && page !== 1) setPage(1); else load();
+                }}
             />
-            <AddDeleteModal
-                getListGroup={getListGroup}
-                setDeleteModal={setDeleteModal}
-                checkedList={checkedList}
-                setCheckedList={setCheckedList}
-                deleteModal={deleteModal}
-                setFileState={setFileState}
+            <ConfirmDeleteModal
+                open={deleteTarget !== null}
+                onClose={() => !busy && setDeleteTarget(null)}
+                onConfirm={confirmDelete}
+                name={deleteTarget?.name}
+                icon={<TrashIcon size={22}/>}
             />
         </div>
     );
 };
+
+/* Xodim rasmi: bosilsa katta ko'rinishda ochiladi (antd Image preview — kattalashtirish, burish).
+   Rasm bo'lmasa yoki yuklanmasa — ikonka. */
+const StaffPhoto = ({item, t}) => {
+    const [broken, setBroken] = useState(false);
+    if (!item.image || broken) {
+        return <span className="emp_staff_photo"><UserIcon size={22}/></span>;
+    }
+    return (
+        <span className="emp_staff_photo emp_staff_photo--zoom" title={t("Rasmni kattalashtirish")}>
+            <Image
+                src={`${ip}/staff/${item.image}`}
+                alt={item.fullname || ''}
+                onError={() => setBroken(true)}
+                preview={{mask: <ZoomInIcon size={18}/>}}
+            />
+        </span>
+    );
+};
+
+const ZoomInIcon = ({size = 18}) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+         strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="M20 20l-3.5-3.5M11 8v6M8 11h6"/>
+    </svg>
+);
 
 export default DatabaseAdd;

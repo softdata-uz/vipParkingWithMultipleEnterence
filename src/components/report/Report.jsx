@@ -1,254 +1,357 @@
-import React, {useEffect, useState} from 'react';
-import Layout from "../Layout";
-import {Link} from "react-router-dom";
-import {ip} from "../../ip";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DatePicker, message, Table} from "antd";
+import {useTranslation} from "react-i18next";
 import axios from "axios";
-import moment from "moment";
+import dayjs from "dayjs";
 
-import prev from "../../images/Vector.png";
-import search from "../../images/tabler-icon-search (1).png";
-import filter from "../../images/filter_icon.svg";
-import exel from "../../images/exel.svg";
-import pdf from "../../images/pdf.svg";
+import {ip} from "../../ip";
+import {
+    CalendarIcon,
+    ClockIcon,
+    DownloadIcon,
+    FileTextIcon,
+    InboxIcon,
+    RefreshIcon,
+    SearchIcon,
+} from "../../design-system/icons";
+import PagePagination from "../common/PagePagination";
+import PlateNumber from "../common/PlateNumber";
+import {PersonCell, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+
+import '../../design-system/ui.css';
+import '../../styles/table-cells.css';
+import '../../styles/page.css';
 import './report.css';
-import ReportTable from "./ReportTable";
-import ReportPagenation from "./ReportPagenation";
-import FilterModal from "./filterModal/FilterModal";
 
+/* Hisobot — avtomobillarning kirish-chiqish tarixi.
+   API: GET  /api/vehicle_log/:limit/:page?fromDate&toDate&searched_data&type  -> {data, count, current_page}
+          ⚠ fromDate/toDate bo'lmasa server bo'sh ro'yxat qaytaradi — davr doim yuboriladi.
+          ⚠ table_name/order_by ni server e'tiborsiz qoldiradi — ustun bo'yicha saralash yo'q.
+          ⚠ type=staff | stranger hozir serverda 500 ("column staff.lastname does not exist").
+        POST /api/report/vehicle_log/excel | pdf  (shu filtr bilan) -> fayl (blob)
+        GET  /api/image/event/:id/plate_image | vehicle_image */
 
-const Report = (props) => {
+const PAGE_SIZES = [15, 30, 50, 100];
+const DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";          // server kutadigan format
+const PDF_TIMEOUT = 90 * 1000;                      // PDF sekin tayyorlanadi
+const auth = () => ({'x-access-token': localStorage.getItem('vipparking-token')});
 
-    const [reportData, setReportData] = useState();
-    const [isOpenFilter, setIsOpenFilter] = useState(false);
-    const [reportTotal, setReportTotal] = useState(null);
-    const [reportPaginationLimit, setReportPaginationLimit] = useState(15);
-    const [reportPaginationCurrent, setReportPaginationCurrent] = useState(1);
-    const [filterInitialValue, setFilterInitialValue] = useState({
-        fromDate: '',
-        toDate: '',
-        searched_data: '',
-        type: 'all',
-        // table_name: '',
-        // order_by: '',
-        // fullname : '',
-        // position: '',
-        // vehicle_number: '',
-        // the_date: '',
+// tayyor davrlar: [boshlanish, tugash]
+const PERIODS = {
+    today: () => [dayjs().startOf('day'), dayjs().endOf('day')],
+    yesterday: () => [dayjs().subtract(1, 'day').startOf('day'), dayjs().subtract(1, 'day').endOf('day')],
+    week: () => [dayjs().subtract(6, 'day').startOf('day'), dayjs().endOf('day')],
+    month30: () => [dayjs().subtract(29, 'day').startOf('day'), dayjs().endOf('day')],
+    thisMonth: () => [dayjs().startOf('month'), dayjs().endOf('month')],
+};
 
-        // searched_data, type, fromDate, toDate
-    })
+const saveBlob = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+};
 
+const Report = () => {
+    const {t} = useTranslation();
 
-    const getReportData = async (paramsObj) => {
-        await axios.get(`${ip}/api/vehicle_log/${reportPaginationLimit}/${reportPaginationCurrent}`,
-                {
-                    headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                    params: paramsObj
-                })
-            .then(response => {
-                const {data} = response;
-                const count = data.count;
-                setReportTotal(count)
-                const newData = data.data.map((item, index) => (
-                    {
-                        ...item,
-                        key: index + 1 + (data.current_page - 1) * reportPaginationLimit,
-                        fullname: item.fullname,
-                        position: item.position,
-                        vehicle_number: item.vehicle_number,
-                        // the_date: moment(item.the_date).format('DD.MM.YYYY, HH:mm:ss'),
-                        entering_time: item.entering_time ? moment(item.entering_time).format('DD.MM.YYYY, HH:mm:ss') : "",
-                        exiting_time: item.exiting_time ? moment(item.exiting_time).format('DD.MM.YYYY, HH:mm:ss') : "",
-                        id: item.id
-                    }
-                ));
-                setReportData(newData)
-                // console.log(reportData)
-            })
-            .catch(error => {
-                // console.log(error.response);
-            })
-    }
+    const [rows, setRows] = useState(null);
+    const [total, setTotal] = useState(null);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(PAGE_SIZES[0]);
+    const [period, setPeriod] = useState('month30');
+    const [customRange, setCustomRange] = useState(null);   // [dayjs, dayjs] — "Oraliq" tanlanganda
+    const [type, setType] = useState('all');
+    const [search, setSearch] = useState('');
+    const [searchInput, setSearchInput] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
+    const [exporting, setExporting] = useState(null);       // 'excel' | 'pdf' | null
+    const requestIdRef = useRef(0);
 
-    const getExcelReport = async (type, paramsObj) => {
-        const lang = localStorage.getItem('i18nextLng');
-        await axios
-            .get(`${ip}/api/report/${type}`, {
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                params: {...paramsObj, lang}
-            })
-            .then(res => {
-                const {filename, secret} = res?.data;
+    const range = useMemo(
+        () => (period === 'custom' ? customRange : PERIODS[period]()),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [period, customRange]);
 
-                const myInterval = setInterval(async () => {
-                    await axios
-                        .get(`${ip}/api/report/loading/${type}/${secret}`, {
-                            headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                        })
-                        .then(async res => {
-                            if (res.data !== "wait") {
-                                clearInterval(myInterval);
-                                window.open(`${ip}/${type}/${filename}`, '_blank', 'noopener,noreferrer');
-                            }
-                        })
-                        .catch(err => {
-                            clearInterval(myInterval);
-                        })
-                }, 3000)
+    // serverga yuboriladigan filtr — jadval ham, Excel/PDF ham shu bilan
+    const filter = useMemo(() => ({
+        fromDate: range ? range[0].format(DATE_FORMAT) : '',
+        toDate: range ? range[1].format(DATE_FORMAT) : '',
+        searched_data: search,
+        type,
+    }), [range, search, type]);
+
+    const load = useCallback(() => {
+        if (!range) return Promise.resolve(false);          // "Oraliq" hali tanlanmagan
+        const requestId = ++requestIdRef.current;
+        return axios.get(`${ip}/api/vehicle_log/${limit}/${page}`, {headers: auth(), params: filter})
+            .then(({data}) => {
+                if (requestId !== requestIdRef.current) return false;
+                const offset = (Number(data?.current_page || page) - 1) * limit;
+                setRows((data?.data || []).map((item, i) => ({...item, key: item.id, index: offset + i + 1})));
+                setTotal(data?.count ?? 0);
+                return true;
             })
             .catch(err => {
+                if (requestId !== requestIdRef.current) return false;
+                setRows([]);
+                setTotal(0);
+                message.error(err?.response?.data?.msg || t("Xatolik"));
+                return false;
+            });
+    }, [filter, limit, page, range, t]);
 
-            })
-    }
+    useEffect(() => {
+        load();
+    }, [load]);
 
-    // excel pdf example
+    // filtr o'zgarsa — 1-sahifa
+    useEffect(() => {
+        setPage(1);
+    }, [period, customRange, type, search]);
 
-    const downloadReportExcel = async () => {
+    // qidiruv 400ms kechiktirib yuboriladi
+    useEffect(() => {
+        const value = searchInput.trim();
+        if (value === search) return undefined;
+        const timer = setTimeout(() => setSearch(value), 400);
+        return () => clearTimeout(timer);
+    }, [searchInput, search]);
+
+    const refresh = async () => {
+        if (refreshing) return;
+        setRefreshing(true);
         try {
-            const response = await axios.post(`${ip}/api/report/vehicle_log/excel`, filterInitialValue,
-                {
-                    headers: {'x-access-token': localStorage.getItem('vipparking-token'),},
-                    responseType: 'blob', // Important for handling binary data
-                }
-            );
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'report.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        } catch (error) {
-            console.error('Error downloading the report:', error);
+            const [ok] = await Promise.all([load(), new Promise(r => setTimeout(r, 600))]);
+            if (ok) message.success(t("Yangilandi"));
+        } finally {
+            setRefreshing(false);
         }
     };
 
-    const downloadReport = async () => {
-        axios.post(`${ip}/api/report/vehicle_log/pdf`,
-            filterInitialValue,
-            {
-                headers: { 'x-access-token': localStorage.getItem('vipparking-token')},
-                responseType: 'blob'
-            }
-        )
-            .then((res) => {
-                const blob = new Blob([res.data], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'report.pdf'; // File name
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            })
-            .catch((error) => {
-                console.error('Error downloading the PDF report:', error);
+    const onPageChange = (nextPage, nextLimit) => {
+        if (nextLimit !== limit) {
+            setLimit(nextLimit);
+            setPage(1);
+        } else {
+            setPage(nextPage);
+        }
+    };
+
+    // Excel / PDF — joriy filtr bilan; tugma yuklanish holatida, xato bo'lsa xabar
+    const exportFile = async (kind) => {
+        if (exporting || !range) return;
+        setExporting(kind);
+        try {
+            const res = await axios.post(`${ip}/api/report/vehicle_log/${kind}`, filter, {
+                headers: auth(),
+                responseType: 'blob',
+                timeout: kind === 'pdf' ? PDF_TIMEOUT : 60 * 1000,
             });
-    }
+            const name = `hisobot_${range[0].format('YYYY-MM-DD')}_${range[1].format('YYYY-MM-DD')}`;
+            saveBlob(res.data, kind === 'pdf' ? `${name}.pdf` : `${name}.xlsx`);
+        } catch (err) {
+            message.error(err?.code === 'ECONNABORTED'
+                ? t("Server faylni o'z vaqtida tayyorlamadi. Qisqaroq davr tanlab qayta urinib ko'ring.")
+                : t("Faylni yuklab bo'lmadi"));
+        } finally {
+            setExporting(null);
+        }
+    };
 
-    // excel pdf example
+    const PERIOD_OPTIONS = [
+        {value: 'today', label: t("Bugun")},
+        {value: 'yesterday', label: t("Kecha")},
+        {value: 'week', label: t("7 kun")},
+        {value: 'month30', label: t("30 kun")},
+        {value: 'thisMonth', label: t("Bu oy")},
+        {value: 'custom', label: t("Oraliq")},
+    ];
+    const TYPE_OPTIONS = [
+        {value: 'all', label: t("Barchasi")},
+        {value: 'staff', label: t("Xodim")},
+        {value: 'stranger', label: t("Begona shaxs")},
+    ];
 
-
-    const reportPaginationOnchange = (e = 1, option) => {
-        // getReportData(e)
-        setReportPaginationCurrent(e)
-        setReportPaginationLimit(option)
-    }
-
-    useEffect(() => {
-        getReportData(filterInitialValue);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        reportPaginationLimit,
-        reportPaginationCurrent,
-        filterInitialValue.table_name,
-        filterInitialValue.order_by,
-        filterInitialValue.searched_data
-    ]);
-
-    const handlclicFilter = () => {
-        setIsOpenFilter(true)
-    }
+    const columns = [
+        {
+            title: t("T/r"),
+            dataIndex: 'index',
+            key: 'index',
+            width: 64,
+            align: 'center',
+            render: (value) => <span className="rp_index">{value}</span>,
+        },
+        {
+            title: t("F.I.Sh"),
+            dataIndex: 'fullname',
+            key: 'fullname',
+            render: (_, record) => <PersonCell record={record} t={t}/>,
+        },
+        {
+            title: t("Boshqarma"),
+            dataIndex: 'position',
+            key: 'position',
+            ellipsis: true,
+            render: (value) => value || <span className="tc-muted">—</span>,
+        },
+        {
+            title: t("Davlat raqami"),
+            dataIndex: 'vehicle_number',
+            key: 'vehicle_number',
+            render: (value) => <PlateNumber value={value}/>,
+        },
+        {
+            title: t("Kirgan vaqti"),
+            dataIndex: 'entering_time',
+            key: 'entering_time',
+            render: (value) => <TimeCell value={value}/>,
+        },
+        {
+            title: t("Chiqqan vaqti"),
+            dataIndex: 'exiting_time',
+            key: 'exiting_time',
+            render: (value) => (value
+                ? <TimeCell value={value}/>
+                : <span className="ds-badge ds-badge--brand rp_inside"><span className="ds-badge__dot"/>{t("Ichkarida")}</span>),
+        },
+        {
+            title: t("Turgan vaqti"),
+            key: 'duration',
+            render: (_, record) => (
+                <span className="rp_duration">
+                    <ClockIcon size={15}/>
+                    {formatDuration(record.entering_time, record.exiting_time, t)}
+                </span>
+            ),
+        },
+        {
+            title: t("Avtomobil rasmi"),
+            key: 'image',
+            align: 'center',
+            width: 170,
+            render: (_, record) => (
+                <VehicleImage t={t}
+                              src={`${ip}/api/image/event/${record.id}/plate_image`}
+                              previewSrc={`${ip}/api/image/event/${record.id}/vehicle_image`}/>
+            ),
+        },
+    ];
 
     return (
-            <div className="user_list">
-
-                <div className="user_list_top">
-                    <div className="user_list_top_left">
-                        <Link to="/" className="user_list_top_left_prev"><img src={prev}/></Link>
-                        <div className="user_list_top_left_text">
-                            <span>Asosiy »</span>
-                            <p>Hisobot</p>
-                        </div>
-                    </div>
-                    <div className="user_list_top_right">
-                        <div className="user_list_top_right_search">
-                            <img src={search}/>
-                            <input
-                                type="text"
-                                placeholder="Izlash"
-                                onChange={
-                                    (event) => {
-                                        setFilterInitialValue({
-                                            ...filterInitialValue,
-                                            searched_data: event.currentTarget.value
-                                        });
-                                        setReportPaginationCurrent(1);
-                                    }}
-                            />
-                        </div>
-
-                        <div onClick={handlclicFilter} className="report_content_top_filter">
-                            <img src={filter}/>
-                            <p>Filterlash</p>
-                        </div>
-                        <div className="download_buttons">
-                            <button onClick={downloadReportExcel}
-                                    className="download_btn">
-                                <img src={exel}/>
-                                Yuklash
-                            </button>
-                            <button onClick={downloadReport}
-                                    className="download_btn_pdf">
-                                <img src={pdf}/>
-                                Yuklash
-                            </button>
-                        </div>
-                    </div>
+        <div className="admin content-enter">
+            <div className="admin_header">
+                <div className="admin_header_left">
+                    <p>{t("Hisobot")}</p>
+                    {total != null && range && <span className="ds-badge ds-badge--gray page_count_badge">{total}</span>}
                 </div>
-
-                <div className="user_list_body">
-                    <div className="report_section">
-                        <div className="report_table">
-                            <ReportTable
-                                reportData={reportData}
-                                filterInitialValue={filterInitialValue}
-                                setFilterInitialValue={setFilterInitialValue}
-                            />
-                        </div>
-
+                <div className="admin_header_right">
+                    <div className="admin_header_search">
+                        <SearchIcon size={18}/>
+                        <input type="text" placeholder={t("F.I.Sh yoki raqam bo'yicha izlash...")} value={searchInput}
+                               onChange={e => setSearchInput(e.target.value)}/>
                     </div>
-                    <div className="report_content_pagination">
-                        <p className = 'content_total' >Jami: {reportTotal}</p>
-                        <ReportPagenation
-                            reportPaginationLimit={reportPaginationLimit}
-                            reportPaginationCurrent={reportPaginationCurrent}
-                            reportPaginationOnchange={reportPaginationOnchange}
-                            reportTotal={reportTotal}
-                        />
-                    </div>
-
+                    <button type="button"
+                            className={`admin_header_btn admin_header_btn--icon${refreshing ? ' is-spinning' : ''}`}
+                            onClick={refresh} disabled={refreshing}
+                            title={t("Yangilash")} aria-label={t("Yangilash")}>
+                        <RefreshIcon size={18}/>
+                    </button>
+                    <button type="button" className={`admin_header_btn rp_export${exporting === 'excel' ? ' is-loading' : ''}`}
+                            onClick={() => exportFile('excel')} disabled={!!exporting || !range}
+                            title={t("Joriy filtr bo'yicha Excel fayl")}>
+                        {exporting === 'excel' ? <span className="rp_spinner"/> : <DownloadIcon size={18}/>}
+                        Excel
+                    </button>
+                    <button type="button" className={`admin_header_btn rp_export${exporting === 'pdf' ? ' is-loading' : ''}`}
+                            onClick={() => exportFile('pdf')} disabled={!!exporting || !range}
+                            title={t("Joriy filtr bo'yicha PDF fayl")}>
+                        {exporting === 'pdf' ? <span className="rp_spinner"/> : <FileTextIcon size={18}/>}
+                        PDF
+                    </button>
                 </div>
-                <FilterModal
-                    isOpenFilter={isOpenFilter}
-                    setIsOpenFilter={setIsOpenFilter}
-                    filterInitialValue={filterInitialValue}
-                    setFilterInitialValue={setFilterInitialValue}
-                    reportPaginationLimit={reportPaginationLimit}
-                    reportPaginationCurrent={reportPaginationCurrent}
-                    getReportData={getReportData}
-                />
             </div>
+
+            <div className="admin_body">
+                <div className="admin_toolbar">
+                    <div className="admin_toolbar_left">
+                        {/* davr */}
+                        <div className="page_seg" role="tablist" aria-label={t("Davr")}>
+                            {PERIOD_OPTIONS.map(o => (
+                                <button key={o.value} type="button" role="tab" aria-selected={period === o.value}
+                                        className={`page_seg_item${period === o.value ? ' is-active' : ''}`}
+                                        onClick={() => setPeriod(o.value)}>
+                                    {o.value === 'custom' && <CalendarIcon size={14}/>}
+                                    {o.label}
+                                </button>
+                            ))}
+                        </div>
+                        {period === 'custom' && (
+                            <DatePicker.RangePicker
+                                className="rp_range"
+                                value={customRange}
+                                onChange={(value) => setCustomRange(value && value[0] && value[1] ? value : null)}
+                                showTime={{
+                                    format: 'HH:mm',
+                                    defaultValue: [dayjs('00:00:00', 'HH:mm:ss'), dayjs('23:59:59', 'HH:mm:ss')],
+                                }}
+                                format="DD.MM.YYYY HH:mm"
+                                placeholder={[t("Boshlanish"), t("Tugash")]}
+                                allowClear
+                            />
+                        )}
+                        {period !== 'custom' && range && (
+                            <span className="rp_range_text">
+                                {range[0].format('DD.MM.YYYY')}
+                                {!range[0].isSame(range[1], 'day') && ` – ${range[1].format('DD.MM.YYYY')}`}
+                            </span>
+                        )}
+                    </div>
+                    <div className="admin_toolbar_right">
+                        {/* tur */}
+                        <div className="page_seg" role="tablist" aria-label={t("Turi")}>
+                            {TYPE_OPTIONS.map(o => (
+                                <button key={o.value} type="button" role="tab" aria-selected={type === o.value}
+                                        className={`page_seg_item${type === o.value ? ' is-active' : ''}`}
+                                        onClick={() => setType(o.value)}>
+                                    {o.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="admin_body_table">
+                    <Table
+                        className="rp_table"
+                        columns={columns}
+                        // "Oraliq" sanalari hali tanlanmagan — oldingi davr natijasi ko'rsatilmaydi
+                        dataSource={range ? (rows || []) : []}
+                        loading={rows === null && !!range}
+                        pagination={false}
+                        locale={{
+                            emptyText: (
+                                <div className="page_empty">
+                                    <span className="page_empty_icon"><InboxIcon size={24}/></span>
+                                    <p>{!range
+                                        ? t("Oraliqni tanlang")
+                                        : search
+                                            ? t("Qidiruv bo'yicha hech narsa topilmadi")
+                                            : t("Bu davrda kirish-chiqish yo'q")}</p>
+                                </div>
+                            ),
+                        }}
+                    />
+                </div>
+
+                <PagePagination total={range ? total : 0} current={page} pageSize={limit} onChange={onPageChange}
+                                pageSizeOptions={PAGE_SIZES}/>
+            </div>
+        </div>
     );
 };
 

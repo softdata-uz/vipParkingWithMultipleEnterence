@@ -1,0 +1,129 @@
+/* Mavzu + til paneli (src/components/common/PrefsSwitch.jsx) — header va login sahifasida */
+
+/* --- mavzu + til: bitta panel, ikki segmentli guruh (Untitled UI "button group") --- */
+.shell-prefs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: var(--control-md);
+    padding: 3px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+}
+
+/* til guruhi: globus belgisi + UZ/RU/EN; faol til — brend rangida */
+.shell-prefs__globe {
+    flex: none;
+    margin: 0 4px 0 7px;
+    color: var(--fg-quaternary);
+}
+
+.shell-prefs__divider {
+    flex: none;
+    width: 1px;
+    height: 18px;
+    margin: 0 6px 0 4px;
+    background: var(--border-secondary);
+}
+
+.shell-prefs--lang .shell-seg__item.is-active {
+    background: var(--utility-brand-50);
+    border-color: var(--utility-brand-200);
+    box-shadow: none;
+    color: var(--utility-brand-700);
+}
+
+.shell-seg {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 100%;
+}
+
+.shell-seg__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* App.css: button { height: 40px } */
+    min-width: 34px;
+    padding: 0 var(--spacing-md);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.02em;
+    color: var(--fg-quaternary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.shell-seg--icon .shell-seg__item {
+    padding: 0;
+    width: 34px;
+}
+
+.shell-seg__item:hover:not(.is-active) {
+    color: var(--text-primary);
+}
+
+/* faol — ko'tarilgan oq "tugmacha" */
+.shell-seg__item.is-active {
+    background: var(--bg-primary);
+    border-color: var(--border-secondary);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-primary);
+}
+
+.shell-seg--icon .shell-seg__item.is-active {
+    color: var(--fg-brand);
+}
+
+.shell-seg__item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* --- ixcham variant (login): alohida mavzu tugmasi + til guruhi --- */
+.shell-prefs-compact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shell-theme-btn {
+    width: var(--control-md);
+    height: var(--control-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    color: var(--fg-secondary);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
+}
+
+.shell-theme-btn:hover {
+    color: var(--fg-brand);
+    border-color: var(--border-primary);
+}
+
+.shell-theme-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+/* tor ekranda globus belgisi joy olmasin */
+@media (max-width: 860px) {
+    .shell-prefs__globe,
+    .shell-prefs__divider {
+        display: none;
+    }
+}

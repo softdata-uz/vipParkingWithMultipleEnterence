@@ -1,138 +1,49 @@
-.report_content_top_filter {
-    display: flex;
-    align-items: center;
-    background: #FFFFFF;
-    border-radius: 5px;
-    padding: 8px 15px;
-    margin-left: 10px;
-    cursor: pointer;
-}
-.report_content_top_filter img {
-    margin-right: 5px;
-}
-.report_content_top_filter p {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 19px;
-    color: #000000;
-}
-.user_list_top_right{
-    display: flex;
-    align-items: center;
-}
-.download_buttons{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    text-align: center;
-}
-.download_btn{
-    display: flex;
-   align-items: center;
-    height: 40px;
-    background: #FFFFFF;
-    border: 1px solid #EAEAEA;
-    border-radius: 5px;
-    padding:0 15px;
-    margin-left: 15px;
+/* ============================================================================
+   Joriy holat (Status.jsx) — turargoh ichidagi avtomobillar jadvali.
+   Jadval uslubi — styles/page.css; xodim/vaqt/rasm kataklari — common/vehicleCells.css.
+   ========================================================================== */
 
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 19px;
-    color: #000000;
-    cursor: pointer;
-}
-.download_btn:hover{
-    border: 1px solid #29B85D;
-    color: #29B85D;
-}
-.download_btn img{
-    margin-right: 5px;
-}
-.download_btn_pdf{
-    display: flex;
-    align-items: center;
-    height: 40px;
-    background: #FFFFFF;
-    border: 1px solid #EAEAEA;
-    border-radius: 5px;
-    padding:0 15px;
-    margin-left: 15px;
-
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 19px;
-    color: #000000;
-    cursor: pointer;
-}
-.download_btn_pdf img{
-    margin-right: 5px;
-}
-.download_btn_pdf:hover{
-    border: 1px solid #920000;
-    color: #920000;
+.ds-badge.st_live {
+    height: 24px;
+    padding: 0 10px;
+    font-size: 12px;
 }
 
-
-/*---table---*/
-.table_user_cell {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    grid-column-gap: 5px;
-}
-.table_user_cell_img{
-    border-radius: 20px;
-    margin-right: 5px;
-    max-width: 40px;
-    max-height: 40px;
-}
-.table_user_cell .ant-image-mask {
-    max-width: 40px;
-    max-height: 40px;
-    border-radius: 100px;
-}
-.table_report_cell{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    grid-column-gap: 5px;
-    /*background: red;*/
-    height: 55px;
-}
-.table_report_cell_img{
-    width: 200px!important;
-    height: 55px!important;
-    object-fit: cover;
-}
-.report_section{
-    width: 100%;
-    height: calc(100vh - 130px);
-    display: grid;
-    grid-template-rows: 1fr 50px;
-    border-radius: 3px;
-}
-.report_table{
-    overflow: auto;
+.st_live .ds-badge__dot {
+    animation: st-live-pulse 1.6s ease-in-out infinite;
 }
 
-.report_content_pagination{
-    display: flex;
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    padding: 10px!important;
+@keyframes st-live-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
 }
-.content_total {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 500;
-    font-size: 16px;
-    margin-right: 10px !important;
-    display: flex;
+
+.st_index {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-quaternary);
+}
+
+.st_stay {
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    font-size: 13px;
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.st_stay svg {
+    flex: none;
+    color: var(--fg-quaternary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .st_live .ds-badge__dot {
+        animation: none;
+    }
 }

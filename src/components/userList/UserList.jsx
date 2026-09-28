@@ -18,7 +18,6 @@ import UserListPagination from "./UserListPagination";
 import axios from "axios";
 import {ip} from "../../ip";
 import moment from "moment";
-import ReportTable from "../report/ReportTable";
 import {useDispatch, useSelector} from "react-redux";
 import DeleteModal from "./deleteModal/DeleteModal";
 import {CiImageOn} from "react-icons/ci";

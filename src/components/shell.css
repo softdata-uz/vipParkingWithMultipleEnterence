@@ -1,0 +1,547 @@
+/* ============================================================================
+   App shell header — Monitoring loyihasidagi components/shell.css dan 1:1 nusxa
+   (logo + menyu + mavzu/til/profil). Kontent qismi VIP'da layout.css da (.layout, .layout_body).
+   Barcha qiymatlar src/design-system/tokens.css dan.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+
+.shell-top {
+    /* 3 ustun: logo | menyu | boshqaruv. Menyu logo yonidan boshlanadi va qolgan
+       joyni egallaydi; joy yetmasa torayib, skroll bo'ladi. */
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: var(--spacing-3xl);
+    height: var(--topbar-height);
+    flex: none;
+    padding: 0 var(--gutter);
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+/* logo va menyu orasida ingichka ajratgich */
+.shell-top__logo {
+    display: flex;
+    align-items: center;
+    flex: none;
+    height: 32px;
+    padding-right: var(--spacing-3xl);
+    border-right: 1px solid var(--border-secondary);
+}
+
+.shell-top__logo img {
+    height: 32px;
+    width: auto;
+    display: block;
+}
+
+/* o'ng tomon: mavzu, til va foydalanuvchi — yonma-yon uchta alohida guruh */
+.shell-top__right {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: none;
+}
+
+.shell-top__right .shell-prefs,
+.shell-top__right .shell-user__trigger {
+    height: 40px;
+}
+
+/* guruhlar orasidagi ingichka ajratuvchi ustuncha */
+.shell-top__sep {
+    flex: none;
+    width: 1px;
+    height: 24px;
+    background: var(--border-secondary);
+}
+
+.shell-top__right .shell-user__trigger .shell-user__avatar {
+    width: 32px;
+    height: 32px;
+}
+
+/* --- gorizontal menyu: ilovadagi filtr tugmalari uslubida ---
+   Faol bo'lim — yumshoq yashil fon + yashil chegara ("Sun'iy to'siqlar" dagi P1/P3 filtrlari kabi),
+   qolganlari oddiy; hover — kartalar kabi yengil fon va chegara. */
+.shell-topnav {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.shell-topnav__scroll {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.shell-topnav__scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.shell-topnav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: none;
+    height: 40px;
+    padding: 0 var(--spacing-lg);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-tertiary);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.shell-topnav__link svg {
+    flex: none;
+    color: var(--fg-quaternary);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+/* `!important` — App.css dagi global `a:hover` qoidasiga qarshi */
+.shell-topnav__link:not(.is-active):hover {
+    background: var(--bg-secondary);
+    border-color: var(--border-secondary);
+    color: var(--text-primary) !important;
+}
+
+.shell-topnav__link:not(.is-active):hover svg {
+    color: var(--text-secondary);
+}
+
+/* faol — "Davom etmoqda" badge'i (.ds-badge--brand) ranglarida; shakli menyuning o'zidagi */
+.shell-topnav__link.is-active,
+.shell-topnav__link.is-active:hover {
+    background: var(--utility-brand-50);
+    border-color: var(--utility-brand-200);
+    color: var(--utility-brand-700) !important;
+}
+
+.shell-topnav__link.is-active svg {
+    color: var(--utility-brand-700);
+}
+
+.shell-topnav__link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.shell-topnav__arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    color: var(--fg-tertiary);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.shell-topnav__arrow:hover {
+    color: var(--text-primary);
+    border-color: var(--border-primary);
+}
+
+.shell-topnav__arrow--left {
+    left: 0;
+}
+
+.shell-topnav__arrow--right {
+    right: 0;
+}
+
+/* --- foydalanuvchi menyusi --- */
+.shell-user {
+    position: relative;
+}
+
+/* Mavzu/til paneli (.shell-prefs) bilan bir xil qobiq: 44px, bg-secondary, radius-lg */
+.shell-user__trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    height: var(--control-md);
+    padding: 3px var(--spacing-md) 3px 3px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    font-family: var(--font-family);
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+/* hover/ochiq — segmentdagi faol element kabi "ko'tariladi" */
+.shell-user__trigger:hover,
+.shell-user__trigger.is-open {
+    background: var(--bg-primary);
+    border-color: var(--border-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.shell-user__trigger .shell-user__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    background: var(--utility-brand-50);
+    color: var(--utility-brand-700);
+    box-shadow: inset 0 0 0 1px var(--utility-brand-200);
+}
+
+.shell-user__trigger .shell-user__avatar img {
+    border-radius: var(--radius-md);
+}
+
+.shell-user__trigger .shell-user__avatar::after {
+    border-color: var(--bg-secondary);
+}
+
+.shell-user__trigger:hover .shell-user__avatar::after,
+.shell-user__trigger.is-open .shell-user__avatar::after {
+    border-color: var(--bg-primary);
+}
+
+.shell-user__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.shell-user__role {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.shell-user__trigger:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.shell-user__avatar {
+    position: relative;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--text-tertiary);
+}
+
+.shell-user__avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+}
+
+/* avatar burchagidagi onlayn nuqtasi */
+.shell-user__avatar::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--fg-success);
+    border: 2px solid var(--bg-primary);
+}
+
+.shell-user__avatar--lg {
+    width: 44px;
+    height: 44px;
+    font-size: var(--text-lg);
+}
+
+.shell-user__name {
+    font-size: 13px;
+    line-height: 17px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shell-user__chevron {
+    flex: none;
+    color: var(--fg-quaternary);
+    transition: transform var(--duration-base) var(--ease-out);
+}
+
+.shell-user__trigger.is-open .shell-user__chevron {
+    transform: rotate(180deg);
+}
+
+/* Menyu — profil tugmasi (.shell-user__trigger) bilan bir xil til: radius-lg, bg-secondary blok,
+   yumaloq-kvadrat avatar va ikonkalar */
+.shell-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 1200;
+    width: 280px;
+    padding: 4px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-lg);
+    transform-origin: top right;
+    animation: shell-menu-in var(--duration-base) var(--ease-out);
+}
+
+@keyframes shell-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shell-menu {
+        animation: none;
+    }
+}
+
+/* foydalanuvchi bloki — trigger qobig'ining kattaroq nusxasi */
+.shell-menu__head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: 10px;
+    margin-bottom: 4px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.shell-menu__head .shell-user__avatar--lg {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    background: var(--utility-brand-50);
+    color: var(--utility-brand-700);
+    box-shadow: inset 0 0 0 1px var(--utility-brand-200);
+}
+
+.shell-menu__head .shell-user__avatar--lg img {
+    border-radius: var(--radius-md);
+}
+
+.shell-menu__head .shell-user__avatar--lg::after {
+    border-color: var(--bg-secondary);
+}
+
+.shell-menu__head-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.shell-menu__head-name {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shell-menu__head-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    min-width: 0;
+}
+
+/* rol badge'i menyuda ixchamroq (jadvaldagi 30px o'rniga) */
+.shell-menu__head-meta .role-badge {
+    height: 22px;
+    padding: 0 8px;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.shell-menu__head-meta .role-badge::before {
+    width: 6px;
+    height: 6px;
+}
+
+.shell-menu__head-login {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shell-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    width: 100%;
+    height: 40px; /* App.css: button { height: 40px } */
+    padding: 0 var(--spacing-sm);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+/* hover — trigger kabi "ko'tarilgan" blok */
+.shell-menu__item:hover {
+    background: var(--bg-secondary);
+    border-color: var(--border-secondary);
+    color: var(--text-primary);
+}
+
+.shell-menu__item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* ikonka — avatar bilan bir xil yumaloq-kvadrat */
+.shell-menu__item-icon {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--fg-quaternary);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+.shell-menu__item:hover .shell-menu__item-icon {
+    color: var(--fg-brand);
+}
+
+.shell-menu__item--danger {
+    color: var(--text-error);
+}
+
+.shell-menu__item--danger .shell-menu__item-icon {
+    border-color: var(--utility-error-200);
+    background: var(--utility-error-50);
+    color: var(--utility-error-700);
+}
+
+.shell-menu__item--danger:hover {
+    background: var(--bg-error-primary);
+    border-color: var(--utility-error-200);
+    color: var(--text-error);
+}
+
+.shell-menu__item--danger:hover .shell-menu__item-icon {
+    color: var(--utility-error-700);
+}
+
+/* ==========================================================================
+   Responsiv
+   ========================================================================== */
+
+@media (max-width: 1370px) {
+    .shell-top {
+        gap: var(--spacing-xl);
+    }
+
+    .shell-user__name {
+        max-width: 140px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .shell-user__text {
+        display: none;
+    }
+
+    .shell-user__trigger {
+        padding: 3px var(--spacing-sm) 3px 3px;
+    }
+
+}
+
+@media (max-width: 860px) {
+    .shell-top__logo img {
+        height: 26px;
+    }
+
+    /* menyuda faqat ikonkalar */
+    .shell-topnav__label {
+        display: none;
+    }
+
+    .shell-topnav__link {
+        padding: 0 var(--spacing-lg);
+    }
+}
+
+@media (max-width: 560px) {
+    .shell-top {
+        gap: var(--spacing-md);
+        padding: 0 var(--container-padding-mobile);
+    }
+
+    .shell-top {
+        grid-template-columns: minmax(0, 1fr) max-content;
+    }
+
+    .shell-top__logo {
+        display: none;
+    }
+}

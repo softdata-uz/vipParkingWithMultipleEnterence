@@ -1,0 +1,458 @@
+/* ============================================================================
+   Design tokens — Figma "Green" design system (Untitled UI)
+   ----------------------------------------------------------------------------
+   Manba: Figma fayl xK6ePC3HunPrCPpBKcUecI ("Green"), ❖ FOUNDATIONS sahifalari
+   (Colors / Typography / Spacing, radius & grids / Effect styles).
+   Qiymatlar Figma Dev Mode MCP orqali `get_variable_defs` bilan olingan.
+
+   Nomlash Figma'dagi o'zgaruvchilarga bir-bir mos:
+     Colors/Background/bg-primary      -> --bg-primary
+     Colors/Text/text-primary (900)    -> --text-primary
+     Colors/Border/border-primary      -> --border-primary
+     spacing-xl                        -> --spacing-xl
+     radius-md                         -> --radius-md
+
+   ⚠ CHEKINISH: Figma'da text-xs = 12px, text-sm = 14px. Loyiha qoidasi
+   "minimal 16px" bo'lgani uchun ikkalasi ham 16px ga ko'tarildi
+   (pastdagi "Typography" blokiga qarang). Figma bilan 1:1 qilish kerak
+   bo'lsa — faqat o'sha ikki qatorni qaytarish kifoya.
+
+   Bu loyihada: yorug'/qorong'i rejim <html data-theme="..."> orqali
+   (ThemeContext). `.theme-dark` klassi esa doim qorong'i bo'lishi kerak
+   bo'lgan qism uchun (sidebar).
+   ========================================================================== */
+
+/* ----------------------------------------------------------- Primitives -- */
+:root {
+    /* --- Brand: Untitled UI "Green" ---------------------------------------
+       Figma'dan tasdiqlangan: fg-brand-primary (600) = #099250,
+       text-brand-secondary (700) = #087443, utility-brand-50 = #edfcf2,
+       utility-brand-200 = #aaf0c4                                        */
+    --brand-25: #f6fef9;
+    --brand-50: #edfcf2;
+    --brand-100: #d3f8df;
+    --brand-200: #aaf0c4;
+    --brand-300: #73e2a3;
+    --brand-400: #3ccb7f;
+    --brand-500: #16b364;
+    --brand-600: #099250;
+    --brand-700: #087443;
+    --brand-800: #095c37;
+    --brand-900: #0a5225;
+    --brand-950: #052e16;
+
+    /* --- Gray (light mode) ------------------------------------------------
+       Figma'dan tasdiqlangan: 50 #fafafa, 200 #e9eaeb, 300 #d5d7da,
+       600 #535862, 700 #414651, 900 #181d27                              */
+    --gray-25: #fdfdfd;
+    --gray-50: #fafafa;
+    --gray-100: #f5f5f5;
+    --gray-200: #e9eaeb;
+    --gray-300: #d5d7da;
+    --gray-400: #a4a7ae;
+    --gray-500: #717680;
+    --gray-600: #535862;
+    --gray-700: #414651;
+    --gray-800: #252b37;
+    --gray-900: #181d27;
+    --gray-950: #0a0d12;
+
+    /* --- Gray (dark mode) — Untitled UI dark shkalasi ------------------- */
+    --gray-dark-25: #fafafa;
+    --gray-dark-50: #f7f7f7;
+    --gray-dark-100: #f0f0f1;
+    --gray-dark-200: #ececed;
+    --gray-dark-300: #cecfd2;
+    --gray-dark-400: #94979c;
+    --gray-dark-500: #85888e;
+    --gray-dark-600: #61656c;
+    --gray-dark-700: #373a41;
+    --gray-dark-800: #22262f;
+    --gray-dark-900: #13161b;
+    --gray-dark-950: #0c0e12;
+
+    /* --- Utility / status (Untitled UI) -------------------------------- */
+    --error-25: #fffbfa;
+    --error-50: #fef3f2;
+    --error-100: #fee4e2;
+    --error-200: #fecdca;
+    --error-300: #fda29b;
+    --error-400: #f97066;
+    --error-500: #f04438;
+    --error-600: #d92d20;
+    --error-700: #b42318;
+
+    --warning-25: #fffcf5;
+    --warning-50: #fffaeb;
+    --warning-100: #fef0c7;
+    --warning-200: #fedf89;
+    --warning-300: #fec84b;
+    --warning-400: #fdb022;
+    --warning-500: #f79009;
+    --warning-600: #dc6803;
+    --warning-700: #b54708;
+
+    --success-25: #f6fef9;
+    --success-50: #ecfdf3;
+    --success-100: #dcfae6;
+    --success-200: #abefc6;
+    --success-300: #75e0a7;
+    --success-400: #47cd89;
+    --success-500: #17b26a;
+    --success-600: #079455;
+    --success-700: #067647;
+
+    --blue-50: #eff8ff;
+    --blue-100: #d1e9ff;
+    --blue-200: #b2ddff;
+    --blue-500: #2e90fa;
+    --blue-600: #1570ef;
+    --blue-700: #175cd3;
+
+    --purple-50: #f4f3ff;
+    --purple-200: #d9d6fe;
+    --purple-500: #7a5af8;
+    --purple-600: #6938ef;
+
+    --base-white: #ffffff;
+    --base-black: #000000;
+
+    /* --- Radius (Figma: radius-*) -------------------------------------- */
+    --radius-none: 0;
+    --radius-xxs: 2px;
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-3xl: 20px;
+    --radius-4xl: 24px;
+    --radius-full: 9999px;
+
+    /* --- Spacing (Figma: spacing-*) ------------------------------------ */
+    --spacing-none: 0;
+    --spacing-xxs: 2px;
+    --spacing-xs: 4px;
+    --spacing-sm: 6px;
+    --spacing-md: 8px;
+    --spacing-lg: 12px;
+    --spacing-xl: 16px;
+    --spacing-2xl: 20px;
+    --spacing-3xl: 24px;
+    --spacing-4xl: 32px;
+    --spacing-5xl: 40px;
+    --spacing-6xl: 48px;
+    --spacing-7xl: 64px;
+    --spacing-8xl: 80px;
+    --spacing-9xl: 96px;
+    --spacing-10xl: 128px;
+    --spacing-11xl: 160px;
+
+    /* --- Gutter --------------------------------------------------------
+       Loyiha qoidasi: barcha asosiy margin/padding/gap desktopda 24px,
+       mobilda 16px. Komponentlarda shu token ishlatiladi. */
+    --gutter: 24px;
+
+    /* --- Kengliklar / konteyner (Figma: width-*, container-*) ---------- */
+    --width-xxs: 320px;
+    --width-xs: 384px;
+    --width-sm: 480px;
+    --width-md: 560px;
+    --width-lg: 640px;
+    --width-xl: 768px;
+    --width-2xl: 1024px;
+    --width-3xl: 1280px;
+    --width-4xl: 1440px;
+    --width-5xl: 1600px;
+    --width-6xl: 1920px;
+    --paragraph-max-width: 720px;
+    --container-padding-mobile: 16px;
+    --container-padding-desktop: 32px;
+    --container-max-width-desktop: 1280px;
+
+    /* --- Typography (Figma: Font size/*, Line height/*) ---------------- */
+    /* Zaxira zanjiri muhim: Inter yuklanguncha brauzer shu ro'yxatdan tanlaydi.
+       Agar faqat "Inter" yozilsa, brauzer o'z standartiga (Times New Roman) tushadi. */
+    --font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, Helvetica, sans-serif;
+
+    /* ⚠ Figma: text-xs = 12/18, text-sm = 14/20.
+       Loyiha qoidasi "minimal 16px" — ikkalasi 16/24 ga ko'tarildi. */
+    --text-xs: 16px;
+    --line-xs: 24px;
+    --text-sm: 16px;
+    --line-sm: 24px;
+
+    --text-md: 16px;
+    --line-md: 24px;
+    --text-lg: 18px;
+    --line-lg: 28px;
+    --text-xl: 20px;
+    --line-xl: 30px;
+
+    --display-xs: 24px;
+    --line-display-xs: 32px;
+    --display-sm: 30px;
+    --line-display-sm: 38px;
+    --display-md: 36px;
+    --line-display-md: 44px;
+    --display-lg: 48px;
+    --line-display-lg: 60px;
+    --display-xl: 60px;
+    --line-display-xl: 72px;
+    --tracking-display: -0.02em; /* Figma: letterSpacing -2 */
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    /* --- Boshqaruv elementlari balandligi -------------------------------
+       Untitled UI: sm 36 / md 40 / lg 44 / xl 48 / 2xl 60.
+       Matn 16px bo'lgani uchun bir pog'ona kattaroq olindi.            */
+    --control-sm: 40px;
+    --control-md: 44px;
+    --control-lg: 48px;
+    --control-xl: 56px;
+
+    /* --- Transition ---------------------------------------------------- */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+
+    /* --- Layout -------------------------------------------------------- */
+    --sidebar-width: 296px; /* Figma "Sidebar navigation" kengligi */
+    --sidebar-width-collapsed: 80px;
+    --topbar-height: 72px;
+}
+
+/* Mobilda gutter 16px */
+@media (max-width: 768px) {
+    :root {
+        --gutter: 16px;
+    }
+}
+
+/* ------------------------------------------------ Semantic — light mode -- */
+:root,
+:root[data-theme="light"],
+.theme-light {
+    color-scheme: light;
+
+    --bg-primary: var(--base-white);
+    --bg-primary_hover: var(--gray-50);
+    --bg-primary-solid: var(--gray-950);
+    --bg-secondary: var(--gray-50);
+    --bg-secondary_subtle: var(--gray-25);
+    --bg-tertiary: var(--gray-100);
+    --bg-quaternary: var(--gray-200);
+    --bg-active: var(--gray-50);
+    --bg-disabled: var(--gray-100);
+    --bg-brand-primary: var(--brand-50);
+    --bg-brand-secondary: var(--brand-100);
+    --bg-brand-solid: var(--brand-600);
+    --bg-brand-solid_hover: var(--brand-700);
+    --bg-error-primary: var(--error-50);
+    --bg-error-solid: var(--error-600);
+    --bg-error-solid_hover: var(--error-700);
+    --bg-warning-primary: var(--warning-50);
+    --bg-success-primary: var(--success-50);
+    --bg-overlay: rgba(10, 13, 18, 0.7);
+
+    --text-primary: var(--gray-900);
+    --text-secondary: var(--gray-700);
+    --text-tertiary: var(--gray-600);
+    --text-quaternary: var(--gray-500);
+    --text-placeholder: var(--gray-500);
+    --text-disabled: var(--gray-500);
+    --text-brand-primary: var(--brand-900);
+    --text-brand-secondary: var(--brand-700);
+    --text-brand-tertiary: var(--brand-600);
+    --text-on-brand: var(--base-white);
+    --text-error: var(--error-600);
+    --text-warning: var(--warning-600);
+    --text-success: var(--success-600);
+
+    --border-primary: var(--gray-300);
+    --border-secondary: var(--gray-200);
+    --border-tertiary: var(--gray-100);
+    --border-disabled: var(--gray-300);
+    --border-brand: var(--brand-600);
+    --border-error: var(--error-500);
+
+    --fg-primary: var(--gray-900);
+    --fg-secondary: var(--gray-700);
+    --fg-tertiary: var(--gray-600);
+    --fg-quaternary: var(--gray-500);
+    --fg-quinary: var(--gray-400);
+    --fg-brand: var(--brand-600);
+    --fg-error: var(--error-600);
+    --fg-warning: var(--warning-600);
+    --fg-success: var(--success-600);
+    --fg-white: var(--base-white);
+
+    /* --- Utility ranglar (badge, ikonka foni) — LIGHT ------------------
+       Har bir rang uchun uchlik: -50 fon, -200 chegara, -700 matn/ikonka.
+       ⚠ Komponentlarda faqat SHU tokenlar ishlatiladi, primitivlar emas —
+       aks holda dark rejimda ranglar moslashmay qoladi. */
+    --utility-gray-50: var(--gray-50);
+    --utility-gray-200: var(--gray-200);
+    --utility-gray-700: var(--gray-700);
+
+    --utility-brand-50: var(--brand-50);
+    --utility-brand-200: var(--brand-200);
+    --utility-brand-500: var(--brand-500);
+    --utility-brand-700: var(--brand-700);
+
+    --utility-success-50: var(--success-50);
+    --utility-success-200: var(--success-200);
+    --utility-success-700: var(--success-700);
+
+    --utility-warning-50: var(--warning-50);
+    --utility-warning-200: var(--warning-200);
+    --utility-warning-700: var(--warning-700);
+
+    --utility-error-50: var(--error-50);
+    --utility-error-200: var(--error-200);
+    --utility-error-700: var(--error-700);
+
+    --utility-blue-50: var(--blue-50);
+    --utility-blue-200: var(--blue-200);
+    --utility-blue-700: var(--blue-700);
+
+    --utility-purple-50: var(--purple-50);
+    --utility-purple-200: var(--purple-200);
+    --utility-purple-700: var(--purple-600);
+
+    --focus-ring: rgba(9, 146, 80, 0.24);
+    --focus-ring-error: rgba(240, 68, 56, 0.24);
+
+    /* Skrollbar — neytral, brend rangida emas */
+    /* Skroll panelining kengligi. Layout hisob-kitobida kerak: skroll qiluvchi
+       soha kontentni shuncha chapga suradi, tashqaridagi sarlavha esa surilmaydi. */
+    --scrollbar-size: 10px;
+    --scrollbar-thumb: rgba(16, 24, 40, 0.2);
+    --scrollbar-thumb-hover: rgba(16, 24, 40, 0.38);
+
+    /* Figma: Effect styles */
+    --shadow-xs: 0 1px 2px 0 rgba(10, 13, 18, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(10, 13, 18, 0.1), 0 1px 2px -1px rgba(10, 13, 18, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(10, 13, 18, 0.1), 0 2px 4px -2px rgba(10, 13, 18, 0.06);
+    --shadow-lg: 0 2px 2px -1px rgba(10, 13, 18, 0.04), 0 4px 6px -2px rgba(10, 13, 18, 0.03),
+    0 12px 16px -4px rgba(10, 13, 18, 0.08);
+    --shadow-xl: 0 4px 4px -2px rgba(10, 13, 18, 0.04), 0 8px 8px -4px rgba(10, 13, 18, 0.03),
+    0 20px 24px -4px rgba(10, 13, 18, 0.08);
+    --shadow-3xl: 0 5px 5px -2.5px rgba(10, 13, 18, 0.04), 0 32px 64px -12px rgba(10, 13, 18, 0.14);
+    /* Untitled UI tugmalaridagi "skeuomorphic" ichki chegara */
+    --shadow-skeuomorphic: 0 1px 2px 0 rgba(10, 13, 18, 0.05),
+    inset 0 -2px 0 0 rgba(10, 13, 18, 0.05),
+    inset 0 0 0 1px rgba(10, 13, 18, 0.18);
+}
+
+/* ------------------------------------------------- Semantic — dark mode -- */
+:root[data-theme="dark"],
+.theme-dark {
+    color-scheme: dark;
+
+    --bg-primary: var(--gray-dark-950);
+    --bg-primary_hover: var(--gray-dark-900);
+    --bg-primary-solid: var(--gray-dark-900);
+    --bg-secondary: var(--gray-dark-900);
+    --bg-secondary_subtle: var(--gray-dark-950);
+    --bg-tertiary: var(--gray-dark-800);
+    --bg-quaternary: var(--gray-dark-700);
+    --bg-active: var(--gray-dark-800);
+    --bg-disabled: var(--gray-dark-800);
+    --bg-brand-primary: rgba(9, 146, 80, 0.16);
+    --bg-brand-secondary: rgba(9, 146, 80, 0.24);
+    --bg-brand-solid: var(--brand-600);
+    --bg-brand-solid_hover: var(--brand-500);
+    --bg-error-primary: rgba(240, 68, 56, 0.12);
+    --bg-error-solid: var(--error-600);
+    --bg-error-solid_hover: var(--error-500);
+    --bg-warning-primary: rgba(247, 144, 9, 0.12);
+    --bg-success-primary: rgba(23, 178, 106, 0.12);
+    --bg-overlay: rgba(10, 13, 18, 0.8);
+
+    --text-primary: var(--base-white);
+    --text-secondary: var(--gray-dark-300);
+    --text-tertiary: var(--gray-dark-400);
+    --text-quaternary: var(--gray-dark-400);
+    --text-placeholder: var(--gray-dark-500);
+    --text-disabled: var(--gray-dark-500);
+    --text-brand-primary: var(--base-white);
+    --text-brand-secondary: var(--gray-dark-300);
+    --text-brand-tertiary: var(--brand-400);
+    --text-on-brand: var(--base-white);
+    --text-error: var(--error-400);
+    --text-warning: var(--warning-400);
+    --text-success: var(--success-400);
+
+    --border-primary: var(--gray-dark-700);
+    --border-secondary: var(--gray-dark-800);
+    --border-tertiary: var(--gray-dark-900);
+    --border-disabled: var(--gray-dark-700);
+    --border-brand: var(--brand-500);
+    --border-error: var(--error-500);
+
+    --fg-primary: var(--base-white);
+    --fg-secondary: var(--gray-dark-300);
+    --fg-tertiary: var(--gray-dark-400);
+    --fg-quaternary: var(--gray-dark-400);
+    --fg-quinary: var(--gray-dark-500);
+    --fg-brand: var(--brand-500);
+    --fg-error: var(--error-400);
+    --fg-warning: var(--warning-400);
+    --fg-success: var(--success-400);
+    --fg-white: var(--base-white);
+
+    /* --- Utility ranglar — DARK -----------------------------------------
+       Fon: rangning past shaffofligi (qora ustida yumshoq porlash),
+       chegara: kuchliroq shaffoflik, matn/ikonka: yorug' tint. */
+    --utility-gray-50: rgba(255, 255, 255, 0.06);
+    --utility-gray-200: rgba(255, 255, 255, 0.14);
+    --utility-gray-700: var(--gray-dark-300);
+
+    --utility-brand-50: rgba(22, 179, 100, 0.14);
+    --utility-brand-200: rgba(22, 179, 100, 0.3);
+    --utility-brand-500: var(--brand-500);
+    --utility-brand-700: var(--brand-300);
+
+    --utility-success-50: rgba(23, 178, 106, 0.14);
+    --utility-success-200: rgba(23, 178, 106, 0.3);
+    --utility-success-700: var(--success-300);
+
+    --utility-warning-50: rgba(247, 144, 9, 0.14);
+    --utility-warning-200: rgba(247, 144, 9, 0.3);
+    --utility-warning-700: var(--warning-300);
+
+    --utility-error-50: rgba(240, 68, 56, 0.14);
+    --utility-error-200: rgba(240, 68, 56, 0.3);
+    --utility-error-700: var(--error-300);
+
+    --utility-blue-50: rgba(46, 144, 250, 0.14);
+    --utility-blue-200: rgba(46, 144, 250, 0.3);
+    --utility-blue-700: var(--blue-200);
+
+    --utility-purple-50: rgba(122, 90, 248, 0.16);
+    --utility-purple-200: rgba(122, 90, 248, 0.32);
+    --utility-purple-700: var(--purple-200);
+
+    --focus-ring: rgba(22, 179, 100, 0.28);
+    --focus-ring-error: rgba(240, 68, 56, 0.28);
+
+    --scrollbar-thumb: rgba(255, 255, 255, 0.18);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.34);
+
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 2px 2px -1px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.3),
+    0 12px 16px -4px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 4px 4px -2px rgba(0, 0, 0, 0.3), 0 8px 8px -4px rgba(0, 0, 0, 0.3),
+    0 20px 24px -4px rgba(0, 0, 0, 0.5);
+    --shadow-3xl: 0 5px 5px -2.5px rgba(0, 0, 0, 0.3), 0 32px 64px -12px rgba(0, 0, 0, 0.6);
+    --shadow-skeuomorphic: 0 1px 2px 0 rgba(0, 0, 0, 0.3),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}

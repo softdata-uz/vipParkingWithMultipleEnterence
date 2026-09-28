@@ -2,16 +2,24 @@
     display: flex;
     align-items: center;
     background: #FFFFFF;
-    border-radius: 5px;
-    padding: 8px 15px;
+    border: 1px solid #E9EAEB;
+    border-radius: 8px;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 0 15px;
     margin-left: 10px;
     cursor: pointer;
+    transition: border-color .2s ease;
+}
+
+.report_content_top_filter:hover {
+    border-color: #17B26A;
 }
 .report_content_top_filter img {
     margin-right: 5px;
 }
 .report_content_top_filter p {
-    font-family: 'Open Sans';
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -33,10 +41,11 @@
    align-items: center;
     height: 40px;
     background: #FFFFFF;
-    border: 1px solid #EAEAEA;
-    border-radius: 5px;
+    border: 1px solid #E9EAEB;
+    border-radius: 8px;
     padding:0 15px;
     margin-left: 15px;
+    transition: border-color .2s ease, color .2s ease;
 
     font-style: normal;
     font-weight: 400;
@@ -57,10 +66,11 @@
     align-items: center;
     height: 40px;
     background: #FFFFFF;
-    border: 1px solid #EAEAEA;
-    border-radius: 5px;
+    border: 1px solid #E9EAEB;
+    border-radius: 8px;
     padding:0 15px;
     margin-left: 15px;
+    transition: border-color .2s ease, color .2s ease;
 
     font-style: normal;
     font-weight: 400;
@@ -101,10 +111,17 @@
     justify-content: center;
     align-items: center;
     grid-column-gap: 5px;
+    /* avval status.css / report.css da global edi — ular yangilangach shu yerga ko'chirildi */
+    height: 55px;
+}
+.table_report_cell_img{
+    width: 200px!important;
+    height: 55px!important;
+    object-fit: cover;
 }
 .report_section{
     width: 100%;
-    height: calc(100vh - 130px);
+    height: calc(100vh - var(--header-height) - 90px);
     display: grid;
     grid-template-rows: 1fr 50px;
     border-radius: 3px;
@@ -121,7 +138,7 @@
     padding: 10px!important;
 }
 .content_total {
-    font-family: 'Open Sans';
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: 16px;

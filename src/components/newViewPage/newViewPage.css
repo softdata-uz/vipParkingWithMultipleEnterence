@@ -31,7 +31,7 @@
     align-items: center;
     border-radius: 12px;
 
-    font-family: Inter;
+    font-family: 'Inter', sans-serif;
     font-size: 36px;
     font-style: normal;
     font-weight: 600;
@@ -62,7 +62,7 @@
 .newViewPage_body_inner_new_car_img_inner p {
     color: #9A9EA3;
     text-overflow: ellipsis;
-    font-family: Inter;
+    font-family: 'Inter', sans-serif;
     font-size: 16px;
     font-style: normal;
     font-weight: 600;

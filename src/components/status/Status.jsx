@@ -1,209 +1,235 @@
-import React, {useEffect, useState} from 'react';
-import Layout from "../Layout";
-import {Link} from "react-router-dom";
-import {ip} from "../../ip";
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {message, Table} from "antd";
+import {useTranslation} from "react-i18next";
 import axios from "axios";
-import moment from "moment";
 
-import prev from "../../images/Vector.png";
-import search from "../../images/tabler-icon-search (1).png";
-import filter from "../../images/filter_icon.svg";
-import exel from "../../images/exel.svg";
-import pdf from "../../images/pdf.svg";
+import {ip} from "../../ip";
+import {ClockIcon, InboxIcon, RefreshIcon, SearchIcon} from "../../design-system/icons";
+import PagePagination from "../common/PagePagination";
+import PlateNumber from "../common/PlateNumber";
+import {PersonCell, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+
+import '../../design-system/ui.css';
+import '../../styles/table-cells.css';
+import '../../styles/page.css';
 import './status.css';
-import StatusTable from "./StatusTable";
-import StatusPagenation from "./StatusPagenation";
-import FilterModal from "./filterModal/FilterModal";
 
+/* Joriy holat — hozir turargoh ichidagi avtomobillar.
+   API: GET /api/event/:limit/:page?searched_data=&table_name=&order_by=  -> {data, count, current_page}
+        ⚠ searched_data (bo'sh bo'lsa ham) doim yuborilishi kerak — busiz server bo'sh ro'yxat qaytaradi.
+        GET /api/image/event/:id/plate_image | vehicle_image — raqam va avtomobil rasmlari */
 
-const Status = (props) => {
+const PAGE_SIZES = [15, 30, 50, 100];
+const LIVE_INTERVAL = 30 * 1000;           // jonli sahifa — har 30 soniyada jim yangilanadi
+const auth = () => ({'x-access-token': localStorage.getItem('vipparking-token')});
 
-    const [reportData, setReportData] = useState();
-    const [isOpenFilter, setIsOpenFilter] = useState(false);
-    const [reportTotal, setReportTotal] = useState(null);
-    const [reportPaginationLimit, setReportPaginationLimit] = useState(15);
-    const [reportPaginationCurrent, setReportPaginationCurrent] = useState(1);
-    const [filterInitialValue, setFilterInitialValue] = useState({
-        // fromDate: '',
-        // toDate: '',
-        searched_data: '',
-        // type: 'all',
-        table_name: '',
-        order_by: '',
-        // fullname: '',
-        // position: '',
-        // vehicle_number: '',
-        // the_date: '',
+const Status = () => {
+    const {t} = useTranslation();
 
-        // searched_data, table_name, order_by
-    })
+    const [rows, setRows] = useState(null);          // null — yuklanmoqda
+    const [total, setTotal] = useState(null);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(PAGE_SIZES[0]);
+    const [sort, setSort] = useState({field: '', order: ''});
+    const [search, setSearch] = useState('');
+    const [searchInput, setSearchInput] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
+    const [now, setNow] = useState(() => Date.now());
+    const requestIdRef = useRef(0);
 
-
-    const getReportData = async (paramsObj) => {
-        await axios
-            .get(`${ip}/api/event/${reportPaginationLimit}/${reportPaginationCurrent}`,
-                // .get(`${ip}/api/vehicle_log/${reportPaginationLimit}/${reportPaginationCurrent}`,
-                {
-                    headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                    params: paramsObj
-                })
-            .then(response => {
-                // console.log(response)
-                const {data} = response;
-                const count = data.count;
-                setReportTotal(count)
-                const newData = data.data.map((item, index) => (
-                    {
-                        ...item,
-                        key: index + 1 + (data.current_page - 1) * reportPaginationLimit,
-                        fullname: item.fullname,
-                        position: item.position,
-                        vehicle_number: item.vehicle_number,
-                        the_date: moment(item.entering_time).format('DD.MM.YYYY, HH:mm:ss'),
-                        // exiting_time: moment(item.exiting_time).format('DD.MM.YYYY, HH:mm:ss'),
-                        id: item.id
-                    }
-                ));
-                setReportData(newData)
-                // console.log(reportData)
-            })
-            .catch(error => {
-                // console.log(error.response);
-            })
-    }
-
-    const getExcelReport = async (type, paramsObj) => {
-        const lang = localStorage.getItem('i18nextLng');
-        await axios
-            .get(`${ip}/api/report/${type}`, {
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                params: {...paramsObj, lang}
-            })
-            .then(res => {
-                const {filename, secret} = res?.data;
-
-                const myInterval = setInterval(async () => {
-                    await axios
-                        .get(`${ip}/api/report/loading/${type}/${secret}`, {
-                            headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                        })
-                        .then(async res => {
-                            if (res.data !== "wait") {
-                                clearInterval(myInterval);
-                                window.open(`${ip}/${type}/${filename}`, '_blank', 'noopener,noreferrer');
-                            }
-                        })
-                        .catch(err => {
-                            clearInterval(myInterval);
-                        })
-                }, 3000)
+    // true — yangilandi; false — xato (xabar ko'rsatiladi) yoki eskirgan so'rov
+    const load = useCallback(({silent = false} = {}) => {
+        const requestId = ++requestIdRef.current;
+        return axios.get(`${ip}/api/event/${limit}/${page}`, {
+            headers: auth(),
+            params: {searched_data: search, table_name: sort.field, order_by: sort.order},
+        })
+            .then(({data}) => {
+                if (requestId !== requestIdRef.current) return false;
+                const offset = (Number(data?.current_page || page) - 1) * limit;
+                setRows((data?.data || []).map((item, i) => ({...item, key: item.id, index: offset + i + 1})));
+                setTotal(data?.count ?? 0);
+                setNow(Date.now());
+                return true;
             })
             .catch(err => {
-
-            })
-    }
-
-
-    const reportPaginationOnchange = (e = 1, option) => {
-        // getReportData(e)
-        setReportPaginationCurrent(e)
-        setReportPaginationLimit(option)
-    }
+                if (requestId !== requestIdRef.current) return false;
+                setRows(prev => prev ?? []);
+                if (!silent) message.error(err?.response?.data?.msg || t("Xatolik"));
+                return false;
+            });
+    }, [limit, page, search, sort.field, sort.order, t]);
 
     useEffect(() => {
-        getReportData(filterInitialValue);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        reportPaginationLimit,
-        reportPaginationCurrent,
-        filterInitialValue.table_name,
-        filterInitialValue.order_by,
-        filterInitialValue.searched_data
-    ]);
+        load();
+    }, [load]);
 
-    const handlclicFilter = () => {
-        setIsOpenFilter(true)
-    }
+    // jonli yangilanish: ro'yxat va "turish vaqti" — sahifa ko'rinib turganda
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (document.visibilityState === 'visible') load({silent: true});
+        }, LIVE_INTERVAL);
+        return () => clearInterval(timer);
+    }, [load]);
+
+    // qidiruv 400ms kechiktirib yuboriladi va 1-sahifadan boshlanadi
+    useEffect(() => {
+        const value = searchInput.trim();
+        if (value === search) return undefined;
+        const timer = setTimeout(() => {
+            setSearch(value);
+            setPage(1);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [searchInput, search]);
+
+    const refresh = async () => {
+        if (refreshing) return;
+        setRefreshing(true);
+        try {
+            // server tez javob bersa ham aylanish ko'rinsin — kamida 600ms
+            const [ok] = await Promise.all([load(), new Promise(r => setTimeout(r, 600))]);
+            if (ok) message.success(t("Yangilandi"));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
+    const onPageChange = (nextPage, nextLimit) => {
+        if (nextLimit !== limit) {
+            setLimit(nextLimit);
+            setPage(1);
+        } else {
+            setPage(nextPage);
+        }
+    };
+
+    // saralash: eski kodda holat ketma-ket ikki marta o'rnatilib, maydon nomi yo'qolardi
+    const onTableChange = (_, __, sorter) => {
+        const order = sorter?.order ? sorter.order.replace('end', '') : '';
+        setSort({field: order ? sorter.field : '', order});
+        setPage(1);
+    };
+
+    const sortOrderOf = (field) => (sort.field === field && sort.order ? `${sort.order}end` : null);
+
+    const columns = [
+        {
+            title: t("T/r"),
+            dataIndex: 'index',
+            key: 'index',
+            width: 64,
+            align: 'center',
+            render: (value) => <span className="st_index">{value}</span>,
+        },
+        {
+            title: t("F.I.Sh"),
+            dataIndex: 'fullname',
+            key: 'fullname',
+            sorter: true,
+            sortOrder: sortOrderOf('fullname'),
+            render: (_, record) => <PersonCell record={record} t={t}/>,
+        },
+        {
+            title: t("Boshqarma"),
+            dataIndex: 'position',
+            key: 'position',
+            sorter: true,
+            sortOrder: sortOrderOf('position'),
+            ellipsis: true,
+            render: (value) => value || <span className="tc-muted">—</span>,
+        },
+        {
+            title: t("Davlat raqami"),
+            dataIndex: 'vehicle_number',
+            key: 'vehicle_number',
+            sorter: true,
+            sortOrder: sortOrderOf('vehicle_number'),
+            render: (value) => <PlateNumber value={value}/>,
+        },
+        {
+            title: t("Kirgan vaqti"),
+            dataIndex: 'entering_time',
+            key: 'entering_time',
+            sorter: true,
+            sortOrder: sortOrderOf('entering_time'),
+            render: (value) => <TimeCell value={value}/>,
+        },
+        {
+            title: t("Turish vaqti"),
+            key: 'stay',
+            render: (_, record) => (
+                <span className="st_stay">
+                    <ClockIcon size={15}/>
+                    {formatDuration(record.entering_time, now, t)}
+                </span>
+            ),
+        },
+        {
+            title: t("Avtomobil rasmi"),
+            key: 'image',
+            align: 'center',
+            width: 170,
+            render: (_, record) => (
+                <VehicleImage t={t}
+                              src={`${ip}/api/image/event/${record.id}/plate_image`}
+                              previewSrc={`${ip}/api/image/event/${record.id}/vehicle_image`}/>
+            ),
+        },
+    ];
 
     return (
-            <div className="user_list">
-
-                <div className="user_list_top">
-                    <div className="user_list_top_left">
-                        <Link to="/" className="user_list_top_left_prev"><img src={prev}/></Link>
-                        <div className="user_list_top_left_text">
-                            <span>Asosiy »</span>
-                            <p>Joriy holat</p>
-                        </div>
-                    </div>
-                    <div className="user_list_top_right">
-                        <div className="user_list_top_right_search" style={{marginRight: "0"}}>
-                            <img src={search}/>
-                            <input
-                                type="text"
-                                placeholder="Izlash"
-                                onChange={
-                                    (event) => {
-                                        setFilterInitialValue({
-                                            ...filterInitialValue,
-                                            searched_data: event.currentTarget.value
-                                        });
-                                        setReportPaginationCurrent(1);
-                                    }}
-                            />
-                        </div>
-
-                        {/*<div onClick={handlclicFilter} className="report_content_top_filter">*/}
-                        {/*    <img src={filter}/>*/}
-                        {/*    <p>Filterlash</p>*/}
-                        {/*</div>*/}
-                        {/*<div className="download_buttons">*/}
-                        {/*    <button onClick={() => getExcelReport('excel', filterInitialValue)}*/}
-                        {/*            className="download_btn">*/}
-                        {/*        <img src={exel}/>*/}
-                        {/*        Yuklash*/}
-                        {/*    </button>*/}
-                        {/*    <button onClick={() => getExcelReport('pdf', filterInitialValue)}*/}
-                        {/*            className="download_btn_pdf">*/}
-                        {/*        <img src={pdf}/>*/}
-                        {/*        Yuklash*/}
-                        {/*    </button>*/}
-                        {/*</div>*/}
-                    </div>
+        <div className="admin content-enter">
+            <div className="admin_header">
+                <div className="admin_header_left">
+                    <p>{t("Joriy holat")}</p>
+                    {total != null && <span className="ds-badge ds-badge--gray page_count_badge">{total}</span>}
+                    <span className="ds-badge ds-badge--brand st_live" title={t("Har 30 soniyada avtomatik yangilanadi")}>
+                        <span className="ds-badge__dot"/>{t("Jonli")}
+                    </span>
                 </div>
-
-                <div className="user_list_body">
-                    <div className="report_section">
-                        <div className="report_table">
-                            <StatusTable
-                                reportData={reportData}
-                                filterInitialValue={filterInitialValue}
-                                setFilterInitialValue={setFilterInitialValue}
-                            />
-                        </div>
-
+                <div className="admin_header_right">
+                    <div className="admin_header_search">
+                        <SearchIcon size={18}/>
+                        <input type="text" placeholder={t("F.I.Sh yoki raqam bo'yicha izlash...")} value={searchInput}
+                               onChange={e => setSearchInput(e.target.value)}/>
                     </div>
-                    <div className="report_content_pagination">
-                        <p className='content_total'>Jami: {reportTotal}</p>
-                        <StatusPagenation
-                            reportPaginationLimit={reportPaginationLimit}
-                            reportPaginationCurrent={reportPaginationCurrent}
-                            reportPaginationOnchange={reportPaginationOnchange}
-                            reportTotal={reportTotal}
-                        />
-                    </div>
-
+                    <button type="button"
+                            className={`admin_header_btn admin_header_btn--icon${refreshing ? ' is-spinning' : ''}`}
+                            onClick={refresh} disabled={refreshing}
+                            title={t("Yangilash")} aria-label={t("Yangilash")}>
+                        <RefreshIcon size={18}/>
+                    </button>
                 </div>
-                <FilterModal
-                    isOpenFilter={isOpenFilter}
-                    setIsOpenFilter={setIsOpenFilter}
-                    filterInitialValue={filterInitialValue}
-                    setFilterInitialValue={setFilterInitialValue}
-                    reportPaginationLimit={reportPaginationLimit}
-                    reportPaginationCurrent={reportPaginationCurrent}
-                    getReportData={getReportData}
-                />
             </div>
+
+            <div className="admin_body">
+                <div className="admin_body_table">
+                    <Table
+                        className="st_table"
+                        columns={columns}
+                        dataSource={rows || []}
+                        loading={rows === null}
+                        onChange={onTableChange}
+                        pagination={false}
+                        showSorterTooltip={false}
+                        locale={{
+                            emptyText: (
+                                <div className="page_empty">
+                                    <span className="page_empty_icon"><InboxIcon size={24}/></span>
+                                    <p>{search
+                                        ? t("Qidiruv bo'yicha hech narsa topilmadi")
+                                        : t("Hozir turargohda avtomobil yo'q")}</p>
+                                </div>
+                            ),
+                        }}
+                    />
+                </div>
+
+                <PagePagination total={total} current={page} pageSize={limit} onChange={onPageChange}
+                                pageSizeOptions={PAGE_SIZES}/>
+            </div>
+        </div>
     );
 };
 

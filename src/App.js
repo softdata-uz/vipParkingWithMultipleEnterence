@@ -11,6 +11,7 @@ import Layout from "./components/Layout";
 import Login from "./components/loginPage/Login";
 import NewViewPage from "./components/newViewPage/NewViewPage";
 import MultipleEnterence from "./components/MultipleEnterence/MultipleEnterence";
+import {LightZone} from "./context/ThemeContext";
 
 function App() {
 
@@ -48,7 +49,6 @@ function App() {
 
 
     return (
-
         <React.Fragment>
             {isAuthenticated ?
                 <Layout/>
@@ -56,7 +56,7 @@ function App() {
                 <BrowserRouter>
                     <Routes>
                         {/*<Route path='/' element={<NewViewPage/>}/>*/}
-                        <Route path='/' element={<MultipleEnterence/>}/>
+                        <Route path='/' element={<LightZone><MultipleEnterence/></LightZone>}/>
 
                         <Route path='/login' element={<Login/>}/>
                         <Route path='*' element={<Navigate to="/"/>}/>
@@ -64,7 +64,6 @@ function App() {
                 </BrowserRouter>
             }
         </React.Fragment>
-
     );
 }
 

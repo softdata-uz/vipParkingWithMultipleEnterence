@@ -1,306 +1,126 @@
+/* ============================================================================
+   Sozlamalar (Setting.jsx) — Adminlar, Kameralar, Kamera guruhlari.
+   Jadval uslubi — styles/page.css; bo'limlar almashtirgichi — .page_seg.
+   Eski setting.css dagi global antd qoidalari (".ant-input-affix-wrapper { height: 100% !important }",
+   ".ant-form-item-control-input-content { height: 40px !important }" va h.k.) olib tashlandi —
+   ular butun ilovadagi formalarni buzardi.
+   ========================================================================== */
 
-.setting {
-    height: 100%;
-    position: relative;
+.set_tabs {
+    margin-left: var(--spacing-md);
 }
 
-.setting_top {
+.set_tabs .page_seg_item svg {
+    flex: none;
+}
+
+.set_index {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-quaternary);
+}
+
+/* --- admin --- */
+.set_person {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 35px;
+    gap: var(--spacing-lg);
+    min-width: 0;
 }
 
-.setting_top_left {
-    display: flex;
-    align-items: center;
-}
-
-.setting_top_left_link {
-    display: flex;
-    align-items: center;
-}
-
-.setting_top_left_tabs {
-    margin-left: 10px;
-}
-
-.setting_top_left_prev {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #FFFFFF;
-    border: 1px solid #EAEAEA;
-    border-radius: 8px;
-    height: 35px;
-    width: 35px;
-}
-
-.setting_top_left_text {
-    display: flex;
-    align-items: center;
-    margin-left: 15px;
-
-}
-
-.setting_top_left_text span {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 600;
-    font-size: 20px;
-    color: #828CA9;
-}
-
-.setting_top_left_text p {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 600;
-    font-size: 20px;
-    color: #29B85D;
-    margin: 0;
-    padding: 0;
-    margin-left: 5px !important;
-}
-
-.setting_top_right {
-    display: flex;
-    align-items: center;
-}
-
-.setting_top_right_search {
-    display: flex;
-    align-items: center;
-    background: #FFFFFF;
-    border: 1px solid #EAEAEA;
-    border-radius: 5px;
+.set_avatar {
+    flex: none;
+    width: 40px;
     height: 40px;
-    padding: 0 5px;
-    box-sizing: border-box;
-    margin-right: 10px;
-}
-
-.setting_top_right_search img {
-    margin-right: 5px;
-}
-
-.setting_top_right_search input {
-    outline: none;
-    border: 0;
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    color: #000000;
-}
-
-.setting_top_right_search input::placeholder {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    color: #000000;
-}
-
-
-.setting_top_right_add {
     display: flex;
     align-items: center;
     justify-content: center;
-    /*background: #29B85D;*/
-    background: #ABFCC8;
-    border-radius: 5px;
-    height: 38px;
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 600;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--utility-brand-50);
+    box-shadow: inset 0 0 0 1px var(--utility-brand-200);
+    color: var(--utility-brand-700);
     font-size: 14px;
-    color: #29B85D;
+    font-weight: var(--weight-semibold);
+}
+
+.set_avatar .ant-image,
+.set_avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.set_person_text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.set_person_name {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.set_person_login {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.ds-badge.set_me,
+.ds-badge.set_badge {
+    height: 22px;
     padding: 0 8px;
-    box-sizing: border-box;
-    cursor: pointer;
+    font-size: 12px;
 }
 
-.setting_top_right_add:hover {
-    background: #29B85D;
-    color: white;
-}
-
-.setting_top_right_add svg {
-    margin-right: 5px;
-}
-
-.setting_body {
-    margin-top: 10px;
-    background: #FFFFFF;
-    height: calc(100% - 45px);
-    border-radius: 10px;
-    overflow-y: auto;
-
-}
-
-.setting_body_cameras {
-    display: grid;
-    grid-template-columns: 4fr 1fr;
-    grid-gap: 15px;
-    height: calc(100vh - 125px);
-    position: relative;
-    background: #EAEAEA;
-}
-
-.setting_body_cameras_inner {
-    height: 100%;
-    background: #FFFFFF;
-    border-radius: 8px;
-}
-
-.setting_body_cameras_inner_table {
-    height: calc(100% - 62px);
-    overflow-y: auto;
-}
-
-.setting_body_cameras_inner_bottom {
+/* --- kamera --- */
+.set_camera {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    padding: 0 20px;
+    gap: var(--spacing-lg);
+    min-width: 0;
 }
 
-.setting_body_cameras_group {
-    overflow-y: auto;
-    height: 100%;
-    background: #FFFFFF;
-    border-radius: 8px;
-}
-
-.setting_body_cameras_group_table {
-    height: calc(100% - 62px);
-    overflow-y: auto;
-}
-
-.setting_body_cameras_group_add {
-    height: 60px;
+.set_camera_icon {
+    flex: none;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-secondary);
+    background: var(--bg-secondary);
+    color: var(--fg-quaternary);
 }
 
-.setting_body_cameras_group_add .setting_top_right_add {
-    width: 100%;
+.set_camera_ip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-tertiary);
 }
 
-
-.ant-tabs-nav {
-    position: absolute !important;
-    top: -1px !important;
-    left: 250px !important;
-}
-
-.ant-tabs-nav-list {
-    height: 40px !important;
-}
-
-.ant-tabs-tab {
-    background: #FFFFFF !important;
-    border: 1px solid #EAEAEA !important;
-    border-radius: 5px !important;
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 19px;
-    color: #000000;
-    margin: 0 5px !important;
-}
-
-.ant-tabs-tab:hover {
-    color: #000000 !important;
-}
-
-.ant-tabs-tab-active {
-    background: #FFFFFF !important;
-    border: 1px solid #29B85D !important;
-    border-radius: 5px !important;
-
-}
-
-.ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: #29B85D !important;
-}
-
-.ant-tabs-ink-bar {
-    display: none !important;
-}
-
-.ant-tabs-nav:before {
-    display: none !important;
-}
-
-.tabPaneIcon {
-    display: flex;
+/* yashirin parol + ko'z tugmasi */
+.set_secret {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 3px 0;
-
+    gap: 6px;
 }
 
-.tabPaneIcon span {
-    margin-left: 5px;
+.set_secret_value {
+    min-width: 72px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--text-secondary);
+    letter-spacing: .04em;
 }
 
-.settin_pagination {
-    background: white;
-    width: 100%;
-    position: absolute;
-    bottom: 0px;
-    height: 50px;
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    border-radius: 10px;
-}
-
-.settin_pagination_inner {
-    display: flex;
-    align-items: center;
-    margin-right: 10px;
-}
-
-.setting_body_cameras_inner_bottom .settin_pagination_inner {
-    margin-right: 0;
-}
-
-.ant-select-selection-search {
-    display: flex;
-    align-items: center;
-}
-
-.ant-select-selection-search::placeholder {
-
-}
-
-.ant-form-item-control-input-content {
-    height: 40px !important;
-}
-
-.ant-input-affix-wrapper {
-    height: 100% !important;
-    display: flex;
-    align-items: center;
-    /*ant-input-password ant-input-affix-wrapper-status-error css-dev-only-do-not-override-1hyej8k*/
-}
-
-#wrap_password {
-    background: transparent !important;
-    height: 95% !important;
-}
-
-#wrap_password:active {
-    background: transparent !important;
-    height: 95% !important;
-}
-
-.ant-select-selection-search .ant-select-selection-search-input {
-    margin-top: 15px !important;
+.set_actions {
+    justify-content: flex-end;
 }

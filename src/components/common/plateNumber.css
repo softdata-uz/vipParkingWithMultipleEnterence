@@ -1,0 +1,117 @@
+/* Davlat raqami belgisi (PlateNumber.jsx) — O'zbekiston raqamiga o'xshash:
+   qalin qora ramka + ichki oq hoshiya, chapda hudud kodi (ajratgich bilan), o'ngda bayroq va "UZ".
+   Belgi haqiqiy raqam kabi doim yorug' — mavzu (qorong'i rejim) unga ta'sir qilmaydi.
+   O'lchamlar: sm 26px (ro'yxatlar), md 34px, lg 40px (xodim kartasi). */
+
+.plate {
+    --plate-h: 34px;
+    --plate-fs: 17px;
+    --plate-ink: #0B0F14;
+    display: inline-flex;
+    align-items: stretch;
+    height: var(--plate-h);
+    max-width: 100%;
+    overflow: hidden;
+    border: 2px solid var(--plate-ink);
+    border-radius: 6px;
+    background: #FFFFFF;
+    /* ichki oq hoshiya + yengil soya — haqiqiy raqamdagi bo'rtiq chekka */
+    box-shadow: inset 0 0 0 1.5px #FFFFFF, inset 0 0 0 2.5px rgba(11, 15, 20, .18), 0 1px 2px rgba(0, 0, 0, .25);
+    color: var(--plate-ink);
+    font-family: var(--font-family);
+    font-size: var(--plate-fs);
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .04em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.plate__region {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(var(--plate-h) * .95);
+    padding: 0 7px;
+    border-right: 2px solid var(--plate-ink);
+}
+
+.plate__text {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plate__flag {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5px;
+    padding: 0 7px 0 2px;
+}
+
+.plate__flag i {
+    display: block;
+    width: calc(var(--plate-h) * .44);
+    height: calc(var(--plate-h) * .09);
+    border-radius: 1px;
+}
+
+.plate__flag i:nth-child(1) { background: #0099B5; }
+.plate__flag i:nth-child(2) { background: #FFFFFF; box-shadow: 0 -1px 0 #CE1126, 0 1px 0 #CE1126; }
+.plate__flag i:nth-child(3) { background: #1EB53A; }
+
+.plate__flag b {
+    margin-top: 1px;
+    font-size: calc(var(--plate-h) * .22);
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .02em;
+    color: #0077A0;
+}
+
+/* maxsus raqamlar */
+.plate--green {
+    --plate-ink: #064E2B;
+    background: #0E8A4A;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5), 0 1px 2px rgba(0, 0, 0, .25);
+    color: #FFFFFF;
+}
+
+.plate--blue {
+    --plate-ink: #13367E;
+    background: #1570EF;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5), 0 1px 2px rgba(0, 0, 0, .25);
+    color: #FFFFFF;
+}
+
+.plate--yellow {
+    --plate-ink: #7A2E0E;
+    background: #FDB022;
+    color: #0B0F14;
+}
+
+.plate--plain {
+    --plate-ink: #344054;
+}
+
+/* o'lchamlar */
+.plate--sm {
+    --plate-h: 26px;
+    --plate-fs: 13px;
+    border-width: 1.5px;
+    border-radius: 5px;
+}
+
+.plate--sm .plate__region {
+    border-right-width: 1.5px;
+}
+
+.plate--lg {
+    --plate-h: 40px;
+    --plate-fs: 20px;
+    border-radius: 7px;
+}

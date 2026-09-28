@@ -10,7 +10,7 @@
   height: 30px;
 }
 .dashboard_top h2{
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 24px;
@@ -60,7 +60,7 @@
 .dashboard_body_right_inner_one table tr td {
   padding: 10px;
   border: 1px solid #EAEAEA;
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 26px;
@@ -125,7 +125,7 @@ table tr:last-child td:last-child {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 14px;
@@ -151,7 +151,7 @@ table tr:last-child td:last-child {
   border: 2px solid black;
 }
 .number_text{
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 40px;
@@ -164,7 +164,7 @@ table tr:last-child td:last-child {
 
 .dashboard_body_left_notInformation{
   width: 100%;
-  height: calc(100vh - 140px);
+  height: calc(100vh - var(--header-height) - 100px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,7 +180,7 @@ table tr:last-child td:last-child {
   margin-top: 10px;
 }
 .dashboard_body_left_notInformation_text h2{
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 24px;
@@ -196,7 +196,7 @@ table tr:last-child td:last-child {
   border: 0;
   width: 140px;
   height: 40px;
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 16px;
@@ -208,7 +208,7 @@ table tr:last-child td:last-child {
   border: 0;
   width: 140px;
   height: 40px;
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 16px;
@@ -225,7 +225,7 @@ table tr:last-child td:last-child {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Open Sans';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 34px;

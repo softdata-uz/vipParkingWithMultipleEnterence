@@ -6,7 +6,7 @@
     padding: 10px 0;
 }
 .group_list_modal_title p {
-    font-family: Inter;
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 24px;
@@ -20,7 +20,7 @@
 }
 .group_list_modal_body_inner{
     padding: 10px;
-    font-family: Inter;
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 18px;
