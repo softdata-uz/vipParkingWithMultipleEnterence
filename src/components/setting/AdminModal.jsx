@@ -60,7 +60,7 @@ const AdminModal = ({open, admin, onClose, onSaved}) => {
                 await axios.post(`${ip}/api/admin`, fd, {headers});
                 message.success(t("Yangi admin qo'shildi"));
             }
-            onSaved();
+            onSaved(admin);
             onClose();
         } catch (err) {
             message.error(err?.response?.data?.msg || t("Xatolik"));

@@ -11,7 +11,6 @@ import {
     GridIcon,
     InboxIcon,
     PlusIcon,
-    RefreshIcon,
     SearchIcon,
     TrashIcon,
 } from "../../design-system/icons";
@@ -33,7 +32,6 @@ const CameraGroupsTab = ({tabs}) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(PAGE_SIZES[0]);
     const [search, setSearch] = useState('');
-    const [refreshing, setRefreshing] = useState(false);
     const [editGroup, setEditGroup] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [busy, setBusy] = useState(false);
@@ -79,16 +77,6 @@ const CameraGroupsTab = ({tabs}) => {
     const rows = filtered.slice((page - 1) * limit, page * limit)
         .map((g, i) => ({...g, key: g.id, index: (page - 1) * limit + i + 1}));
 
-    const refresh = async () => {
-        if (refreshing) return;
-        setRefreshing(true);
-        try {
-            const [ok] = await Promise.all([load(), new Promise(r => setTimeout(r, 600))]);
-            if (ok) message.success(t("Yangilandi"));
-        } finally {
-            setRefreshing(false);
-        }
-    };
 
     const confirmDelete = async () => {
         setBusy(true);
@@ -169,12 +157,6 @@ const CameraGroupsTab = ({tabs}) => {
                         <input type="text" placeholder={t("Guruh nomi bo'yicha izlash...")} value={search}
                                onChange={e => setSearch(e.target.value)}/>
                     </div>
-                    <button type="button"
-                            className={`admin_header_btn admin_header_btn--icon${refreshing ? ' is-spinning' : ''}`}
-                            onClick={refresh} disabled={refreshing}
-                            title={t("Yangilash")} aria-label={t("Yangilash")}>
-                        <RefreshIcon size={18}/>
-                    </button>
                     <button type="button" className="admin_header_add" onClick={() => setEditGroup({})}>
                         <PlusIcon size={20}/>{t("Guruh qo'shish")}
                     </button>
