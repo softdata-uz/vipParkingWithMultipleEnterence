@@ -1,21 +1,21 @@
 import axios from "axios";
 import {ip} from "../../../ip";
+import {EXPIRING_DAYS} from "../../../utils/staffPeriod";
 
-/* Barcha guruhlardagi xodimlar indeksi — muddati tugayotgan xodimlarni aniqlash uchun.
-   Guruhlar odatda o'nlab, xodimlar yuzlab bo'ladi: xodimi bor guruhlar parallel so'raladi. */
-
-const ALL = 1000;
 const auth = () => ({'x-access-token': localStorage.getItem('vipparking-token')});
 
 /** Raqamni solishtirish uchun: bo'shliqsiz, katta harfda */
 export const normalizePlate = (plate) => (plate || '').toString().replace(/\s+/g, '').toUpperCase();
 
-/** @returns {Promise<Array>} har bir xodim + uning guruhi: {...staff, group} */
-export const fetchAllStaff = async (groups) => {
-    const withStaff = (groups || []).filter(g => Number(g.item_count) > 0);
-    const results = await Promise.all(withStaff.map(g =>
-        axios.get(`${ip}/api/staff/${g.id}/${ALL}/1`, {params: {searched_data: ''}, headers: auth()})
-            .then(({data}) => (data?.data || []).map(s => ({...s, group: g})))
-            .catch(() => [])));
-    return results.flat();
+/* Muddati tugayotgan (EXPIRING_DAYS kun ichida) / o'tgan xodimlar — bitta yengil so'rov bilan
+   (backend: GET /api/staff-expiring-summary?days=). Avval har bir guruh uchun alohida
+   /api/staff/:groupId so'rovi yuborilardi — karta ro'yxati ochilganda ham barcha xodimlar
+   yuklanardi, endi shart emas: DatabaseAdd.jsx guruh xodimlarini faqat o'sha guruh kartasi
+   ochilganda (drill-down) o'zi alohida yuklaydi. */
+export const fetchExpiringSummary = async () => {
+    const {data} = await axios.get(`${ip}/api/staff-expiring-summary`, {
+        params: {days: EXPIRING_DAYS},
+        headers: auth(),
+    });
+    return (data?.data || []).map(s => ({...s, group: {id: s.group_id, name: s.group_name}}));
 };

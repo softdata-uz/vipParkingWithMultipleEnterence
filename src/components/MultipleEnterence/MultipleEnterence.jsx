@@ -2,21 +2,18 @@ import React, {useEffect, useState} from "react";
 
 import "./multipleEnterence.css";
 
-import logo from "../../images/softdataLogo.svg";
+import logo from "../../images/logo_light.svg";
 import {Link} from "react-router-dom";
 
-import enterIcon from "../../images/new/log-in-02.png";
-import carFlag from "../../images/new/Group 55888 (4).png";
-import addGroupIcon from "../../images/Illustration.png";
-import emptyIcon from "../../images/new/Group.png";
-import plusIcon from "../../images/plus.png";
-
 import GroupListModal from "./GroupListModal";
+import PlateNumber from "../common/PlateNumber";
+import {GroupTypeBadge} from "../employees/database/groupTypes";
 
 import axios from "axios";
 import {ip} from "../../ip";
 
 import {RiDeleteBin6Line} from "react-icons/ri";
+import {TbLogin2, TbPlus, TbLayoutGrid, TbInbox} from "react-icons/tb";
 
 import socketIOClient from "socket.io-client";
 
@@ -671,10 +668,7 @@ const MultipleEnterence = () => {
 
                         <Link to="/login">
 
-                            <img
-                                src={enterIcon}
-                                alt=""
-                            />
+                            <TbLogin2 size={20}/>
 
                             <span>
                                 Tizimga kirish
@@ -734,10 +728,7 @@ const MultipleEnterence = () => {
                                         <div className="multipleEnterence_body_group_inner">
 
 
-                                            <img
-                                                src={addGroupIcon}
-                                                alt=""
-                                            />
+                                            <TbLayoutGrid size={48}/>
 
 
                                             <p>
@@ -760,10 +751,7 @@ const MultipleEnterence = () => {
                                                 }
                                             >
 
-                                                <img
-                                                    src={plusIcon}
-                                                    alt=""
-                                                />
+                                                <TbPlus size={16}/>
 
                                                 Qo’shish
 
@@ -837,10 +825,7 @@ const MultipleEnterence = () => {
                                             <div className="multipleEnterence_body_empty_inner">
 
 
-                                                <img
-                                                    src={emptyIcon}
-                                                    alt=""
-                                                />
+                                                <TbInbox size={48}/>
 
 
                                                 <p>
@@ -871,10 +856,11 @@ const MultipleEnterence = () => {
                                 data[0]?.staff_data;
 
 
+                            // Eshik faqat oq ro'yxat uchun ochiladi (backend: StaffService.getByVehicleNumber) —
+                            // shu qoida shu yerda ham takrorlanadi, aks holda qora ro'yxat/qidiruvdagi mashina
+                            // ham "RUXSAT" bo'lib ko'rinib qoladi.
                             const isAllowed =
-                                Boolean(
-                                    staff?.id
-                                );
+                                staff?.db_type === "whitelist";
 
 
                             const directionText =
@@ -966,6 +952,21 @@ const MultipleEnterence = () => {
 
 
 
+                                            {
+                                                staff?.db_type && (
+                                                    <div className="multipleEnterence_body_card_information_inner">
+                                                        <span>
+                                                            DB turi
+                                                        </span>
+                                                        <p>
+                                                            <GroupTypeBadge type={staff.db_type} t={(s) => s}/>
+                                                        </p>
+                                                    </div>
+                                                )
+                                            }
+
+
+
                                             <div className="multipleEnterence_body_card_information_inner">
 
                                                 <span>
@@ -1020,20 +1021,11 @@ const MultipleEnterence = () => {
                                                     Avtomobilning davlat raqami
                                                 </span>
 
-                                                <p>
-
-                                                    {
-                                                        vehicle?.vehicle_number
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                    <img
-                                                        src={carFlag}
-                                                        alt=""
-                                                    />
-
-                                                </p>
+                                                {
+                                                    vehicle?.vehicle_number
+                                                        ? <PlateNumber value={vehicle.vehicle_number}/>
+                                                        : <p>-</p>
+                                                }
 
                                             </div>
 

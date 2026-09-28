@@ -1,7 +1,5 @@
 import React, {Suspense} from 'react';
-import {positions, Provider} from "react-alert";
 import {Provider as ReduxProvider} from 'react-redux'
-import AlertTemplate from "react-alert-template-basic";
 import {store} from "./redux/store";
 import ReactDOM from 'react-dom';
 import './design-system/tokens.css';
@@ -15,21 +13,11 @@ import App from "./App";
 import {ThemeProvider} from "./context/ThemeContext";
 
 
-const options = {
-    timeout: 5 * 1000,
-    position: positions.TOP_CENTER,
-    containerStyle: {
-        zIndex: 1009999
-    }
-};
-
 ReactDOM.render(
     <ThemeProvider>
         <ReduxProvider store={store}>
             <Suspense fallback={<Loader/>}>
-                <Provider template={AlertTemplate} {...options}>
-                    <App/>
-                </Provider>
+                <App/>
             </Suspense>
         </ReduxProvider>
     </ThemeProvider>,

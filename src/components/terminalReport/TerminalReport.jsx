@@ -1,220 +1,168 @@
 import React, {useEffect, useState} from 'react';
-import Layout from "../Layout";
 import {Link} from "react-router-dom";
-import {ip} from "../../ip";
+import {Table, message} from "antd";
 import axios from "axios";
 import moment from "moment";
 
-import prev from "../../images/Vector.png";
-import search from "../../images/tabler-icon-search (1).png";
-import filter from "../../images/filter_icon.svg";
-import exel from "../../images/exel.svg";
-import pdf from "../../images/pdf.svg";
-import './report.css';
-import ReportTable from "./ReportTable";
-import ReportPagenation from "./ReportPagenation";
-import FilterModal from "./filterModal/FilterModal";
+import {ip} from "../../ip";
+import {TbChevronLeft, TbSearch, TbFileSpreadsheet, TbFileTypePdf} from "react-icons/tb";
+import PlateNumber from "../common/PlateNumber";
+import {PersonCell} from "../common/VehicleCells";
+import PagePagination from "../common/PagePagination";
 
+import "./report.css";
 
-const TerminalReport = (props) => {
+/* Terminal hisoboti — vehicle_log tarixi, hozircha eski (LightZone) ko'rinishda.
+   API: GET /api/vehicle_log/:limit/:page?searched_data= -> {data, count, current_page}
+        POST /api/report/vehicle_log/excel | pdf (searched_data bilan) -> fayl (blob) */
 
-    const [reportData, setReportData] = useState();
-    const [isOpenFilter, setIsOpenFilter] = useState(false);
-    const [reportTotal, setReportTotal] = useState(null);
-    const [reportPaginationLimit, setReportPaginationLimit] = useState(15);
-    const [reportPaginationCurrent, setReportPaginationCurrent] = useState(1);
-    const [filterInitialValue, setFilterInitialValue] = useState({
-        fromDate: '',
-        toDate: '',
-        searched_data: '',
-        type: 'all',
-        // table_name: '',
-        // order_by: '',
-        // fullname : '',
-        // position: '',
-        // vehicle_number: '',
-        // the_date: '',
+const auth = () => ({'x-access-token': localStorage.getItem('vipparking-token')});
 
-        // searched_data, type, fromDate, toDate
-    })
+const TerminalReport = () => {
+    const [reportData, setReportData] = useState([]);
+    const [total, setTotal] = useState(null);
+    const [limit, setLimit] = useState(15);
+    const [current, setCurrent] = useState(1);
+    const [searchedData, setSearchedData] = useState('');
 
-
-    const getReportData = async (paramsObj) => {
-        await axios
-            .get(`${ip}/api/terminal-history-log/${reportPaginationLimit}/${reportPaginationCurrent}`,
-                {
-                    headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                    params: paramsObj
-                })
-            .then(response => {
-                const {data} = response;
-                const count = data.count;
-                setReportTotal(count)
-                const newData = data.data.map((item, index) => (
-                    {
-                        ...item,
-                        key: index + 1 + (data.current_page - 1) * reportPaginationLimit,
-                        // fullname: item.fullname,
-                        // position: item.position,
-                        // vehicle_number: item.vehicle_number,
-                        // // the_date: moment(item.the_date).format('DD.MM.YYYY, HH:mm:ss'),
-                        // entering_time: moment(item.entering_time).format('DD.MM.YYYY, HH:mm:ss'),
-                        // exiting_time: moment(item.exiting_time).format('DD.MM.YYYY, HH:mm:ss'),
-                        // id: item.id
-
-                        created_time: moment(item.created_time).format('DD.MM.YYYY, HH:mm:ss'),
-                        access: item.access,
-                        id : item.id,
-                        vehicle_number : item.vehicle_number,
-                        vehicle_log_id: item.vehicle_log_id,
-                        door_name: item.door_name,
-                        fullname: item.fullname,
-                        position: item.position,
-                        staff_image : item.staff_image,
-                        vehicle_image : item.vehicle_image,
-                        entering_time : !item?.entering_time ? "..." : moment(item?.entering_time).format('DD.MM.YYYY, HH:mm:ss')
-                    }
-                ));
-                setReportData(newData)
-                // console.log(reportData)
+    const getReportData = () => {
+        axios.get(`${ip}/api/vehicle_log/${limit}/${current}`, {
+            headers: auth(),
+            params: {searched_data: searchedData},
+        })
+            .then(({data}) => {
+                const offset = (Number(data?.current_page || current) - 1) * limit;
+                setTotal(data?.count ?? 0);
+                setReportData((data?.data || []).map((item, i) => ({
+                    ...item,
+                    key: offset + i + 1,
+                    entering_time: item.entering_time ? moment(item.entering_time).format('DD.MM.YYYY HH:mm:ss') : '',
+                    exiting_time: item.exiting_time ? moment(item.exiting_time).format('DD.MM.YYYY HH:mm:ss') : '',
+                })));
             })
-            .catch(error => {
-                // console.log(error.response);
-            })
-    }
-
-    const getExcelReport = async (type, paramsObj) => {
-        const lang = localStorage.getItem('i18nextLng');
-        await axios
-            .get(`${ip}/api/report/${type}`, {
-                headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                params: {...paramsObj, lang}
-            })
-            .then(res => {
-                const {filename, secret} = res?.data;
-
-                const myInterval = setInterval(async () => {
-                    await axios
-                        .get(`${ip}/api/report/loading/${type}/${secret}`, {
-                            headers: {'x-access-token': localStorage.getItem('vipparking-token')},
-                        })
-                        .then(async res => {
-                            if (res.data !== "wait") {
-                                clearInterval(myInterval);
-                                window.open(`${ip}/${type}/${filename}`, '_blank', 'noopener,noreferrer');
-                            }
-                        })
-                        .catch(err => {
-                            clearInterval(myInterval);
-                        })
-                }, 3000)
-            })
-            .catch(err => {
-
-            })
-    }
-
-
-    const reportPaginationOnchange = (e = 1, option) => {
-        // getReportData(e)
-        setReportPaginationCurrent(e)
-        setReportPaginationLimit(option)
-    }
+            .catch(() => {
+                setReportData([]);
+                setTotal(0);
+            });
+    };
 
     useEffect(() => {
-        getReportData(filterInitialValue);
+        getReportData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        reportPaginationLimit,
-        reportPaginationCurrent,
-        filterInitialValue.table_name,
-        filterInitialValue.order_by,
-        filterInitialValue.searched_data
-    ]);
+    }, [limit, current, searchedData]);
 
-    const handlclicFilter = () => {
-        setIsOpenFilter(true)
-    }
+    const onPageChange = (nextPage, nextLimit) => {
+        if (nextLimit !== limit) {
+            setLimit(nextLimit);
+            setCurrent(1);
+        } else {
+            setCurrent(nextPage);
+        }
+    };
+
+    const download = (kind) => {
+        axios.post(`${ip}/api/report/vehicle_log/${kind}`, {searched_data: searchedData}, {
+            headers: auth(),
+            responseType: 'blob',
+        })
+            .then((res) => {
+                const blob = new Blob([res.data]);
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = kind === 'pdf' ? 'terminal-report.pdf' : 'terminal-report.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(() => message.error("Faylni yuklab bo'lmadi"));
+    };
+
+    const columns = [
+        {title: 'T/r', dataIndex: 'key', key: 'key', width: 60, align: 'center'},
+        {
+            title: 'F.I.SH',
+            dataIndex: 'fullname',
+            key: 'fullname',
+            render: (_, record) => <PersonCell record={record} t={(s) => s}/>,
+        },
+        {
+            title: 'Boshqarma',
+            dataIndex: 'position',
+            key: 'position',
+            render: (value) => value || <span className="tc-muted">—</span>,
+        },
+        {
+            title: 'Davlat raqami',
+            dataIndex: 'vehicle_number',
+            key: 'vehicle_number',
+            render: (value) => <PlateNumber value={value}/>,
+        },
+        {title: 'Kirgan vaqti', dataIndex: 'entering_time', key: 'entering_time'},
+        {title: 'Chiqqan vaqti', dataIndex: 'exiting_time', key: 'exiting_time'},
+        {
+            title: 'Avtomobil rasmi',
+            key: 'image',
+            align: 'center',
+            render: (_, record) => (
+                <div className="table_report_cell">
+                    <img className="table_report_cell_img"
+                         src={`${ip}/api/image/event/${record.id}/plate_image`}
+                         alt=""/>
+                </div>
+            ),
+        },
+    ];
 
     return (
-            <div className="user_list">
-
-                <div className="user_list_top">
-                    <div className="user_list_top_left">
-                        <Link to="/" className="user_list_top_left_prev"><img src={prev}/></Link>
-                        <div className="user_list_top_left_text">
-                            <span>Asosiy »</span>
-                            <p>Terminal hisoboti</p>
-                        </div>
-                    </div>
-                    <div className="user_list_top_right">
-                        <div className="user_list_top_right_search">
-                            <img src={search}/>
-                            <input
-                                type="text"
-                                placeholder="Izlash"
-                                onChange={
-                                    (event) => {
-                                        setFilterInitialValue({
-                                            ...filterInitialValue,
-                                            searched_data: event.currentTarget.value
-                                        });
-                                        setReportPaginationCurrent(1);
-                                    }}
-                            />
-                        </div>
-
-                        <div onClick={handlclicFilter} className="report_content_top_filter">
-                            <img src={filter}/>
-                            <p>Filterlash</p>
-                        </div>
-                        {/*<div className="download_buttons">*/}
-                        {/*    <button onClick={() => getExcelReport('excel', filterInitialValue)}*/}
-                        {/*            className="download_btn">*/}
-                        {/*        <img src={exel}/>*/}
-                        {/*        Yuklash*/}
-                        {/*    </button>*/}
-                        {/*    <button onClick={() => getExcelReport('pdf', filterInitialValue)}*/}
-                        {/*            className="download_btn_pdf">*/}
-                        {/*        <img src={pdf}/>*/}
-                        {/*        Yuklash*/}
-                        {/*    </button>*/}
-                        {/*</div>*/}
+        <div className="user_list">
+            <div className="user_list_top">
+                <div className="user_list_top_left">
+                    <Link to="/" className="user_list_top_left_prev"><TbChevronLeft size={18}/></Link>
+                    <div className="user_list_top_left_text">
+                        <span>Asosiy »</span>
+                        <p>Terminal hisoboti</p>
                     </div>
                 </div>
-
-                <div className="user_list_body">
-                    <div className="report_section">
-                        <div className="report_table">
-                            <ReportTable
-                                reportData={reportData}
-                                filterInitialValue={filterInitialValue}
-                                setFilterInitialValue={setFilterInitialValue}
-                            />
-                        </div>
-
-                    </div>
-                    <div className="report_content_pagination">
-                        <p className = 'content_total' >Jami: {reportTotal}</p>
-                        <ReportPagenation
-                            reportPaginationLimit={reportPaginationLimit}
-                            reportPaginationCurrent={reportPaginationCurrent}
-                            reportPaginationOnchange={reportPaginationOnchange}
-                            reportTotal={reportTotal}
+                <div className="user_list_top_right">
+                    <div className="user_list_top_right_search">
+                        <TbSearch size={16}/>
+                        <input
+                            type="text"
+                            placeholder="Izlash"
+                            value={searchedData}
+                            onChange={(e) => {
+                                setSearchedData(e.currentTarget.value);
+                                setCurrent(1);
+                            }}
                         />
                     </div>
-
+                    <div className="download_buttons">
+                        <button className="download_btn" onClick={() => download('excel')}>
+                            <TbFileSpreadsheet size={18} style={{marginRight: 5}}/>Yuklash
+                        </button>
+                        <button className="download_btn_pdf" onClick={() => download('pdf')}>
+                            <TbFileTypePdf size={18} style={{marginRight: 5}}/>Yuklash
+                        </button>
+                    </div>
                 </div>
-                <FilterModal
-                    isOpenFilter={isOpenFilter}
-                    setIsOpenFilter={setIsOpenFilter}
-                    filterInitialValue={filterInitialValue}
-                    setFilterInitialValue={setFilterInitialValue}
-                    reportPaginationLimit={reportPaginationLimit}
-                    reportPaginationCurrent={reportPaginationCurrent}
-                    getReportData={getReportData}
-                />
             </div>
+
+            <div className="user_list_body">
+                <div className="report_section">
+                    <div className="report_table">
+                        <Table
+                            rowSelection={false}
+                            columns={columns}
+                            dataSource={reportData}
+                            pagination={false}
+                        />
+                    </div>
+                </div>
+            </div>
+            <PagePagination total={total} current={current} pageSize={limit} onChange={onPageChange}/>
+        </div>
     );
 };
 

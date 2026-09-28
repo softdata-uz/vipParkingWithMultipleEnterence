@@ -201,7 +201,7 @@ const StaffList = ({group, onBack, onGroupChanged}) => {
             setPage(1);
         }, 400);
         return () => clearTimeout(timer);
-    }, [searchInput, search]);
+    }, [searchInput, search, setPage]);
 
     const onPageChange = (nextPage, nextSize) => {
         onPagingChange(nextPage, nextSize);

@@ -2,14 +2,12 @@ import React, {useEffect} from "react";
 import {Routes, Route, BrowserRouter , Navigate} from 'react-router-dom'
 
 import {useDispatch, useSelector} from "react-redux";
-import axios from "axios";
 import {ip} from "./ip";
 import {getMeAction, LOGIN_REQUEST, LoginFailure, loginResponse} from "./redux/action/action";
 import {api, storage} from "./services";
 import Loader from "./components/loading/Loader";
 import Layout from "./components/Layout";
 import Login from "./components/loginPage/Login";
-import NewViewPage from "./components/newViewPage/NewViewPage";
 import MultipleEnterence from "./components/MultipleEnterence/MultipleEnterence";
 import {LightZone} from "./context/ThemeContext";
 
@@ -41,7 +39,8 @@ function App() {
         if (token) {
             loadFetch();
         }
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token]);
 
     if (!isFetched) {
         return <Loader/>
@@ -55,7 +54,6 @@ function App() {
                 :
                 <BrowserRouter>
                     <Routes>
-                        {/*<Route path='/' element={<NewViewPage/>}/>*/}
                         <Route path='/' element={<LightZone><MultipleEnterence/></LightZone>}/>
 
                         <Route path='/login' element={<Login/>}/>

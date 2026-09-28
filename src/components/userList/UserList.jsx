@@ -1,31 +1,19 @@
 import React, {useState, useEffect} from 'react';
-import Layout from "../Layout";
 import {Link} from "react-router-dom";
-import prev from "../../images/Vector.png";
-import search from "../../images/tabler-icon-search (1).png";
-import plus from "../../images/add-circle.png";
-
-import modalImg from "../../images/gallery-add.png";
-import UploadIcon from "../../images/Vector (22).png"
+import {TbChevronLeft, TbSearch, TbFileSpreadsheet} from "react-icons/tb";
 import {MdOutlineAddCircleOutline} from 'react-icons/md';
 
-import {Alert, Button, message, Space} from 'antd';
-import {Form, Input, Select} from 'antd';
+import {message} from 'antd';
+import {Form, Input} from 'antd';
 import Modal from "react-modal";
 import "./userList.css";
 import UserListTable from "./UserListTable";
 import UserListPagination from "./UserListPagination";
 import axios from "axios";
 import {ip} from "../../ip";
-import moment from "moment";
-import {useDispatch, useSelector} from "react-redux";
-import DeleteModal from "./deleteModal/DeleteModal";
 import {CiImageOn} from "react-icons/ci";
 import {MdOutlineCancel} from "react-icons/md";
-import excelIcon from "../../images/excelIcon.png";
-
-
-const {Option} = Select;
+import DeleteModal from "./deleteModal/DeleteModal";
 
 const UserList = (props) => {
 
@@ -36,7 +24,6 @@ const UserList = (props) => {
 
 
     const [staffData, setStaffData] = useState();
-    const [isOpenFilter, setIsOpenFilter] = useState(false);
     const [staffTotal, setStaffTotal] = useState(null);
     const [staffPaginationLimit, setStaffPaginationLimit] = useState(15);
     const [staffPaginationCurrent, setStaffPaginationCurrent] = useState(1);
@@ -90,6 +77,7 @@ const UserList = (props) => {
 
     useEffect(() => {
         getStaffData(filterInitialValue);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         staffPaginationLimit,
         staffPaginationCurrent,
@@ -148,35 +136,12 @@ const UserList = (props) => {
 
 
     // img car
-    const [view2, setView2] = useState(null);
-    const [imageState2, setImageState2] = useState({
+    const [, setImageState2] = useState({
         initial: true,
         uploaded: false,
         requested: false,
         check: false
     });
-    const [img2, setImg2] = useState({})
-    const uploadCar = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            // console.log('uploaded')
-            setView2(URL.createObjectURL(e.target.files[0]))
-            setImg2({...img2, image: e.target.files[0]})
-            setImageState2({
-                initial: false,
-                uploaded: true,
-                requested: false,
-                check: true
-            })
-        } else {
-            setView2(null)
-            setImageState2({
-                initial: true,
-                uploaded: false,
-                requested: false,
-                check: false
-            })
-        }
-    }
 
     // img car
 
@@ -207,10 +172,6 @@ const UserList = (props) => {
         })
     }
 
-    const onClose = (e) => {
-        console.log(e, 'I was closed.');
-    };
-    const [messageApi, contextHolder] = message.useMessage();
     const addStaff = (values) => {
         const formData = {
             ...values,
@@ -328,7 +289,7 @@ const UserList = (props) => {
             <div className="user_list">
                 <div className="user_list_top">
                     <div className="user_list_top_left">
-                        <Link to="/" className="user_list_top_left_prev"><img src={prev}/></Link>
+                        <Link to="/" className="user_list_top_left_prev"><TbChevronLeft size={18}/></Link>
                         <div className="user_list_top_left_text">
                             <span>Asosiy »</span>
                             <p>Xodimlar</p>
@@ -336,7 +297,7 @@ const UserList = (props) => {
                     </div>
                     <div className="user_list_top_right">
                         <div className="user_list_top_right_search">
-                            <img src={search}/>
+                            <TbSearch size={16}/>
                             <input
                                 type="text"
                                 placeholder="Izlash"
@@ -351,17 +312,13 @@ const UserList = (props) => {
                             />
                         </div>
                         <div className="user_list_top_right_add" onClick={() => setOpen(true)}>
-                            {/*<img src={plus}/>*/}
-                            <MdOutlineAddCircleOutline size={23} sytle={{marginRight: "8px"}}/>
+                            <MdOutlineAddCircleOutline size={23} style={{marginRight: "8px"}}/>
                             Yangi qo'shish
                         </div>
 
-                        {/*<div className="">*/}
-                        {/*<img src={excelIcon}/>Import*/}
-                        {/*<div className="excel">*/}
                         <label htmlFor='staff_exel' className="">
                             <div className="user_list_top_right_excel">
-                                <img src={excelIcon}/>
+                                <TbFileSpreadsheet size={18}/>
                                 <div>{fileState2.uploaded ? "Saqlash" : "Import"}</div>
                             </div>
                             {
@@ -374,11 +331,6 @@ const UserList = (props) => {
                         </label>
                         {fileState2.uploaded ? <div className="excel_exit" onClick={cencelExcel}
                         ><MdOutlineCancel style={{fontSize: "20px", marginRight: "5px"}}/>Bekor qilish</div> : ""}
-                        {/*</div>*/}
-
-                        {/*</div>*/}
-
->>>>>>> 15a85bf2c68c8068382fc6bbf09297774052da4b
                     </div>
                 </div>
                 <div className="user_list_body">
@@ -438,16 +390,15 @@ const UserList = (props) => {
                                             <div className="user_list_modal_uploadImg_left_inner">
                                                 {
                                                     initialValues.edit && !imageState.check ?
-                                                        <img src={`${ip}/staff/${initialValues.image}`} className="img1"/> :
-                                                        imageState.uploaded ? <img src={view} className="img1"/>
-                                                            : <img src={modalImg} className="img2"/>}
+                                                        <img src={`${ip}/staff/${initialValues.image}`} alt="" className="img1"/> :
+                                                        imageState.uploaded ? <img src={view} alt="" className="img1"/>
+                                                            : <CiImageOn size={32} className="img2"/>}
                                             </div>
                                         </div>
                                         <div className="user_list_modal_uploadImg_right">
                                             <div className="user_list_modal_uploadImg_right_inner">
                                                 <label htmlFor='add_staff_img' className="upload_button">
                                                     <div className="upload_button_icon">
-                                                        {/*<img src={UploadIcon} style={{marginRight: "8px"}}/>*/}
                                                         <CiImageOn size={22} style={{marginRight: "8px"}}/>Rasm yuklash
                                                     </div>
                                                     <input onChange={upload} name='image' type="file"

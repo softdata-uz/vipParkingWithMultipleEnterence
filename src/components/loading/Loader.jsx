@@ -1,7 +1,7 @@
 import React from 'react';
-import {Rings , Circles} from "react-loader-spinner";
+import {Circles} from "react-loader-spinner";
 
-import './loader.css'
+import './loader.css';
 import {useTheme} from "../../context/ThemeContext";
 const Loader = () => {
     const {theme} = useTheme() || {};

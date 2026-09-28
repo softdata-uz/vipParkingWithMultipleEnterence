@@ -8,6 +8,7 @@ import {ClockIcon, InboxIcon, RefreshIcon, SearchIcon} from "../../design-system
 import PagePagination from "../common/PagePagination";
 import PlateNumber from "../common/PlateNumber";
 import {PersonCell, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+import {GroupTypeBadge} from "../employees/database/groupTypes";
 
 import '../../design-system/ui.css';
 import '../../styles/table-cells.css';
@@ -138,6 +139,15 @@ const Status = () => {
             sortOrder: sortOrderOf('position'),
             ellipsis: true,
             render: (value) => value || <span className="tc-muted">—</span>,
+        },
+        {
+            title: t("DB turi"),
+            dataIndex: 'db_type',
+            key: 'db_type',
+            align: 'center',
+            render: (value) => value
+                ? <GroupTypeBadge type={value} t={t}/>
+                : <span className="tc-muted">—</span>,
         },
         {
             title: t("Davlat raqami"),
