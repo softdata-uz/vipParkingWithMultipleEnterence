@@ -15,7 +15,7 @@ import {
 } from "../../design-system/icons";
 import PagePagination from "../common/PagePagination";
 import PlateNumber from "../common/PlateNumber";
-import {PersonCell, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+import {PersonCell, personColumnWidth, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
 import {GroupTypeBadge} from "../employees/database/groupTypes";
 
 import '../../design-system/ui.css';
@@ -188,6 +188,7 @@ const Report = () => {
             title: t("F.I.Sh"),
             dataIndex: 'fullname',
             key: 'fullname',
+            width: personColumnWidth(rows, t),   // eng uzun ismga moslanadi (280px .. ekranning 30%)
             render: (_, record) => <PersonCell record={record} t={t}/>,
         },
         {

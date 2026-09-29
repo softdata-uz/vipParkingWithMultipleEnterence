@@ -22,6 +22,27 @@ export const formatDuration = (from, to, t) => {
     return t("{{count}} daq", {count: m});
 };
 
+/* F.I.Sh ustuni kengligi — moslashuvchan:
+   - sahifadagi eng uzun ism bir qatorga sig'adigan qilib o'lchanadi;
+   - yuqori chegara ekran kengligiga bog'liq (30%, 360..640px) — katta ekranda uzun ismga ko'proq joy;
+   - ism chegaradan ham uzun bo'lsa, keyingi qatorga o'tadi (kesilmaydi). */
+const NAME_FONT = "600 14px Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif";
+const PERSON_COL_MIN = 280;
+const PERSON_COL_EXTRA = 36 + 16 + 32 + 40;        // avatar + oraliq + katak ichki bo'shlig'i + zaxira
+let measureCtx = null;
+const textWidth = (text) => {
+    if (!measureCtx) measureCtx = document.createElement('canvas').getContext('2d');
+    measureCtx.font = NAME_FONT;
+    return measureCtx.measureText(text || '').width;
+};
+
+export const personColumnWidth = (rows, t) => {
+    const max = Math.min(640, Math.max(360, window.innerWidth * 0.3));
+    const names = (rows || []).map(r => r.fullname || t("Aniqlanmagan shaxs"));
+    const longest = names.reduce((w, n) => Math.max(w, textWidth(n)), 0);
+    return Math.round(Math.min(max, Math.max(PERSON_COL_MIN, longest + PERSON_COL_EXTRA)));
+};
+
 /** Xodim: rasm (bosilsa kattalashadi) + F.I.Sh. Ro'yxatda yo'q avtomobil — "Aniqlanmagan shaxs" */
 export const PersonCell = ({record, t}) => {
     const [broken, setBroken] = useState(false);

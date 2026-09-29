@@ -252,5 +252,6 @@
   "Ulanmoqda...": "Подключение...",
   "Turi noma'lum": "Тип неизвестен",
   "Ma'lumot olinmadi": "Данные не получены",
-  "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "Окно обновится само, когда связь с сервером восстановится"
+  "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "Окно обновится само, когда связь с сервером восстановится",
+  "DB turi": "Тип БД"
 }

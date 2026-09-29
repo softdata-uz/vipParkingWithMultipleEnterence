@@ -50,12 +50,12 @@
     min-width: 0;
 }
 
+/* ustun kengligi eng uzun ismga moslanadi (personColumnWidth); undan ham uzun bo'lsa keyingi qatorga o'tadi */
 .vc_person_name {
+    max-width: 100%;
     font-weight: var(--weight-semibold);
     color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
 }
 
 .vc_person_name--muted {

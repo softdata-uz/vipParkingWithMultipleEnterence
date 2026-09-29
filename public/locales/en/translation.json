@@ -252,5 +252,6 @@
   "Ulanmoqda...": "Connecting...",
   "Turi noma'lum": "Unknown type",
   "Ma'lumot olinmadi": "Could not load data",
-  "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "The window refreshes automatically once the server is reachable"
+  "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "The window refreshes automatically once the server is reachable",
+  "DB turi": "DB type"
 }
