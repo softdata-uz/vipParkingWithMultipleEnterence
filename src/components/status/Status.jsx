@@ -4,10 +4,11 @@ import {useTranslation} from "react-i18next";
 import axios from "axios";
 
 import {ip} from "../../ip";
-import {ClockIcon, InboxIcon, RefreshIcon, SearchIcon} from "../../design-system/icons";
+import {ClockIcon, InboxIcon, SearchIcon} from "../../design-system/icons";
 import PagePagination from "../common/PagePagination";
 import PlateNumber from "../common/PlateNumber";
 import {PersonCell, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+import {GroupTypeBadge} from "../employees/database/groupTypes";
 
 import '../../design-system/ui.css';
 import '../../styles/table-cells.css';
@@ -33,7 +34,6 @@ const Status = () => {
     const [sort, setSort] = useState({field: '', order: ''});
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
-    const [refreshing, setRefreshing] = useState(false);
     const [now, setNow] = useState(() => Date.now());
     const requestIdRef = useRef(0);
 
@@ -83,18 +83,6 @@ const Status = () => {
         return () => clearTimeout(timer);
     }, [searchInput, search]);
 
-    const refresh = async () => {
-        if (refreshing) return;
-        setRefreshing(true);
-        try {
-            // server tez javob bersa ham aylanish ko'rinsin — kamida 600ms
-            const [ok] = await Promise.all([load(), new Promise(r => setTimeout(r, 600))]);
-            if (ok) message.success(t("Yangilandi"));
-        } finally {
-            setRefreshing(false);
-        }
-    };
-
     const onPageChange = (nextPage, nextLimit) => {
         if (nextLimit !== limit) {
             setLimit(nextLimit);
@@ -138,6 +126,15 @@ const Status = () => {
             sortOrder: sortOrderOf('position'),
             ellipsis: true,
             render: (value) => value || <span className="tc-muted">—</span>,
+        },
+        {
+            title: t("DB turi"),
+            dataIndex: 'db_type',
+            key: 'db_type',
+            align: 'center',
+            render: (value) => value
+                ? <GroupTypeBadge type={value} t={t}/>
+                : <span className="tc-muted">—</span>,
         },
         {
             title: t("Davlat raqami"),
@@ -194,12 +191,6 @@ const Status = () => {
                         <input type="text" placeholder={t("F.I.Sh yoki raqam bo'yicha izlash...")} value={searchInput}
                                onChange={e => setSearchInput(e.target.value)}/>
                     </div>
-                    <button type="button"
-                            className={`admin_header_btn admin_header_btn--icon${refreshing ? ' is-spinning' : ''}`}
-                            onClick={refresh} disabled={refreshing}
-                            title={t("Yangilash")} aria-label={t("Yangilash")}>
-                        <RefreshIcon size={18}/>
-                    </button>
                 </div>
             </div>
 

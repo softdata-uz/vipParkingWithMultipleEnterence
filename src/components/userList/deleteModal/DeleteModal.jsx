@@ -1,59 +1,46 @@
 import React, {useState} from 'react';
-import {Modal} from "antd";
 import axios from "axios";
-import {ip} from "../../../ip";
 import {message} from "antd";
+import {ip} from "../../../ip";
+import {ConfirmDeleteModal} from "../../common/ModalShell";
+import {TbTrash} from "react-icons/tb";
 
-import '../userList.css';
+const DeleteModal = ({deleteOpen, setDeleteOpen, deleteData, setDeleteData, getStaffData}) => {
+    const [busy, setBusy] = useState(false);
 
-const DeleteModal = (props) => {
+    const close = () => {
+        if (busy) return;
+        setDeleteOpen(false);
+        setDeleteData([]);
+    };
 
-    const {
-        deleteOpen,
-        setDeleteOpen,
-        deleteData,
-        setDeleteData,
-        getStaffData
-    } = props;
-
-    const deleteStaff = () =>{
-        axios.delete(`${ip}/api/staff/${deleteData.id}`, {headers: {'x-access-token': localStorage.getItem('vipparking-token')}})
-            .then((res) => {
-                console.log(res);
-                setDeleteOpen(false);
+    const confirmDelete = () => {
+        if (!deleteData?.id) return;
+        setBusy(true);
+        axios.delete(`${ip}/api/staff/${deleteData.id}`, {
+            headers: {'x-access-token': localStorage.getItem('vipparking-token')},
+        })
+            .then(() => {
+                message.success("Xodim o'chirildi");
                 getStaffData();
-                message.success("O'chirildi !", 5);
+                setDeleteOpen(false);
+                setDeleteData([]);
             })
-    }
+            .catch((err) => {
+                message.error(err?.response?.data?.msg || "Xatolik yuz berdi");
+            })
+            .finally(() => setBusy(false));
+    };
 
     return (
-        <div>
-            <Modal
-                centered
-                open={deleteOpen}
-                onOk={() => setDeleteOpen(false)}
-                onCancel={() => setDeleteOpen(false)}
-                width={300}>
-                <div className="delete_modal">
-                    <h3>Haqiqatdan ham o'chirasizmi ?</h3>
-                    <div className="delete_modal_button">
-                        <div className="">
-                            <button type="button" className="delete_modal_button_left"
-                                    onClick={() => setDeleteOpen(false)}>Yo'q
-                            </button>
-                        </div>
-                        <div>
-                            <button type="submit" className="delete_modal_button_right"
-
-                                onClick={()=>deleteStaff()} >Ha
-
-                        </button>
-                    </div>
-                </div>
-        </div>
-</Modal>
-</div>
-);
+        <ConfirmDeleteModal
+            open={deleteOpen}
+            onClose={close}
+            onConfirm={confirmDelete}
+            name={deleteData?.fullname}
+            icon={<TbTrash size={22}/>}
+        />
+    );
 };
 
 export default DeleteModal;

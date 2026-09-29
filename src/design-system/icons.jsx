@@ -455,3 +455,24 @@ export const CameraIcon = ({size = 18, ...rest}) => (
         <rect x="2.5" y="6.5" width="13" height="11" rx="2"/>
     </svg>
 );
+
+/** Kuzatuv kamerasi — devordagi kronshteynga o'rnatilgan (chizma: Lucide "cctv", ISC). */
+export const CctvIcon = ({size = 22, ...rest}) => (
+    <svg {...base} width={size} height={size} {...rest}>
+        <path d="M16.75 12h3.63a1 1 0 0 1 .9 1.45l-2.04 4.07a1 1 0 0 1-1.7.13l-2.13-2.97"/>
+        <path d="M17.1 9.05a1 1 0 0 1 .45 1.34l-3.1 6.22a1 1 0 0 1-1.35.44L3.6 12.3a2.92 2.92 0 0 1-1.3-3.91L3.7 5.6a2.92 2.92 0 0 1 3.91-1.3z"/>
+        <path d="M2 19h3.76a2 2 0 0 0 1.8-1.1L9 15"/>
+        <path d="M2 21v-4"/>
+        <path d="M7 9h.01"/>
+    </svg>
+);
+
+/** Avtomobil — old tomondan (chizma: Lucide "car-front", ISC). */
+export const CarFrontIcon = ({size = 22, ...rest}) => (
+    <svg {...base} width={size} height={size} {...rest}>
+        <path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.65 5H8.4a2 2 0 0 0-1.9 1.26L5 10 3 8"/>
+        <path d="M7 14h.01M17 14h.01"/>
+        <rect x="3" y="10" width="18" height="8" rx="2"/>
+        <path d="M5 18v2M19 18v2"/>
+    </svg>
+);

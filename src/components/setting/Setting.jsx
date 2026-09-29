@@ -22,7 +22,7 @@ export const SETTING_TABS = [
     {value: 'groups', label: "Kamera guruhlari", Icon: GridIcon},
 ];
 
-/** Sarlavhadagi bo'limlar almashtirgichi — har bir bo'lim uni o'z sarlavhasida chizadi */
+/** Bo'limlar almashtirgichi — har bir bo'lim uni jadval ustidagi toolbar'da chizadi (Hisobotdagi davrlar kabi) */
 export const SettingTabs = ({value, onChange}) => {
     const {t} = useTranslation();
     return (

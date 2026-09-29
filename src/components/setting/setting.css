@@ -6,10 +6,6 @@
    ular butun ilovadagi formalarni buzardi.
    ========================================================================== */
 
-.set_tabs {
-    margin-left: var(--spacing-md);
-}
-
 .set_tabs .page_seg_item svg {
     flex: none;
 }

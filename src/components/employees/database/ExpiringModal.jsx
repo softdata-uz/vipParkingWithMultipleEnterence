@@ -66,7 +66,9 @@ const ExpiringModal = ({open, data, onClose, onOpenGroup}) => {
                                             {item.group?.name} · {t("Tugash sanasi")}: {formatDate(item.to_date)}
                                         </span>
                                     </span>
-                                    <PlateNumber value={item.vehicle_number} size="sm"/>
+                                    <span className="exp_row_plate">
+                                        <PlateNumber value={item.vehicle_number}/>
+                                    </span>
                                     <span className={`ds-badge ${badge[0]}`}>
                                         <span className="ds-badge__dot"/>{badge[1]}
                                     </span>

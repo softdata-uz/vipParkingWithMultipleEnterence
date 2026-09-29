@@ -1,1146 +1,387 @@
-import React, {useEffect, useState} from "react";
-
-import "./multipleEnterence.css";
-
-import logo from "../../images/softdataLogo.svg";
-import {Link} from "react-router-dom";
-
-import enterIcon from "../../images/new/log-in-02.png";
-import carFlag from "../../images/new/Group 55888 (4).png";
-import addGroupIcon from "../../images/Illustration.png";
-import emptyIcon from "../../images/new/Group.png";
-import plusIcon from "../../images/plus.png";
-
-import GroupListModal from "./GroupListModal";
-
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {message} from "antd";
 import axios from "axios";
-import {ip} from "../../ip";
-
-import {RiDeleteBin6Line} from "react-icons/ri";
-
+import dayjs from "dayjs";
 import socketIOClient from "socket.io-client";
 
-import {
-    Checkbox,
-    Input
-} from "antd";
+import {ip} from "../../ip";
+import {useTheme} from "../../context/ThemeContext";
+import {PrefsSwitch} from "../common/PrefsSwitch";
+import {ArrowRightIcon, GridIcon} from "../../design-system/icons";
+import ViewerPanel from "./ViewerPanel";
+import {GroupPickerModal, RemoveGroupModal} from "./GroupPickerModal";
 
-import moment from "moment";
+import logoDark from "../../images/logo_dark.svg";
+import logoLight from "../../images/logo_light.svg";
 
+import "../../design-system/ui.css";
+import "../../styles/modal.css";
+import "../shell.css";
+import "./live.css";
 
-/* ============================================================
-   VIEWER SETTINGS
-============================================================ */
+/* Bosh ekran — kirish-chiqish nazorati (tizimga kirmasdan ochiladi, post monitori uchun).
+   API: GET /api/all/camera-group            -> {data: [{id, name, viewer}]}  (viewer 0 — hech qaysi oynada emas)
+        GET /api/temp/:viewer                -> {data: null}  guruh yo'q | {data: []} hodisa yo'q | {data: [{vehicle_data, staff_data}]}
+        PUT /api/viewer/camera-group/:id     {viewer}  — guruhni oynaga biriktirish (0 — ajratish)
+        GET /api/image/temp/:ip/full_image/:the_date
+        socket "enter" (viewerId)            — shu oynada yangi hodisa
+   Oynalar soni brauzerda saqlanadi (viewerCount / viewerIds — reducer.js logout'da ham saqlab qoladi). */
 
 const MIN_VIEWERS = 1;
 const MAX_VIEWERS = 12;
 const DEFAULT_VIEWERS = 3;
+const FACTS_MAX_VIEWERS = 6;           // "Vaqt / Yo'nalishi" bloki shu songacha ko'rsatiladi
+const FALLBACK_POLL_MS = 15 * 1000;     // socket uzilganda ma'lumot shuncha vaqtda bir so'raladi
+const GROUPS_POLL_MS = 60 * 1000;       // oyna-guruh bog'lanishi serverda umumiy — boshqa monitor o'zgartirishi mumkin
 
-
-const clampViewerCount = (value) => {
-
-    const num = Number(value);
-
-    if (!Number.isFinite(num)) {
-        return DEFAULT_VIEWERS;
-    }
-
-    return Math.min(
-        Math.max(
-            Math.trunc(num),
-            MIN_VIEWERS
-        ),
-        MAX_VIEWERS
-    );
+// oynalar soni -> [ustun, qator]: ekranni to'liq, skrollsiz to'ldiradi
+const GRID = {
+    1: [1, 1], 2: [2, 1], 3: [3, 1], 4: [2, 2], 5: [3, 2], 6: [3, 2],
+    7: [4, 2], 8: [4, 2], 9: [3, 3], 10: [4, 3], 11: [4, 3], 12: [4, 3],
 };
 
-
-const buildViewerIds = (count) => {
-
-    return Array.from(
-        {length: count},
-        (_, i) => i + 1
-    );
+const clampCount = (value) => {
+    const n = Math.trunc(Number(value));
+    return Number.isFinite(n) ? Math.min(Math.max(n, MIN_VIEWERS), MAX_VIEWERS) : DEFAULT_VIEWERS;
 };
 
-
-const readStoredViewerIds = () => {
-
+const readStoredCount = () => {
     try {
-
-        const stored = JSON.parse(
-            localStorage.getItem("viewerIds")
-        );
-
-        if (Array.isArray(stored)) {
-
-            const ids = stored
-                .map(Number)
-                .filter(Number.isFinite);
-
-            if (ids.length > 0) {
-
-                return ids.slice(
-                    0,
-                    MAX_VIEWERS
-                );
-            }
-        }
-
-    } catch (error) {
-
-        console.log(
-            "viewerIds parse error:",
-            error
-        );
+        const ids = JSON.parse(localStorage.getItem('viewerIds'));
+        if (Array.isArray(ids) && ids.length) return clampCount(ids.length);
+    } catch (e) {
+        // buzilgan qiymat — standart son
     }
-
-    return buildViewerIds(
-        DEFAULT_VIEWERS
-    );
+    return clampCount(localStorage.getItem('viewerCount') ?? DEFAULT_VIEWERS);
 };
 
-
-
-const MultipleEnterence = () => {
-
-
-    /* ============================================================
-       TIME
-    ============================================================ */
-
-    const [time, setTime] = useState(
-        new Date()
-    );
-
-
+/** Soat — o'zi alohida yangilanadi, butun sahifa har soniyada qayta chizilmaydi */
+const LiveClock = () => {
+    const [now, setNow] = useState(() => dayjs());
     useEffect(() => {
-
-        const interval = setInterval(() => {
-
-            setTime(
-                new Date()
-            );
-
-        }, 1000);
-
-
-        return () => {
-
-            clearInterval(
-                interval
-            );
-        };
-
+        const id = setInterval(() => setNow(dayjs()), 1000);
+        return () => clearInterval(id);
     }, []);
-
-
-    const formatDate = (date) => {
-
-        const day = String(
-            date.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-        const month = String(
-            date.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-        const year =
-            date.getFullYear();
-
-
-        const hours = String(
-            date.getHours()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-        const minutes = String(
-            date.getMinutes()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-        return `${day}.${month}.${year}, ${hours}:${minutes}`;
-    };
-
-
-
-    /* ============================================================
-       GROUP MODAL
-    ============================================================ */
-
-    const [
-        openGroup,
-        setOpenGroup
-    ] = useState(false);
-
-
-    const [
-        groupData,
-        setGroupData
-    ] = useState([]);
-
-
-    const [
-        dataGroupViewer,
-        setDataGroupViewer
-    ] = useState({});
-
-
-
-    /* ============================================================
-       GET CAMERA GROUPS
-    ============================================================ */
-
-    const getGroupData = async () => {
-
-        try {
-
-            const response =
-                await axios.get(
-                    `${ip}/api/all/camera-group`
-                );
-
-
-            const {data} =
-                response.data;
-
-
-            setGroupData(
-
-                data.filter(
-                    (item) =>
-                        item.viewer === 0
-                )
-            );
-
-
-            const scrnCameraGroup = {};
-
-
-            data.forEach(
-                (item) => {
-
-                    if (
-                        item.viewer !== 0
-                    ) {
-
-                        scrnCameraGroup[
-                            item.viewer
-                        ] = item;
-                    }
-                }
-            );
-
-
-            setDataGroupViewer(
-                scrnCameraGroup
-            );
-
-
-        } catch (error) {
-
-            console.log(
-                error.response
-            );
-        }
-    };
-
-
-    useEffect(() => {
-
-        getGroupData();
-
-    }, []);
-
-
-
-    /* ============================================================
-       EVENT DATA
-    ============================================================ */
-
-    const [
-        eventDataObj,
-        setEventDataObj
-    ] = useState({});
-
-
-
-    /* ============================================================
-       VIEWER IDS
-    ============================================================ */
-
-    const [
-        viewerIds,
-        setViewerIds
-    ] = useState(
-        readStoredViewerIds
-    );
-
-
-    const [
-        viewerCount,
-        setViewerCount
-    ] = useState(
-        () =>
-            String(
-                viewerIds.length
-            )
-    );
-
-
-    /*
-     * ENG MUHIM QISM
-     *
-     * Agar faqat 1 ta viewer bo'lsa
-     * alohida layout ishlatiladi.
-     */
-    const isSingleViewer =
-        viewerIds.length === 1;
-
-
-
-    /* ============================================================
-       SET VIEWER COUNT
-    ============================================================ */
-
-    const handleSetViewerIds = () => {
-
-        const count =
-            clampViewerCount(
-                viewerCount
-            );
-
-
-        const newIds =
-            buildViewerIds(
-                count
-            );
-
-
-        setViewerCount(
-            String(count)
-        );
-
-
-        setViewerIds(
-            newIds
-        );
-
-
-        localStorage.setItem(
-            "viewerCount",
-            String(count)
-        );
-
-
-        localStorage.setItem(
-            "viewerIds",
-            JSON.stringify(
-                newIds
-            )
-        );
-    };
-
-
-
-    /* ============================================================
-       GET EVENT
-    ============================================================ */
-
-    const getEventDataByViewerId =
-        async (viewerId) => {
-
-            try {
-
-                const response =
-                    await axios.get(
-                        `${ip}/api/temp/${viewerId}`
-                    );
-
-
-                setEventDataObj(
-                    (prev) => ({
-
-                        ...prev,
-
-                        [viewerId]:
-                            response.data.data,
-                    })
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    `Error fetching data for viewer ${viewerId}:`,
-                    error
-                );
-            }
-        };
-
-
-
-    /* ============================================================
-       VIEWER CHANGE
-    ============================================================ */
-
-    useEffect(() => {
-
-        viewerIds.forEach(
-            (viewerId) => {
-
-                getEventDataByViewerId(
-                    viewerId
-                );
-            }
-        );
-
-    }, [viewerIds]);
-
-
-
-    /* ============================================================
-       SOCKET
-    ============================================================ */
-
-    useEffect(() => {
-
-        const socket =
-            socketIOClient(
-                ip
-            );
-
-
-        socket.on(
-            "enter",
-            (viewerId) => {
-
-                getEventDataByViewerId(
-                    viewerId
-                );
-            }
-        );
-
-
-        return () => {
-
-            socket.disconnect();
-        };
-
-    }, []);
-
-
-
-    /* ============================================================
-       GROUP SELECT
-    ============================================================ */
-
-    const [
-        screenViewerNum,
-        setScreenViewerNum
-    ] = useState(null);
-
-
-    const openSelectGroup =
-        (viewerId) => {
-
-            setScreenViewerNum(
-                viewerId
-            );
-
-            setOpenGroup(
-                true
-            );
-        };
-
-
-
-    /* ============================================================
-       DELETE GROUP
-    ============================================================ */
-
-    const [
-        deleteViewerNum,
-        setDeleteViewerNum
-    ] = useState(null);
-
-
-    const onChange =
-        (e, id) => {
-
-            setDeleteViewerNum(
-
-                e.target.checked
-                    ? id
-                    : null
-            );
-        };
-
-
-    const deleteViewer = () => {
-
-        axios.put(
-            `${ip}/api/viewer/camera-group/${deleteViewerNum}`,
-            {
-                viewer: 0
-            }
-        )
-            .then(() => {
-
-                viewerIds.forEach(
-                    (viewerId) => {
-
-                        getEventDataByViewerId(
-                            viewerId
-                        );
-                    }
-                );
-
-
-                getGroupData();
-
-
-                setDeleteViewerNum(
-                    null
-                );
-
-            })
-            .catch(
-                (error) => {
-
-                    console.log(
-                        error
-                    );
-                }
-            );
-    };
-
-
-
-    /* ============================================================
-       RENDER
-    ============================================================ */
-
     return (
-
-        <div className="multipleEnterence">
-
-
-            {/* ====================================================
-                HEADER
-            ==================================================== */}
-
-            <div className="multipleEnterence_header">
-
-
-                <div className="multipleEnterence_header_left">
-
-                    <img
-                        src={logo}
-                        alt="SoftData"
-                    />
-
-                </div>
-
-
-
-                <div className="multipleEnterence_header_right">
-
-
-                    <div className="multipleEnterence_header_right_delete_and_input">
-
-
-                        {
-                            deleteViewerNum && (
-
-                                <div
-                                    className="multipleEnterence_header_right_delete"
-                                    onClick={deleteViewer}
-                                >
-
-                                    <RiDeleteBin6Line
-                                        size={22}
-                                    />
-
-                                    <p>
-                                        O'chirish
-                                    </p>
-
-                                </div>
-                            )
-                        }
-
-
-
-                        <div className="multipleEnterence_header_right_input">
-
-
-                            <p>
-                                Oynalar sonini kiriting :
-                            </p>
-
-
-                            <Input
-                                placeholder="Oynalar sonini"
-
-                                value={viewerCount}
-
-                                maxLength={2}
-
-                                onChange={
-                                    (e) => {
-
-                                        const raw =
-                                            e.target.value;
-
-
-                                        if (
-                                            raw === ""
-                                            ||
-                                            /^\d+$/.test(raw)
-                                        ) {
-
-                                            setViewerCount(
-                                                raw
-                                            );
-                                        }
-                                    }
-                                }
-
-                                onPressEnter={
-                                    handleSetViewerIds
-                                }
-
-                                onBlur={
-                                    () => {
-
-                                        setViewerCount(
-                                            String(
-                                                clampViewerCount(
-                                                    viewerCount
-                                                )
-                                            )
-                                        );
-                                    }
-                                }
-                            />
-
-
-                            <div
-                                className="multipleEnterence_header_right_input_button"
-                                onClick={
-                                    handleSetViewerIds
-                                }
-                            >
-
-                                Saqlash
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <div className="multipleEnterence_header_right_inner">
-
-                        <h2>
-                            {formatDate(time)}
-                        </h2>
-
-                    </div>
-
-
-
-                    <div className="multipleEnterence_header_right_inner">
-
-                        <Link to="/login">
-
-                            <img
-                                src={enterIcon}
-                                alt=""
-                            />
-
-                            <span>
-                                Tizimga kirish
-                            </span>
-
-                        </Link>
-
-                    </div>
-
-
-                </div>
-
-            </div>
-
-
-
-            {/* ====================================================
-                BODY
-            ==================================================== */}
-
-            <div
-                className={
-                    `multipleEnterence_body ${
-                        isSingleViewer
-                            ? "singleViewerLayout"
-                            : ""
-                    }`
-                }
-            >
-
-
-                {
-                    viewerIds.map(
-                        (viewerId) => {
-
-
-                            const data =
-                                eventDataObj[
-                                    viewerId
-                                ];
-
-
-
-                            /* ====================================
-                               GROUP YO'Q
-                            ==================================== */
-
-                            if (!data) {
-
-                                return (
-
-                                    <div
-                                        className="multipleEnterence_body_group"
-                                        key={viewerId}
-                                    >
-
-                                        <div className="multipleEnterence_body_group_inner">
-
-
-                                            <img
-                                                src={addGroupIcon}
-                                                alt=""
-                                            />
-
-
-                                            <p>
-                                                Guruh topilmadi
-                                            </p>
-
-
-                                            <span>
-                                                Guruh shakllantirilgan bo‘lsa qo‘shish talab etiladi
-                                            </span>
-
-
-                                            <div
-                                                className="multipleEnterence_body_group_inner_add"
-                                                onClick={
-                                                    () =>
-                                                        openSelectGroup(
-                                                            viewerId
-                                                        )
-                                                }
-                                            >
-
-                                                <img
-                                                    src={plusIcon}
-                                                    alt=""
-                                                />
-
-                                                Qo’shish
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                );
-                            }
-
-
-
-                            /* ====================================
-                               DATA BO'SH
-                            ==================================== */
-
-                            if (
-                                data.length === 0
-                            ) {
-
-                                return (
-
-                                    <div
-                                        className="multipleEnterence_body_empty"
-                                        key={viewerId}
-                                    >
-
-
-                                        <div className="multipleEnterence_body_card_information_groupName">
-
-
-                                            <div className="multipleEnterence_body_card_information_groupName_left">
-
-                                                <Checkbox
-                                                    onChange={
-                                                        (e) =>
-                                                            onChange(
-                                                                e,
-                                                                dataGroupViewer[
-                                                                    viewerId
-                                                                ]?.id
-                                                            )
-                                                    }
-                                                />
-
-                                            </div>
-
-
-
-                                            <div className="multipleEnterence_body_card_information_corridor corridor_green">
-
-                                                <p>
-                                                    {
-                                                        dataGroupViewer[
-                                                            viewerId
-                                                        ]?.name
-                                                    }
-                                                </p>
-
-                                            </div>
-
-
-                                        </div>
-
-
-
-                                        <div className="multipleEnterence_body_empty_body">
-
-
-                                            <div className="multipleEnterence_body_empty_inner">
-
-
-                                                <img
-                                                    src={emptyIcon}
-                                                    alt=""
-                                                />
-
-
-                                                <p>
-                                                    Ma’lumot topilmadi
-                                                </p>
-
-
-                                            </div>
-
-                                        </div>
-
-
-                                    </div>
-                                );
-                            }
-
-
-
-                            /* ====================================
-                               DATA MAVJUD
-                            ==================================== */
-
-                            const vehicle =
-                                data[0]?.vehicle_data;
-
-
-                            const staff =
-                                data[0]?.staff_data;
-
-
-                            const isAllowed =
-                                Boolean(
-                                    staff?.id
-                                );
-
-
-                            const directionText =
-                                vehicle?.direction ===
-                                "enter"
-                                    ? "KIRISH"
-                                    : "CHIQISH";
-
-
-                            return (
-
-                                <div
-                                    className={
-                                        `multipleEnterence_body_card ${
-                                            isSingleViewer
-                                                ? "multipleEnterence_body_card_single"
-                                                : ""
-                                        }`
-                                    }
-
-                                    key={viewerId}
-                                >
-
-
-                                    {/* ============================
-                                        INFO + IMAGE
-                                    ============================ */}
-
-                                    <div className="multipleEnterence_body_card_main">
-
-
-                                        {/* LEFT INFORMATION */}
-
-                                        <div className="multipleEnterence_body_card_information">
-
-
-                                            <div className="multipleEnterence_body_card_information_groupName">
-
-
-                                                <div className="multipleEnterence_body_card_information_groupName_left">
-
-                                                    <Checkbox
-                                                        onChange={
-                                                            (e) =>
-                                                                onChange(
-                                                                    e,
-                                                                    dataGroupViewer[
-                                                                        viewerId
-                                                                    ]?.id
-                                                                )
-                                                        }
-                                                    />
-
-                                                </div>
-
-
-
-                                                <div className="multipleEnterence_body_card_information_corridor corridor_green">
-
-                                                    <p>
-                                                        {
-                                                            dataGroupViewer[
-                                                                viewerId
-                                                            ]?.name
-                                                        }
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-
-
-                                            <div className="multipleEnterence_body_card_information_inner">
-
-                                                <span>
-                                                    F.I.SH
-                                                </span>
-
-                                                <p>
-                                                    {
-                                                        staff?.fullname
-                                                        ||
-                                                        "-"
-                                                    }
-                                                </p>
-
-                                            </div>
-
-
-
-                                            <div className="multipleEnterence_body_card_information_inner">
-
-                                                <span>
-                                                    Boshqarma
-                                                </span>
-
-                                                <p>
-                                                    {
-                                                        staff?.position
-                                                        ||
-                                                        "-"
-                                                    }
-                                                </p>
-
-                                            </div>
-
-
-
-                                            <div className="multipleEnterence_body_card_information_inner">
-
-                                                <span>
-                                                    Vaqt
-                                                </span>
-
-                                                <p>
-
-                                                    {
-                                                        vehicle?.the_date
-
-                                                            ?
-
-                                                            moment(
-                                                                vehicle.the_date
-                                                            ).format(
-                                                                "DD.MM.YYYY, HH:mm:ss"
-                                                            )
-
-                                                            :
-
-                                                            "-"
-                                                    }
-
-                                                </p>
-
-                                            </div>
-
-
-
-                                            <div className="multipleEnterence_body_card_information_inner">
-
-                                                <span>
-                                                    Avtomobilning davlat raqami
-                                                </span>
-
-                                                <p>
-
-                                                    {
-                                                        vehicle?.vehicle_number
-                                                        ||
-                                                        "-"
-                                                    }
-
-                                                    <img
-                                                        src={carFlag}
-                                                        alt=""
-                                                    />
-
-                                                </p>
-
-                                            </div>
-
-
-                                        </div>
-
-
-
-                                        {/* RIGHT IMAGE */}
-
-                                        <div className="multipleEnterence_body_card_img">
-
-                                            <img
-                                                src={
-                                                    `${ip}/api/image/temp/${vehicle?.ip_address}/full_image/${vehicle?.the_date}`
-                                                }
-
-                                                className="car_img_full"
-
-                                                alt="Avtomobil"
-                                            />
-
-                                        </div>
-
-
-                                    </div>
-
-
-
-                                    {/* ============================
-                                        STATUS - ALWAYS BOTTOM
-                                    ============================ */}
-
-                                    <div
-                                        className={
-                                            `multipleEnterence_body_card_status ${
-                                                isAllowed
-                                                    ? "activeS"
-                                                    : "noActiveS"
-                                            }`
-                                        }
-                                    >
-
-                                        {
-                                            directionText
-                                        }
-
-                                        {" : "}
-
-                                        {
-                                            isAllowed
-                                                ? "RUXSAT"
-                                                : "TAQIQLANADI"
-                                        }
-
-                                    </div>
-
-
-                                </div>
-                            );
-                        }
-                    )
-                }
-
-            </div>
-
-
-
-            {/* ====================================================
-                GROUP MODAL
-            ==================================================== */}
-
-            <GroupListModal
-
-                openGroup={
-                    openGroup
-                }
-
-                setOpenGroup={
-                    setOpenGroup
-                }
-
-                groupData={
-                    groupData
-                }
-
-                setGroupData={
-                    setGroupData
-                }
-
-                screenViewerNum={
-                    screenViewerNum
-                }
-
-                getEventDataByViewerId={
-                    getEventDataByViewerId
-                }
-
-                setDataGroupViewer={
-                    setDataGroupViewer
-                }
-            />
-
-
+        <div className="lv_clock" aria-label={now.format('DD.MM.YYYY HH:mm')}>
+            <span className="lv_clock_time">{now.format('HH:mm')}<small>{now.format(':ss')}</small></span>
+            <span className="lv_clock_date">{now.format('DD.MM.YYYY')}</span>
         </div>
     );
 };
 
+/** Oynalar soni: − N + (darhol qo'llanadi) */
+const ViewerStepper = ({value, onChange}) => {
+    const {t} = useTranslation();
+    return (
+        <div className="lv_stepper" role="group" aria-label={t("Oynalar soni")}>
+            <span className="lv_stepper_label"><GridIcon size={16}/>{t("Oynalar")}</span>
+            <button type="button" onClick={() => onChange(value - 1)} disabled={value <= MIN_VIEWERS}
+                    aria-label={t("Kamaytirish")}>−</button>
+            <span className="lv_stepper_value" aria-live="polite">{value}</span>
+            <button type="button" onClick={() => onChange(value + 1)} disabled={value >= MAX_VIEWERS}
+                    aria-label={t("Ko'paytirish")}>+</button>
+        </div>
+    );
+};
+
+/** Katak o'lchamiga qarab oyna joylashuvi: keng — rasm chapda, ma'lumot o'ngda; past — ixcham */
+const useCellLayout = (cols, rows, count) => {
+    const [size, setSize] = useState({w: 0, h: 0});
+    const observer = useRef(null);
+    // callback ref: tugun ulanganda kuzatuv boshlanadi, ajralganda (node = null) to'xtaydi.
+    // ⚠ alohida useEffect cleanup qo'yilmaydi — StrictMode'da effekt qayta ishga tushganda u
+    //   kuzatuvchini uzib qo'yardi, ref esa qayta chaqirilmaydi va o'lcham hech qachon yangilanmasdi
+    const ref = useCallback((node) => {
+        observer.current?.disconnect();
+        observer.current = null;
+        if (!node) return;
+        observer.current = new ResizeObserver(([entry]) => {
+            const {width, height} = entry.contentRect;
+            setSize({w: width, h: height});
+        });
+        observer.current.observe(node);
+    }, []);
+
+    const gap = 16;
+    const cellW = (size.w - gap * (cols - 1)) / cols;
+    const cellH = (size.h - gap * (rows - 1)) / rows;
+    const layout = useMemo(() => ({
+        // keng katak: rasm chapda, ma'lumot o'ngda (past kataklarda tik joylashuvga rasm sig'maydi)
+        orientation: cellW >= 560 && cellW / cellH > 1.25 ? 'wide' : 'tall',
+        compact: cellH > 0 && cellH < 520,
+        // juda past katak (8–12 oyna, kichik ekran): rasm chapda, ma'lumot o'ngda, qaror bir qatorda
+        mini: cellH > 0 && cellH < 340,
+        // eng past katak (9–12 oyna, ~600px ekran): sarlavha va qaror qatori ingichkalashadi —
+        // raqam, ism, turi va boshqarma sig'ishi uchun
+        tiny: cellH > 0 && cellH < 200,
+        // "Vaqt / Yo'nalishi" bloki — faqat 1–6 oynada (joy yetsa); 7+ oynada yashirin
+        facts: count <= FACTS_MAX_VIEWERS && cellW >= 400 && cellH >= 200,
+        // 5+ oynada ma'lumot tomoni kengroq (rasm 44%) — uzun ism bitta qatorga sig'sin; 1–4 da 1:1
+        dense: count > 4,
+    }), [cellW, cellH, count]);
+    return [ref, layout];
+};
+
+const MultipleEnterence = () => {
+    const {t, i18n} = useTranslation();
+    const {theme} = useTheme();
+    const navigate = useNavigate();
+
+    const [lang, setLang] = useState(localStorage.getItem('i18nextLng') || i18n.language || 'uz');
+    const onChangeLanguage = (next) => {
+        setLang(next);
+        i18n.changeLanguage(next);
+        localStorage.setItem('i18nextLng', next);
+    };
+
+    const [count, setCount] = useState(readStoredCount);
+    const [groups, setGroups] = useState(null);              // null — hali yuklanmagan
+    const [events, setEvents] = useState({});                // {viewer: [] | null}
+    const [socketState, setSocketState] = useState('connecting');   // connecting | live | lost
+    const [groupsError, setGroupsError] = useState(false);
+    const [viewerError, setViewerError] = useState(false);
+    const [pickSlot, setPickSlot] = useState(null);
+    const [removeSlot, setRemoveSlot] = useState(null);
+    const [removing, setRemoving] = useState(false);
+
+    const slots = useMemo(() => Array.from({length: count}, (_, i) => i + 1), [count]);
+    const [cols, rows] = GRID[count] || GRID[DEFAULT_VIEWERS];
+    const [gridRef, layout] = useCellLayout(cols, rows, count);
+
+    // oyna -> guruh
+    const bySlot = useMemo(() => {
+        const map = {};
+        (groups || []).forEach(g => {
+            if (g.viewer) map[g.viewer] = g;
+        });
+        return map;
+    }, [groups]);
+
+    const bySlotRef = useRef(bySlot);
+    bySlotRef.current = bySlot;
+
+    // ⚠ xato bo'lsa oldingi ro'yxat saqlanadi: bo'sh ro'yxat qo'yilsa, barcha oynalar
+    //   "Guruh biriktirilmagan" bo'lib, aslida band oynalarga ham "biriktirish" taklif qilinardi
+    const groupsReq = useRef(0);
+    const loadGroups = useCallback(() => {
+        const id = ++groupsReq.current;
+        return axios.get(`${ip}/api/all/camera-group`)
+            .then(({data}) => {
+                if (id !== groupsReq.current) return;
+                setGroups(data?.data || []);
+                setGroupsError(false);
+            })
+            .catch(() => {
+                if (id === groupsReq.current) setGroupsError(true);
+            });
+    }, []);
+
+    // har oyna uchun faqat eng oxirgi so'rov javobi qabul qilinadi — socket ketma-ket ikki
+    // hodisa yuborsa, kechikib kelgan eski javob yangisining ustiga yozilmaydi
+    const viewerReq = useRef({});
+    const loadViewer = useCallback((viewer) => {
+        const id = (viewerReq.current[viewer] || 0) + 1;
+        viewerReq.current[viewer] = id;
+        return axios.get(`${ip}/api/temp/${viewer}`)
+            .then(({data}) => {
+                if (id !== viewerReq.current[viewer]) return;
+                const value = data?.data ?? null;
+                setEvents(prev => ({...prev, [viewer]: value}));
+                setViewerError(false);
+                // server "guruh yo'q/bor" deydi, bizdagi ro'yxat esa boshqacha — bog'lanishni
+                // boshqa monitor o'zgartirgan: ro'yxat yangilanadi
+                if ((value === null) !== !bySlotRef.current[viewer]) loadGroups();
+            })
+            .catch(() => {
+                if (id !== viewerReq.current[viewer]) return;
+                // skelet osilib qolmasin — oyna guruh ma'lumotiga qarab chiziladi
+                setEvents(prev => (viewer in prev ? prev : {...prev, [viewer]: []}));
+                setViewerError(true);
+            });
+    }, [loadGroups]);
+
+    const loadAll = useCallback(() => {
+        loadGroups();
+        slots.forEach(loadViewer);
+    }, [loadGroups, loadViewer, slots]);
+
+    useEffect(() => {
+        loadAll();
+    }, [loadAll]);
+
+    // jonli hodisalar
+    const slotsRef = useRef(slots);
+    slotsRef.current = slots;
+    useEffect(() => {
+        const socket = socketIOClient(ip);
+        let wasDisconnected = false;
+        socket.on('connect', () => {
+            setSocketState('live');
+            // uzilish paytida o'tkazib yuborilgan hodisalar
+            if (wasDisconnected) {
+                loadGroups();
+                slotsRef.current.forEach(loadViewer);
+            }
+        });
+        socket.on('disconnect', () => {
+            wasDisconnected = true;
+            setSocketState('lost');
+        });
+        socket.on('connect_error', () => {
+            wasDisconnected = true;
+            setSocketState('lost');
+        });
+        socket.on('enter', (viewer) => {
+            const n = Number(viewer);
+            if (slotsRef.current.includes(n)) loadViewer(n);
+        });
+        return () => socket.disconnect();
+    }, [loadGroups, loadViewer]);
+
+    // socket ishlamasa — zaxira so'rov
+    useEffect(() => {
+        if (socketState === 'live') return undefined;
+        const id = setInterval(() => {
+            if (document.visibilityState === 'visible') loadAll();
+        }, FALLBACK_POLL_MS);
+        return () => clearInterval(id);
+    }, [socketState, loadAll]);
+
+    // oyna-guruh bog'lanishi boshqa monitordan ham o'zgarishi mumkin — vaqti-vaqti bilan tekshiriladi
+    useEffect(() => {
+        const id = setInterval(() => {
+            if (document.visibilityState === 'visible') loadGroups();
+        }, GROUPS_POLL_MS);
+        return () => clearInterval(id);
+    }, [loadGroups]);
+
+    const changeCount = (next) => {
+        const value = clampCount(next);
+        setCount(value);
+        localStorage.setItem('viewerCount', String(value));
+        localStorage.setItem('viewerIds', JSON.stringify(Array.from({length: value}, (_, i) => i + 1)));
+    };
+
+    const setViewer = (groupId, viewer) =>
+        axios.put(`${ip}/api/viewer/camera-group/${groupId}`, {viewer});
+
+    // guruhni oynaga biriktirish; oynada boshqa guruh bo'lsa — avval u ajratiladi
+    const assign = async (group) => {
+        const slot = pickSlot;
+        const current = bySlot[slot];
+        const from = group.viewer;
+        let detached = false;
+        try {
+            if (current) {
+                await setViewer(current.id, 0);
+                detached = true;
+            }
+            await setViewer(group.id, slot);
+            message.success(t("{{name}} guruhi {{n}}-oynaga biriktirildi", {name: group.name, n: slot}));
+            setPickSlot(null);
+        } catch (err) {
+            // eski guruh ajratilib, yangisi biriktirilmay qolsa — oyna bo'sh qolmasin, eskisi qaytariladi
+            if (detached) await setViewer(current.id, slot).catch(() => {});
+            message.error(err?.response?.data?.msg || t("Xatolik"));
+        } finally {
+            loadGroups();
+            loadViewer(slot);
+            if (from && from !== slot && slotsRef.current.includes(from)) loadViewer(from);
+        }
+    };
+
+    const remove = async () => {
+        const slot = removeSlot;
+        const group = bySlot[slot];
+        if (!group) return;
+        setRemoving(true);
+        try {
+            await setViewer(group.id, 0);
+            message.success(t("Guruh oynadan olib tashlandi"));
+            setRemoveSlot(null);
+        } catch (err) {
+            message.error(err?.response?.data?.msg || t("Xatolik"));
+        } finally {
+            setRemoving(false);
+            loadGroups();
+            loadViewer(slot);
+        }
+    };
+
+    const status = groupsError || viewerError ? 'error' : socketState;
+    const STATUS_TEXT = {
+        live: t("Jonli"),
+        connecting: t("Ulanmoqda..."),
+        lost: t("Qayta ulanmoqda..."),
+        error: t("Server bilan aloqa yo'q"),
+    };
+
+    return (
+        <div className="lv">
+            <header className="shell-top lv_top">
+                <span className="shell-top__logo">
+                    <img src={theme === 'dark' ? logoDark : logoLight} alt="SoftData"/>
+                </span>
+
+                <div className="lv_title">
+                    <h1>{t("Kirish-chiqish nazorati")}</h1>
+                    <span className={`lv_live is-${status}`} role="status">
+                        <span className="lv_live_dot"/>
+                        {STATUS_TEXT[status]}
+                    </span>
+                </div>
+
+                <div className="shell-top__right">
+                    <ViewerStepper value={count} onChange={changeCount}/>
+                    <span className="shell-top__sep" aria-hidden="true"/>
+                    <LiveClock/>
+                    <span className="shell-top__sep" aria-hidden="true"/>
+                    <PrefsSwitch lang={lang} onChangeLanguage={onChangeLanguage}/>
+                    <button type="button" className="lv_btn lv_btn--primary lv_login" onClick={() => navigate('/login')}>
+                        {t("Tizimga kirish")}<ArrowRightIcon size={18}/>
+                    </button>
+                </div>
+            </header>
+
+            <main className="lv_grid" ref={gridRef}
+                  style={{'--lv-cols': cols, '--lv-rows': rows}}>
+                {slots.map(slot => (
+                    <ViewerPanel
+                        key={slot}
+                        slot={slot}
+                        group={bySlot[slot]}
+                        events={events[slot]}
+                        loading={(groups === null && !groupsError) || !(slot in events)}
+                        unavailable={groups === null && groupsError}
+                        layout={layout}
+                        onAssign={() => setPickSlot(slot)}
+                        onRemove={() => setRemoveSlot(slot)}
+                    />
+                ))}
+            </main>
+
+            <GroupPickerModal
+                open={pickSlot !== null}
+                slot={pickSlot}
+                current={bySlot[pickSlot]}
+                groups={groups}
+                visibleCount={count}
+                onClose={() => setPickSlot(null)}
+                onPick={assign}
+            />
+            <RemoveGroupModal
+                open={removeSlot !== null}
+                slot={removeSlot}
+                group={bySlot[removeSlot]}
+                busy={removing}
+                onClose={() => !removing && setRemoveSlot(null)}
+                onConfirm={remove}
+            />
+        </div>
+    );
+};
 
 export default MultipleEnterence;

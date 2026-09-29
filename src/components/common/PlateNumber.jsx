@@ -18,6 +18,9 @@ export const parsePlate = (raw) => {
     const tex = (raw || '').toString().trim().toUpperCase();
     const s = (from, len) => tex.substr(from, len);
 
+    // prefiksli raqamlar birinchi: "CMD01234" ham 8 belgi — aks holda oddiy raqam deb o'qilardi
+    if (s(0, 3) === 'PAA') return {kind: 'standard', text: `PAA ${s(3)}`, flag: true};
+    if (s(0, 3) === 'CMD') return {kind: 'green', text: `CMD ${s(3, 2)}-${s(5)}`};
     if (tex.length === 8) {
         const region = s(0, 2);
         const rest = isNum(s(2, 2))
@@ -25,8 +28,6 @@ export const parsePlate = (raw) => {
             : `${s(2, 1)} ${s(3, 3)} ${s(6)}`;
         return {kind: 'standard', region, text: rest, flag: true};
     }
-    if (s(0, 3) === 'PAA') return {kind: 'standard', text: `PAA ${s(3)}`, flag: true};
-    if (s(0, 3) === 'CMD') return {kind: 'green', text: `CMD ${s(3, 2)}-${s(5)}`};
     if (tex.length === 7 && ['D', 'T', 'X'].includes(s(0, 1)) && isNum(s(1))) {
         return {kind: 'green', text: `${s(0, 1)} ${s(1)}`};
     }

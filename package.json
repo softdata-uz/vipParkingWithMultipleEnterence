@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@react-icons/all-files": "^4.1.0",
-    "@react-navigation/native": "^6.1.5",
     "@reduxjs/toolkit": "^2.6.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -21,8 +20,6 @@
     "moment": "^2.29.4",
     "qs": "^6.14.0",
     "react": "^18.2.0",
-    "react-alert": "^7.0.3",
-    "react-alert-template-basic": "^1.0.2",
     "react-datepicker": "^8.3.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^15.4.1",

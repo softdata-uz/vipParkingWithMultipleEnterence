@@ -1,0 +1,82 @@
+/* ============================================================================
+   Guruh turlari ranglari — groupTypes.jsx ulaydi, shuning uchun GroupTypeBadge
+   istalgan sahifada (Xodimlar, Hisobot, bosh ekran) bir xil ko'rinadi:
+   Oq ro'yxat — yashil, Qora ro'yxat — qora, Qidiruvda — qizil
+   ========================================================================== */
+
+:root {
+    --grp-black-bg: #101828;
+    --grp-black-border: #101828;
+    --grp-black-fg: #FFFFFF;
+}
+
+/* qorong'i rejimda qora belgi fondan ajralib turishi uchun aniq chegara */
+:root[data-theme="dark"] {
+    --grp-black-bg: #000000;
+    --grp-black-border: rgba(255, 255, 255, .28);
+    --grp-black-fg: #FFFFFF;
+}
+
+/* belgi (badge) */
+.grp_badge--white {
+    background: var(--utility-success-50);
+    border-color: var(--utility-success-200);
+    color: var(--utility-success-700);
+}
+
+.grp_badge--black {
+    background: var(--grp-black-bg);
+    border-color: var(--grp-black-border);
+    color: var(--grp-black-fg);
+}
+
+.grp_badge--wanted {
+    background: var(--utility-error-50);
+    border-color: var(--utility-error-200);
+    color: var(--utility-error-700);
+}
+
+.grp_badge--unknown {
+    background: var(--utility-gray-50);
+    border-color: var(--utility-gray-200);
+    color: var(--utility-gray-700);
+}
+
+/* kartadagi ikonka qutisi */
+.emp_card_icon.grp_icon--white {
+    background: var(--utility-success-50);
+    border-color: var(--utility-success-200);
+    color: var(--utility-success-700);
+}
+
+.emp_card_icon.grp_icon--black {
+    background: var(--grp-black-bg);
+    border-color: var(--grp-black-border);
+    color: var(--grp-black-fg);
+}
+
+.emp_card_icon.grp_icon--wanted {
+    background: var(--utility-error-50);
+    border-color: var(--utility-error-200);
+    color: var(--utility-error-700);
+}
+
+.emp_card_icon.grp_icon--unknown {
+    background: var(--utility-gray-50);
+    border-color: var(--utility-gray-200);
+    color: var(--utility-gray-700);
+}
+
+/* filtr tugmasi va tanlash ro'yxatidagi nuqta */
+.grp_dot--white { background: var(--fg-success); }
+.grp_dot--wanted { background: var(--fg-error); }
+.grp_dot--black {
+    background: var(--grp-black-bg);
+    box-shadow: 0 0 0 1px var(--grp-black-border);
+}
+
+.grp_option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}

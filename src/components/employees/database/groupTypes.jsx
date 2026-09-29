@@ -1,15 +1,16 @@
 import React from 'react';
+import '../../../styles/group-type.css';
 
 /* Xodimlar guruhining turi (server qiymati -> ko'rinish). Rang va nom faqat shu yerda:
      whitelist — Oq ro'yxat     — yashil
      blacklist — Qora ro'yxat   — qora
-     wanted    — Qidirilmoqda   — qizil
+     wanted    — Qidiruvda   — qizil
    Noma'lum qiymat — kulrang, server qiymatining o'zi bilan. */
 
 export const GROUP_TYPES = [
     {value: 'whitelist', label: "Oq ro'yxat", tone: 'white'},
     {value: 'blacklist', label: "Qora ro'yxat", tone: 'black'},
-    {value: 'wanted', label: "Qidirilmoqda", tone: 'wanted'},
+    {value: 'wanted', label: "Qidiruvda", tone: 'wanted'},
 ];
 
 export const groupType = (value) =>

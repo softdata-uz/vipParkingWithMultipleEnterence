@@ -11,12 +11,12 @@ import {
     DownloadIcon,
     FileTextIcon,
     InboxIcon,
-    RefreshIcon,
     SearchIcon,
 } from "../../design-system/icons";
 import PagePagination from "../common/PagePagination";
 import PlateNumber from "../common/PlateNumber";
 import {PersonCell, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+import {GroupTypeBadge} from "../employees/database/groupTypes";
 
 import '../../design-system/ui.css';
 import '../../styles/table-cells.css';
@@ -24,11 +24,10 @@ import '../../styles/page.css';
 import './report.css';
 
 /* Hisobot — avtomobillarning kirish-chiqish tarixi.
-   API: GET  /api/vehicle_log/:limit/:page?fromDate&toDate&searched_data&type  -> {data, count, current_page}
+   API: GET  /api/vehicle_log/:limit/:page?fromDate&toDate&searched_data&db_type  -> {data, count, current_page}
           ⚠ fromDate/toDate bo'lmasa server bo'sh ro'yxat qaytaradi — davr doim yuboriladi.
           ⚠ table_name/order_by ni server e'tiborsiz qoldiradi — ustun bo'yicha saralash yo'q.
-          ⚠ type=staff | stranger hozir serverda 500 ("column staff.lastname does not exist").
-        POST /api/report/vehicle_log/excel | pdf  (shu filtr bilan) -> fayl (blob)
+        POST /api/report/vehicle_log/excel | pdf  (shu filtr + lang bilan) -> fayl (blob)
         GET  /api/image/event/:id/plate_image | vehicle_image */
 
 const PAGE_SIZES = [15, 30, 50, 100];
@@ -65,10 +64,9 @@ const Report = () => {
     const [limit, setLimit] = useState(PAGE_SIZES[0]);
     const [period, setPeriod] = useState('month30');
     const [customRange, setCustomRange] = useState(null);   // [dayjs, dayjs] — "Oraliq" tanlanganda
-    const [type, setType] = useState('all');
+    const [dbType, setDbType] = useState('all');
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
-    const [refreshing, setRefreshing] = useState(false);
     const [exporting, setExporting] = useState(null);       // 'excel' | 'pdf' | null
     const requestIdRef = useRef(0);
 
@@ -82,10 +80,10 @@ const Report = () => {
         fromDate: range ? range[0].format(DATE_FORMAT) : '',
         toDate: range ? range[1].format(DATE_FORMAT) : '',
         searched_data: search,
-        type,
-    }), [range, search, type]);
+        db_type: dbType === 'all' ? '' : dbType,
+    }), [range, search, dbType]);
 
-    const load = useCallback(() => {
+    const load = useCallback((silent = false) => {
         if (!range) return Promise.resolve(false);          // "Oraliq" hali tanlanmagan
         const requestId = ++requestIdRef.current;
         return axios.get(`${ip}/api/vehicle_log/${limit}/${page}`, {headers: auth(), params: filter})
@@ -98,6 +96,7 @@ const Report = () => {
             })
             .catch(err => {
                 if (requestId !== requestIdRef.current) return false;
+                if (silent) return false;                   // jim yangilashda jadval saqlanib qoladi
                 setRows([]);
                 setTotal(0);
                 message.error(err?.response?.data?.msg || t("Xatolik"));
@@ -109,10 +108,18 @@ const Report = () => {
         load();
     }, [load]);
 
+    // yangi yozuvlar o'zi keladi: har 30 soniyada jim yangilanadi (sahifa ko'rinib turganda)
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (document.visibilityState === 'visible') load(true);
+        }, 30 * 1000);
+        return () => clearInterval(timer);
+    }, [load]);
+
     // filtr o'zgarsa — 1-sahifa
     useEffect(() => {
         setPage(1);
-    }, [period, customRange, type, search]);
+    }, [period, customRange, dbType, search]);
 
     // qidiruv 400ms kechiktirib yuboriladi
     useEffect(() => {
@@ -121,17 +128,6 @@ const Report = () => {
         const timer = setTimeout(() => setSearch(value), 400);
         return () => clearTimeout(timer);
     }, [searchInput, search]);
-
-    const refresh = async () => {
-        if (refreshing) return;
-        setRefreshing(true);
-        try {
-            const [ok] = await Promise.all([load(), new Promise(r => setTimeout(r, 600))]);
-            if (ok) message.success(t("Yangilandi"));
-        } finally {
-            setRefreshing(false);
-        }
-    };
 
     const onPageChange = (nextPage, nextLimit) => {
         if (nextLimit !== limit) {
@@ -147,7 +143,8 @@ const Report = () => {
         if (exporting || !range) return;
         setExporting(kind);
         try {
-            const res = await axios.post(`${ip}/api/report/vehicle_log/${kind}`, filter, {
+            const lang = localStorage.getItem('i18nextLng');
+            const res = await axios.post(`${ip}/api/report/vehicle_log/${kind}`, {...filter, lang}, {
                 headers: auth(),
                 responseType: 'blob',
                 timeout: kind === 'pdf' ? PDF_TIMEOUT : 60 * 1000,
@@ -171,10 +168,11 @@ const Report = () => {
         {value: 'thisMonth', label: t("Bu oy")},
         {value: 'custom', label: t("Oraliq")},
     ];
-    const TYPE_OPTIONS = [
+    const DB_TYPE_OPTIONS = [
         {value: 'all', label: t("Barchasi")},
-        {value: 'staff', label: t("Xodim")},
-        {value: 'stranger', label: t("Begona shaxs")},
+        {value: 'whitelist', label: t("Oq ro'yxat")},
+        {value: 'blacklist', label: t("Qora ro'yxat")},
+        {value: 'wanted', label: t("Qidiruvda")},
     ];
 
     const columns = [
@@ -198,6 +196,15 @@ const Report = () => {
             key: 'position',
             ellipsis: true,
             render: (value) => value || <span className="tc-muted">—</span>,
+        },
+        {
+            title: t("DB turi"),
+            dataIndex: 'db_type',
+            key: 'db_type',
+            align: 'center',
+            render: (value) => value
+                ? <GroupTypeBadge type={value} t={t}/>
+                : <span className="tc-muted">—</span>,
         },
         {
             title: t("Davlat raqami"),
@@ -255,12 +262,6 @@ const Report = () => {
                         <input type="text" placeholder={t("F.I.Sh yoki raqam bo'yicha izlash...")} value={searchInput}
                                onChange={e => setSearchInput(e.target.value)}/>
                     </div>
-                    <button type="button"
-                            className={`admin_header_btn admin_header_btn--icon${refreshing ? ' is-spinning' : ''}`}
-                            onClick={refresh} disabled={refreshing}
-                            title={t("Yangilash")} aria-label={t("Yangilash")}>
-                        <RefreshIcon size={18}/>
-                    </button>
                     <button type="button" className={`admin_header_btn rp_export${exporting === 'excel' ? ' is-loading' : ''}`}
                             onClick={() => exportFile('excel')} disabled={!!exporting || !range}
                             title={t("Joriy filtr bo'yicha Excel fayl")}>
@@ -312,12 +313,12 @@ const Report = () => {
                         )}
                     </div>
                     <div className="admin_toolbar_right">
-                        {/* tur */}
-                        <div className="page_seg" role="tablist" aria-label={t("Turi")}>
-                            {TYPE_OPTIONS.map(o => (
-                                <button key={o.value} type="button" role="tab" aria-selected={type === o.value}
-                                        className={`page_seg_item${type === o.value ? ' is-active' : ''}`}
-                                        onClick={() => setType(o.value)}>
+                        {/* DB turi */}
+                        <div className="page_seg" role="tablist" aria-label={t("DB turi")}>
+                            {DB_TYPE_OPTIONS.map(o => (
+                                <button key={o.value} type="button" role="tab" aria-selected={dbType === o.value}
+                                        className={`page_seg_item${dbType === o.value ? ' is-active' : ''}`}
+                                        onClick={() => setDbType(o.value)}>
                                     {o.label}
                                 </button>
                             ))}

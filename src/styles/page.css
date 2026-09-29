@@ -393,11 +393,16 @@
     color: var(--text-primary);
 }
 
-.page_seg_item.is-active {
-    background: var(--bg-primary);
-    border-color: var(--border-secondary);
-    box-shadow: var(--shadow-sm);
-    color: var(--text-primary);
+/* faol — header menyusidagi faol havola (.shell-topnav__link.is-active) kabi */
+.page_seg_item.is-active,
+.page_seg_item.is-active:hover {
+    background: var(--utility-brand-50);
+    border-color: var(--utility-brand-200);
+    color: var(--utility-brand-700);
+}
+
+.page_seg_item.is-active svg {
+    color: var(--utility-brand-700);
 }
 
 .page_seg_item:focus-visible {
@@ -428,8 +433,8 @@
 }
 
 .page_seg_item.is-active .page_seg_count {
-    background: var(--utility-brand-50);
-    color: var(--utility-brand-700);
+    background: var(--utility-brand-500);
+    color: #FFFFFF;
 }
 
 /* PASTKI panel: jami + pagination */

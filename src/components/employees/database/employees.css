@@ -175,6 +175,13 @@
     text-overflow: ellipsis;
 }
 
+/* raqamlar bir ustunda tekis turadi (turli uzunlikdagi raqamlar o'ng chetdan "sakramaydi") */
+.exp_row_plate {
+    flex: none;
+    width: 176px;                       /* eng uzun oddiy raqam ("01 A 777 AA") — 173px */
+    display: flex;
+}
+
 .exp_row .ds-badge {
     flex: none;
     height: 24px;
@@ -227,6 +234,7 @@
 .emp_card {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     gap: var(--spacing-xl);
     padding: var(--spacing-2xl);
     border: 1px solid var(--border-secondary);
@@ -326,8 +334,11 @@
 .emp_card_stat {
     display: flex;
     align-items: center;
+    justify-content: center;            /* ikonka + son + yozuv qutining o'rtasida */
     gap: var(--spacing-sm);
-    padding: var(--spacing-md) var(--spacing-lg);
+    height: 35px;
+    padding: 0 var(--spacing-lg);
+    line-height: 1;
     border-radius: var(--radius-md);
     background: var(--bg-secondary);
     font-size: 13px;
@@ -342,7 +353,7 @@
 }
 
 .emp_card_stat b {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: var(--weight-semibold);
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
@@ -359,7 +370,7 @@
 }
 
 .emp_card_cam_btn {
-    height: 32px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm);
@@ -403,6 +414,7 @@
 .emp_staff {
     display: flex;
     flex-direction: column;
+    min-width: 0;               /* grid ustunini uzun matn kengaytirmasin (gorizontal skroll chiqardi) */
     gap: var(--spacing-lg);
     padding: var(--spacing-xl);
     border: 1px solid var(--border-secondary);
@@ -430,6 +442,10 @@
     align-items: center;
     gap: var(--spacing-lg);
     min-width: 0;
+    /* ism 1 yoki 2 qator bo'lishidan qat'i nazar hamma kartada bir xil balandlik —
+       raqam va ma'lumotlar bloki barcha kartalarda bir chiziqda turadi.
+       66 = ism 2 qator (2×20) + oraliq (4) + holat belgisi (22) */
+    min-height: 66px;
 }
 
 .emp_staff_top .tc-actions {
@@ -493,15 +509,22 @@
     font-size: 12px;
 }
 
+/* uzun F.I.Sh — 2 qatorgacha, keyin "…"; to'liq ismi title'da.
+   max-width: 100% — ustun flex-start bo'lgani uchun busiz h3 matn kengligida cho'zilib,
+   tugmalar ustiga chiqib ketardi */
 .emp_staff_name {
+    max-width: 100%;
+    text-wrap: balance;                 /* 2 qatorga tushganda teng bo'linadi */
     margin: 0;
     font-size: 15px;
-    line-height: 22px;
+    line-height: 20px;
     font-weight: var(--weight-semibold);
     color: var(--text-primary);
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
 }
 
 .emp_staff_plate {
@@ -675,85 +698,4 @@
     }
 }
 
-
-/* ============================================================================
-   Guruh turlari ranglari (groupTypes.jsx):
-   Oq ro'yxat — yashil, Qora ro'yxat — qora, Qidirilmoqda — qizil
-   ========================================================================== */
-
-:root {
-    --grp-black-bg: #101828;
-    --grp-black-border: #101828;
-    --grp-black-fg: #FFFFFF;
-}
-
-/* qorong'i rejimda qora belgi fondan ajralib turishi uchun aniq chegara */
-:root[data-theme="dark"] {
-    --grp-black-bg: #000000;
-    --grp-black-border: rgba(255, 255, 255, .28);
-    --grp-black-fg: #FFFFFF;
-}
-
-/* belgi (badge) */
-.grp_badge--white {
-    background: var(--utility-success-50);
-    border-color: var(--utility-success-200);
-    color: var(--utility-success-700);
-}
-
-.grp_badge--black {
-    background: var(--grp-black-bg);
-    border-color: var(--grp-black-border);
-    color: var(--grp-black-fg);
-}
-
-.grp_badge--wanted {
-    background: var(--utility-error-50);
-    border-color: var(--utility-error-200);
-    color: var(--utility-error-700);
-}
-
-.grp_badge--unknown {
-    background: var(--utility-gray-50);
-    border-color: var(--utility-gray-200);
-    color: var(--utility-gray-700);
-}
-
-/* kartadagi ikonka qutisi */
-.emp_card_icon.grp_icon--white {
-    background: var(--utility-success-50);
-    border-color: var(--utility-success-200);
-    color: var(--utility-success-700);
-}
-
-.emp_card_icon.grp_icon--black {
-    background: var(--grp-black-bg);
-    border-color: var(--grp-black-border);
-    color: var(--grp-black-fg);
-}
-
-.emp_card_icon.grp_icon--wanted {
-    background: var(--utility-error-50);
-    border-color: var(--utility-error-200);
-    color: var(--utility-error-700);
-}
-
-.emp_card_icon.grp_icon--unknown {
-    background: var(--utility-gray-50);
-    border-color: var(--utility-gray-200);
-    color: var(--utility-gray-700);
-}
-
-/* filtr tugmasi va tanlash ro'yxatidagi nuqta */
-.grp_dot--white { background: var(--fg-success); }
-.grp_dot--wanted { background: var(--fg-error); }
-.grp_dot--black {
-    background: var(--grp-black-bg);
-    box-shadow: 0 0 0 1px var(--grp-black-border);
-}
-
-.grp_option {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
+/* Guruh turlari ranglari (grp_*) — styles/group-type.css (groupTypes.jsx o'zi ulaydi) */

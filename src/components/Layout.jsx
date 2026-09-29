@@ -14,6 +14,7 @@ import {useTheme} from "../context/ThemeContext";
 import {PrefsSwitch} from "./common/PrefsSwitch";
 import {ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EditIcon, LogOutIcon} from "../design-system/icons";
 import {getRoleBadgeClass, getRoleLabel} from "../utils/roleLabel";
+import {canAccess} from "../utils/roleAccess";
 import ProfileEditModal from "./common/ProfileEditModal";
 
 import './shell.css';
@@ -56,14 +57,15 @@ const Avatar = ({user, large = false}) => {
 
 /* Gorizontal menyu — logo yonida: faol bo'lim yumshoq yashil fon + yashil chegara.
    Sig'masa skroll bo'ladi va chekkalarda strelkalar chiqadi. */
-const TopNav = () => {
+const TopNav = ({role}) => {
     const {t} = useTranslation();
     const {pathname} = useLocation();
     const scrollRef = useRef(null);
     const linkRefs = useRef({});
     const [overflow, setOverflow] = useState({left: false, right: false});
 
-    const activeTo = NAV.find(item => isActive(item.to, pathname))?.to;
+    const items = NAV.filter(item => canAccess(item.to, role));
+    const activeTo = items.find(item => isActive(item.to, pathname))?.to;
 
     const update = useCallback(() => {
         const el = scrollRef.current;
@@ -103,7 +105,7 @@ const TopNav = () => {
                 </button>
             }
             <nav className="shell-topnav__scroll" ref={scrollRef} onScroll={update}>
-                {NAV.map(({to, label, Icon}) => {
+                {items.map(({to, label, Icon}) => {
                     const active = to === activeTo;
                     return (
                         <Link
@@ -160,7 +162,7 @@ const TopBar = ({user, lang, onChangeLanguage, onEditProfile, onLogout}) => {
                 <img src={theme === 'dark' ? logoDark : logoLight} alt=""/>
             </Link>
 
-            <TopNav/>
+            <TopNav role={user?.role}/>
 
             <div className="shell-top__right">
                 {/* mavzu, til va foydalanuvchi — ingichka ustunchalar bilan ajratilgan guruhlar */}
@@ -252,7 +254,7 @@ const Layout = () => {
                         onEditProfile={() => setProfileOpen(true)} onLogout={logout}/>
 
                 <main className="layout_body">
-                    <RootPage/>
+                    <RootPage role={user?.role}/>
                 </main>
             </div>
             <ProfileEditModal open={profileOpen} onClose={() => setProfileOpen(false)} user={user}/>

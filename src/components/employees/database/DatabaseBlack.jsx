@@ -24,7 +24,7 @@ import {EXPIRING_DAYS, periodStatus} from "../../../utils/staffPeriod";
 import GroupModal from "./GroupModal";
 import CameraAssignModal from "./CameraAssignModal";
 import ExpiringModal from "./ExpiringModal";
-import {fetchAllStaff} from "./staffIndex";
+import {fetchExpiringSummary} from "./staffIndex";
 import {GROUP_TYPES, GroupTypeBadge, groupType} from "./groupTypes";
 
 import '../../../design-system/ui.css';
@@ -32,11 +32,13 @@ import '../../../styles/table-cells.css';
 import '../../../styles/page.css';
 import './employees.css';
 
-/* Xodimlar — guruhlar (ma'lumotlar bazalari) ro'yxati. Karta bosilsa /employees/:id — guruh ichidagi xodimlar (DatabaseAdd).
+/* Xodimlar — guruhlar (ma'lumotlar bazalari) ro'yxati. Karta bosilsa /employees/:id — guruh ichidagi xodimlar (DatabaseAdd),
+   o'sha guruhning xodimlari FAQAT shu yerda, kartasi ochilganda yuklanadi.
    Guruhlar bir so'rovda to'liq yuklanadi (odatda o'nlab): tur bo'yicha filtr serverda yo'q, statistika esa
    barcha guruhlardan hisoblanadi — filtr, nom bo'yicha qidiruv va sahifalash brauzerda.
    API: GET /api/staff-group/:limit/:page -> {data, count}
-        GET /api/staff/:groupId/:limit/:page — muddati tugayotgan xodimlarni hisoblash uchun
+        GET /api/staff-expiring-summary?days= — muddati tugayotgan/o'tgan xodimlar (barcha guruh xodimlarini
+          alohida-alohida yuklamasdan, bitta yengil so'rov bilan)
         DELETE /api/delete/staff-group, DELETE /api/clear/staff-group — body: [id] */
 
 const ALL = 1000;                             // bitta so'rovda olinadigan guruhlar/xodimlar chegarasi
@@ -68,13 +70,14 @@ const DatabaseBlack = () => {
     // faqat eng oxirgi so'rov javobi qo'llanadi
     const requestIdRef = useRef(0);
 
-    // barcha xodimlar bo'yicha: muddati tugayotgan / o'tgan xodimlar
-    const loadInsights = useCallback(async (list, requestId) => {
-        const allStaff = await fetchAllStaff(list);
+    // muddati tugayotgan / o'tgan xodimlar — bitta yengil backend so'rovi bilan
+    // (avval har bir guruh uchun alohida /api/staff/:id so'rovi yuborilardi)
+    const loadInsights = useCallback(async (requestId) => {
+        const rows = await fetchExpiringSummary();
         if (requestId !== requestIdRef.current) return;
         const expiring = [];
         const expired = [];
-        allStaff.forEach(s => {
+        rows.forEach(s => {
             const period = periodStatus(s.from_date, s.to_date);
             if (period.status === 'expiring') expiring.push({...s, period});
             if (period.status === 'expired') expired.push({...s, period});
@@ -93,7 +96,7 @@ const DatabaseBlack = () => {
                 const list = data?.data || [];
                 setGroups(list);
                 setSelected(prev => prev.filter(id => list.some(g => g.id === id)));
-                loadInsights(list, requestId);
+                loadInsights(requestId);
                 return true;
             })
             .catch(err => {

@@ -1,15 +1,151 @@
-.loader{
+/* ============================================================================
+   Loader (Loader.jsx) — SoftData emblemasi + aylanuvchi yoy + oqib turuvchi chiziq.
+   Tokenlar yo'q bo'lsa ham (tokens.css yuklanmagan holat) zaxira ranglar bilan ishlaydi.
+   ========================================================================== */
+
+.app-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    background: var(--bg-secondary, #FAFAFA);
+    opacity: 0;
+    animation: app-loader-in .3s ease-out .2s forwards;   /* 200ms kechikish — tez yuklanishda ko'rinmaydi */
+}
+
+/* konteyner ichida (masalan, oyna tanasi ustida) */
+.app-loader--overlay {
     position: absolute;
-    left: 0%;
-    top: 0%;
-    z-index: 50;
-    border-radius: 5px;
+    z-index: 5;
+    gap: 20px;
+    background: color-mix(in srgb, var(--bg-primary, #FFFFFF) 82%, transparent);
+    backdrop-filter: blur(2px);
+}
+
+.app-loader__mark {
+    position: relative;
+    width: 88px;
+    height: 88px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    background: var(--bg-primary, #FFFFFF);
+    box-shadow: 0 0 0 1px var(--border-secondary, #E9EAEB), 0 12px 32px -8px rgba(10, 13, 18, .18);
+}
+
+.app-loader__ring {
+    position: absolute;
+    inset: -8px;
+    width: calc(100% + 16px);
+    height: calc(100% + 16px);
+    animation: app-loader-spin 1.1s linear infinite;
+}
+
+.app-loader__track {
+    fill: none;
+    stroke: var(--utility-brand-50, rgba(22, 179, 100, .12));
+    stroke-width: 3;
+}
+
+.app-loader__arc {
+    fill: none;
+    stroke: var(--fg-brand, #16B364);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 72 217;           /* aylana uzunligi ≈ 289 — chorakdan biroz ko'p yoy */
+    transform-origin: 50% 50%;
+    animation: app-loader-dash 1.6s ease-in-out infinite;
+}
+
+.app-loader__emblem {
+    position: relative;
+    animation: app-loader-breathe 1.6s ease-in-out infinite;
+}
+
+.app-loader__bar {
+    position: relative;
+    width: 120px;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--utility-brand-50, rgba(22, 179, 100, .12));
+}
+
+.app-loader__bar span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
     height: 100%;
-    width: 100%;
-    opacity: 5;
-    transition: opacity 0.3s;
+    border-radius: inherit;
+    background: var(--fg-brand, #16B364);
+    animation: app-loader-bar 1.4s cubic-bezier(.65, 0, .35, 1) infinite;
+}
+
+.app-loader--overlay .app-loader__mark {
+    width: 64px;
+    height: 64px;
+}
+
+.app-loader--overlay .app-loader__emblem {
+    width: 30px;
+    height: 30px;
+}
+
+.app-loader--overlay .app-loader__bar {
+    display: none;
+}
+
+/* tugma ichidagi kichik aylanuvchi belgi */
+.app-spinner {
+    display: inline-block;
+    flex: none;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    opacity: .9;
+    animation: app-loader-spin .7s linear infinite;
+}
+
+@keyframes app-loader-in {
+    to { opacity: 1; }
+}
+
+@keyframes app-loader-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes app-loader-dash {
+    0% { stroke-dasharray: 20 269; }
+    50% { stroke-dasharray: 110 179; }
+    100% { stroke-dasharray: 20 269; }
+}
+
+@keyframes app-loader-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(.92); }
+}
+
+@keyframes app-loader-bar {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(260%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-loader__ring,
+    .app-loader__arc,
+    .app-loader__emblem,
+    .app-loader__bar span,
+    .app-spinner {
+        animation-duration: 2.4s;
+    }
+
+    .app-loader__emblem {
+        animation: none;
+    }
 }

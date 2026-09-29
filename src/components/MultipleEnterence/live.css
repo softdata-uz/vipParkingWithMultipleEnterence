@@ -1,0 +1,1344 @@
+/* ============================================================================
+   Bosh ekran — kirish-chiqish nazorati (MultipleEnterence.jsx, ViewerPanel.jsx).
+   Tepa panel — header (shell.css .shell-top) bilan bir xil anatomiya.
+   Oynalar to'ri ekranni skrollsiz to'ldiradi (--lv-cols × --lv-rows, JS hisoblaydi);
+   har oyna o'z katagi o'lchamiga qarab keng (rasm chapda) yoki tik joylashadi.
+   Faqat semantik tokenlar — yorug' va qorong'i rejimda bir xil ishlaydi.
+   ========================================================================== */
+
+.lv {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    overflow: hidden;
+}
+
+/* ---------- tepa panel ---------- */
+
+.lv_top {
+    position: relative;
+    z-index: 2;
+}
+
+.lv_title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    min-width: 0;
+}
+
+.lv_title h1 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lv_live {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 10px;
+    border: 1px solid var(--utility-success-200);
+    border-radius: var(--radius-full);
+    background: var(--utility-success-50);
+    font-size: 12px;
+    font-weight: var(--weight-semibold);
+    color: var(--utility-success-700);
+    white-space: nowrap;
+}
+
+.lv_live_dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--fg-success);
+}
+
+.lv_live_dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: inherit;
+    animation: lv-ping 1.6s ease-out infinite;
+}
+
+/* ulanmoqda — kulrang; qayta ulanmoqda — sariq; server javob bermayapti — qizil */
+.lv_live.is-connecting {
+    border-color: var(--utility-gray-200);
+    background: var(--utility-gray-50);
+    color: var(--utility-gray-700);
+}
+
+.lv_live.is-connecting .lv_live_dot {
+    background: var(--fg-quaternary);
+}
+
+.lv_live.is-lost {
+    border-color: var(--utility-warning-200);
+    background: var(--utility-warning-50);
+    color: var(--utility-warning-700);
+}
+
+.lv_live.is-lost .lv_live_dot {
+    background: var(--fg-warning);
+}
+
+.lv_live.is-error {
+    border-color: var(--utility-error-200);
+    background: var(--utility-error-50);
+    color: var(--utility-error-700);
+}
+
+.lv_live.is-error .lv_live_dot {
+    background: var(--fg-error);
+}
+
+.lv_live.is-error .lv_live_dot::after {
+    animation: none;
+}
+
+/* oynalar soni: − N + */
+.lv_stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 40px;
+    padding: 3px 3px 3px var(--spacing-lg);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.lv_stepper_label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: var(--spacing-md);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.lv_stepper_label svg {
+    color: var(--fg-quaternary);
+}
+
+.lv_stepper button {
+    width: 32px;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+
+.lv_stepper button:hover:not(:disabled) {
+    background: var(--bg-primary);
+    border-color: var(--border-secondary);
+    color: var(--text-primary);
+}
+
+.lv_stepper button:disabled {
+    color: var(--fg-quinary);
+    cursor: not-allowed;
+}
+
+.lv_stepper button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.lv_stepper_value {
+    min-width: 32px;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--utility-brand-200);
+    border-radius: var(--radius-sm);
+    background: var(--utility-brand-50);
+    font-size: 14px;
+    font-weight: var(--weight-bold);
+    color: var(--utility-brand-700);
+    font-variant-numeric: tabular-nums;
+}
+
+/* soat */
+.lv_clock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.lv_clock_time {
+    font-size: 20px;
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+    letter-spacing: -.01em;
+}
+
+.lv_clock_time small {
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-quaternary);
+}
+
+.lv_clock_date {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+}
+
+/* tugmalar */
+.lv_btn {
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-xl);
+    border: 0;
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+
+.lv_btn--primary {
+    background: var(--bg-brand-solid);
+    box-shadow: var(--shadow-skeuomorphic);
+    color: var(--text-on-brand);
+}
+
+.lv_btn--primary:hover {
+    background: var(--bg-brand-solid_hover);
+}
+
+.lv_btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+/* ---------- oynalar to'ri ---------- */
+
+.lv_grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--lv-cols, 3), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--lv-rows, 1), minmax(0, 1fr));
+    gap: 16px;                          /* useCellLayout ham 16 deb hisoblaydi */
+    padding: var(--spacing-xl) var(--gutter);
+}
+
+/* ---------- oyna ---------- */
+
+.lv_panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xs);
+    animation: lv-enter .32s ease-out;
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.lv_panel--allowed {
+    border-color: var(--utility-success-200);
+}
+
+.lv_panel--denied {
+    border-color: var(--utility-error-200);
+}
+
+/* qidiruvdagi avtomobil — ramka to'xtamay "nafas oladi" */
+.lv_panel--wanted {
+    border-color: var(--error-500);
+}
+
+/* ...faqat hodisa yangi bo'lsa (ALARM_MS); eski hodisa ogohlantirishsiz, qizil ramka bilan qoladi */
+.lv_panel--wanted.is-alarm {
+    animation: lv-enter .32s ease-out, lv-alarm 1.4s ease-in-out infinite;
+}
+
+/* yangi hodisa — bir necha soniya yashil halqa */
+.lv_panel.is-fresh:not(.lv_panel--wanted) {
+    animation: lv-fresh 4s ease-out;
+}
+
+/* sarlavha */
+.lv_head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    height: 52px;
+    padding: 0 var(--spacing-md) 0 var(--spacing-lg);
+    border-bottom: 1px solid var(--border-secondary);
+}
+
+.lv_slot {
+    flex: none;
+    min-width: 30px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    font-size: 12px;
+    font-weight: var(--weight-bold);
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+
+.lv_head_group {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 15px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+}
+
+.lv_head_group svg {
+    flex: none;
+    color: var(--fg-quaternary);
+}
+
+.lv_head_group span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lv_dir {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 24px;
+    padding: 0 10px 0 8px;
+    border: 1px solid;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+.lv_dir--enter {
+    border-color: var(--utility-success-200);
+    background: var(--utility-success-50);
+    color: var(--utility-success-700);
+}
+
+.lv_dir--exit {
+    border-color: var(--utility-blue-200);
+    background: var(--utility-blue-50);
+    color: var(--utility-blue-700);
+}
+
+.lv_head_menu {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out);
+}
+
+.lv_head_menu span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--fg-quaternary);
+}
+
+.lv_head_menu:hover,
+.lv_head_menu.ant-dropdown-open {
+    background: var(--bg-secondary);
+    border-color: var(--border-secondary);
+}
+
+.lv_head_menu:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* tana: tik — rasm tepada; keng — rasm chapda */
+.lv_body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.lv_panel--wide .lv_body {
+    flex-direction: row;
+}
+
+.lv_media {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 120px;
+    overflow: hidden;
+    background: #0C0E12;                /* surat foni — mavzudan qat'i nazar qorong'i */
+}
+
+.lv_panel--wide .lv_media {
+    flex: 0 0 58%;
+    min-height: 0;
+}
+
+.lv_media .ant-image,
+.lv_media .ant-image-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.lv_media .ant-image-mask {
+    background: rgba(12, 14, 18, .45);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.lv_media:hover .ant-image-mask {
+    opacity: 1;
+}
+
+.lv_media_zoom {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, .16);
+    backdrop-filter: blur(6px);
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: #FFFFFF;
+}
+
+.lv_media_time {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: var(--radius-full);
+    background: rgba(12, 14, 18, .72);
+    backdrop-filter: blur(6px);
+    font-size: 12px;
+    font-weight: var(--weight-medium);
+    color: rgba(255, 255, 255, .78);
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
+.lv_media_time b {
+    font-size: 13px;
+    font-weight: var(--weight-bold);
+    color: #FFFFFF;
+}
+
+.lv_media_skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #14171D 0%, #1D2129 50%, #14171D 100%);
+    background-size: 200% 100%;
+    animation: lv-shimmer 1.4s linear infinite;
+}
+
+.lv_media_empty {
+    position: absolute;
+    inset: 0 0 42px;                    /* pastdagi vaqt belgisi uchun joy */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, .55);
+}
+
+/* ma'lumot */
+.lv_info {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    min-width: 0;
+    padding: var(--spacing-lg) var(--spacing-xl);
+}
+
+.lv_panel--wide .lv_info {
+    flex: 1;
+    justify-content: center;
+    gap: var(--spacing-2xl);
+    padding: var(--spacing-2xl);
+    overflow: hidden;
+}
+
+.lv_plate {
+    display: flex;
+}
+
+.lv_panel--wide:not(.is-compact) .lv_plate .plate {
+    transform: scale(1.35);
+    transform-origin: left center;
+    margin-bottom: 6px;
+}
+
+/* keng oyna (1–2 ta oyna yoki katta ekran) — ma'lumot uzoqdan ham o'qiladigan o'lchamda */
+.lv_panel--wide:not(.is-compact) .lv_avatar {
+    width: 64px;
+    height: 64px;
+}
+
+.lv_panel--wide:not(.is-compact) .lv_person_name {
+    font-size: 22px;
+    line-height: 30px;
+}
+
+.lv_panel--wide:not(.is-compact) .lv_person_pos {
+    font-size: 14px;
+}
+
+.lv_panel--wide:not(.is-compact) .lv_facts {
+    padding: var(--spacing-lg) var(--spacing-xl);
+}
+
+.lv_panel--wide:not(.is-compact) .lv_facts dt {
+    font-size: 13px;
+}
+
+.lv_panel--wide:not(.is-compact) .lv_facts dd {
+    font-size: 16px;
+}
+
+.lv_person {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    min-width: 0;
+}
+
+.lv_avatar {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-tertiary);
+    color: var(--fg-quaternary);
+}
+
+.lv_avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.lv_person_text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* text-wrap: balance — ikki qatorga tushganda qatorlar teng bo'linadi:
+   "OOO INTELLIGENCE / SYSTEM 21", ikkinchi qatorda yolg'iz "21" qolmaydi */
+.lv_person_name {
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    text-wrap: balance;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.lv_person_name.is-muted {
+    color: var(--text-tertiary);
+}
+
+.lv_person_meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px var(--spacing-md);
+    min-width: 0;
+}
+
+.lv_person_meta .ds-badge {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+.lv_person_pos {
+    min-width: 0;
+    font-size: 13px;
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lv_facts {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: var(--spacing-md);
+    margin: 0;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+}
+
+.lv_facts div {
+    min-width: 0;
+}
+
+.lv_facts dt {
+    font-size: 12px;
+    font-weight: var(--weight-medium);
+    color: var(--text-quaternary);
+}
+
+.lv_facts dd {
+    margin: 2px 0 0;
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* joy yetmasa (tor yoki past oyna) — blok yashiriladi; vaqt rasmning ustida baribir ko'rinadi */
+.lv_panel.no-facts .lv_facts {
+    display: none;
+}
+
+.lv_panel.is-compact .lv_info {
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.lv_panel--wide.is-compact .lv_media {
+    flex-basis: 50%;                    /* 1–4 oyna: rasm va ma'lumot 1:1 */
+}
+
+.lv_panel--wide.is-compact.is-dense .lv_media {
+    flex-basis: 44%;                    /* 5+ oyna: ma'lumotga ko'proq joy — uzun ism bitta qatorga sig'sin */
+}
+
+/* qaror */
+.lv_verdict {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    min-height: 60px;
+    padding: var(--spacing-md) var(--spacing-xl);
+    color: #FFFFFF;
+}
+
+.lv_verdict--allowed {
+    background: var(--success-600);
+}
+
+.lv_verdict--denied {
+    background: var(--error-600);
+}
+
+.lv_verdict--wanted {
+    background: repeating-linear-gradient(-45deg, var(--error-700) 0 14px, var(--error-600) 14px 28px);
+}
+
+.lv_verdict_icon {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .2);
+}
+
+/* sarlavha butun kenglikni oladi, sabab uning ostida — tor oynada ham qaror to'liq o'qiladi */
+.lv_verdict_text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lv_verdict_title {
+    text-wrap: balance;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: var(--weight-bold);
+    letter-spacing: .01em;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+
+.lv_verdict_reason {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: var(--weight-semibold);
+    color: rgba(255, 255, 255, .85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lv_panel--wide:not(.is-compact) .lv_verdict {
+    min-height: 76px;
+    padding: var(--spacing-lg) var(--spacing-2xl);
+}
+
+.lv_panel--wide:not(.is-compact) .lv_verdict_title {
+    font-size: 26px;
+    line-height: 32px;
+}
+
+.lv_panel--wide:not(.is-compact) .lv_verdict_reason {
+    font-size: 15px;
+}
+
+.lv_panel.is-compact .lv_verdict {
+    min-height: 52px;
+}
+
+.lv_panel.is-compact .lv_verdict_title {
+    font-size: 17px;
+}
+
+/* ---------- mini oyna (juda past katak: 8–12 oyna yoki kichik ekran) ----------
+   Eng muhimi qoladi: rasm, davlat raqami, ism, turi va qaror. Rasm chapda, ma'lumot o'ngda. */
+
+.lv_panel.is-mini .lv_head {
+    height: 36px;
+    gap: var(--spacing-sm);
+    padding: 0 4px 0 var(--spacing-md);
+}
+
+.lv_panel.is-mini .lv_slot {
+    min-width: 24px;
+    height: 20px;
+    font-size: 11px;
+}
+
+.lv_panel.is-mini .lv_head_group {
+    font-size: 13px;
+}
+
+.lv_panel.is-mini .lv_dir {
+    height: 20px;
+    padding: 0 7px 0 5px;
+    font-size: 11px;
+}
+
+.lv_panel.is-mini .lv_head_menu {
+    width: 28px;
+    height: 28px;
+}
+
+.lv_panel.is-mini .lv_body {
+    flex-direction: row;
+}
+
+.lv_panel.is-mini .lv_media {
+    flex: 0 0 42%;
+    min-height: 0;
+}
+
+.lv_panel.is-mini .lv_media_time {
+    left: 6px;
+    bottom: 6px;
+    height: 22px;
+    padding: 0 8px;
+}
+
+.lv_panel.is-mini .lv_media_time b {
+    font-size: 11px;
+}
+
+.lv_panel.is-mini .lv_media_time {
+    max-width: calc(100% - 12px);
+    font-size: 11px;
+}
+
+.lv_panel.is-mini .lv_media_ago {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lv_panel.is-tiny .lv_media_ago,
+.lv_panel.is-mini .lv_media_zoom {
+    display: none;
+}
+
+.lv_panel.is-mini .lv_media_empty {
+    inset: 0 0 32px;
+    font-size: 11px;
+}
+
+.lv_panel.is-mini .lv_info {
+    flex: 1;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px var(--spacing-md);
+    overflow: hidden;
+}
+
+.lv_panel.is-tiny .lv_avatar {
+    display: none;
+}
+
+.lv_panel.is-mini .lv_facts {
+    gap: var(--spacing-sm);
+    padding: 5px var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.lv_panel.is-mini .lv_facts dt {
+    font-size: 11px;
+    line-height: 14px;
+}
+
+.lv_panel.is-mini .lv_facts dd {
+    margin-top: 1px;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.lv_panel.is-mini .lv_avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+}
+
+.lv_panel.is-mini .lv_person {
+    gap: var(--spacing-md);
+}
+
+/* turi belgisi va boshqarma — bitta qatorda; boshqarma sig'masa "…" bilan qisqaradi */
+.lv_panel.is-mini .lv_person_meta {
+    flex-wrap: nowrap;
+    gap: 6px;
+    line-height: 20px;                  /* meros qator balandligi (27px) qatorni cho'zmasin */
+}
+
+.lv_panel.is-mini .lv_person_meta .ds-badge {
+    flex: none;
+}
+
+.lv_panel.is-mini .lv_person_pos {
+    font-size: 12px;
+    line-height: 20px;
+}
+
+/* eng past oyna: sarlavha 32px, qaror 30px — ma'lumotga ~93px qoladi (raqam + ism + turi/boshqarma = ~79px) */
+.lv_panel.is-mini.is-tiny .lv_head {
+    height: 32px;
+}
+
+.lv_panel.is-mini.is-tiny .lv_info {
+    padding: 4px var(--spacing-md);
+}
+
+.lv_panel.is-mini.is-tiny .lv_verdict {
+    min-height: 30px;
+    padding: 3px var(--spacing-md);
+}
+
+.lv_panel.is-mini .lv_person_text {
+    gap: 3px;
+}
+
+.lv_panel.is-mini .lv_person_name {
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.lv_panel.is-tiny .lv_person_name {
+    -webkit-line-clamp: 1;
+}
+
+.lv_panel.is-mini .lv_person_meta .ds-badge {
+    height: 20px;
+    padding: 0 6px;
+    font-size: 11px;
+}
+
+/* qaror — bir qator: sarlavha chapda (hech qachon qisqarmaydi), sabab o'ngda (sig'masa "…") */
+.lv_panel.is-mini .lv_verdict {
+    min-height: 40px;
+    gap: var(--spacing-sm);
+    padding: 4px var(--spacing-md);
+}
+
+.lv_panel.is-mini .lv_verdict_icon {
+    width: 22px;
+    height: 22px;
+}
+
+.lv_panel.is-mini .lv_verdict_icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.lv_panel.is-mini .lv_verdict_text {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.lv_panel.is-mini .lv_verdict_title {
+    flex: none;
+    font-size: 14px;
+    line-height: 18px;
+    white-space: nowrap;
+}
+
+.lv_panel.is-mini .lv_verdict_reason {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 12px;
+    text-align: right;
+}
+
+/* bo'sh holatlar — ikonka va izohsiz: sarlavha + tugma */
+.lv_panel.is-mini .lv_empty {
+    gap: 6px;
+    padding: var(--spacing-md);
+}
+
+.lv_panel.is-mini .lv_empty_art,
+.lv_panel.is-mini .lv_empty_text {
+    display: none;
+}
+
+.lv_panel.is-mini .lv_empty_title {
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.lv_panel.is-mini .lv_empty .lv_btn {
+    height: 32px;
+    margin-top: 2px;
+    padding: 0 var(--spacing-lg);
+    font-size: 13px;
+}
+
+.lv_panel.is-mini .lv_empty_slot {
+    top: var(--spacing-md);
+    left: var(--spacing-md);
+}
+
+.lv_panel--loading.is-mini {
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+}
+
+.lv_panel--loading.is-mini .lv_skel--line {
+    height: 28px;
+}
+
+/* ---------- bo'sh holatlar ---------- */
+
+.lv_panel--empty {
+    border: 1.5px dashed var(--border-primary);
+    background: transparent;
+    box-shadow: none;
+}
+
+.lv_empty_slot {
+    position: absolute;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
+    font-size: 12px;
+    font-weight: var(--weight-bold);
+    color: var(--text-quaternary);
+    font-variant-numeric: tabular-nums;
+}
+
+.lv_empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-2xl);
+    text-align: center;
+}
+
+.lv_empty_icon {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xs);
+    color: var(--fg-tertiary);
+}
+
+/* bo'sh holat ikonkasi (qutisi bilan) */
+.lv_empty_art {
+    display: flex;
+    margin-bottom: var(--spacing-md);
+}
+
+.lv_empty_icon--cam {
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-sm), inset 0 -2px 0 0 var(--bg-secondary);
+    color: var(--fg-secondary);
+}
+
+/* hodisa kutilmoqda — yashil ikonka va qutidan tarqaladigan yumshoq to'lqin */
+.lv_empty_art--live .lv_empty_icon--cam {
+    color: var(--fg-brand);
+}
+
+.lv_empty_art--live .lv_empty_icon--cam::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    border: 1.5px solid var(--fg-brand);
+    animation: lv-wave 2.4s ease-out infinite;
+}
+
+
+.lv_empty_title {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+}
+
+.lv_empty_text {
+    max-width: 300px;
+    text-wrap: balance;
+    margin-bottom: var(--spacing-lg);
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--text-tertiary);
+}
+
+/* skelet */
+.lv_panel--loading {
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.lv_skel {
+    border-radius: var(--radius-md);
+    background: linear-gradient(90deg, var(--bg-tertiary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+    background-size: 200% 100%;
+    animation: lv-shimmer 1.4s linear infinite;
+}
+
+.lv_skel--head {
+    height: 24px;
+    width: 45%;
+}
+
+.lv_skel--media {
+    flex: 1;
+}
+
+.lv_skel--line {
+    height: 48px;
+}
+
+/* ---------- guruh tanlash oynasi ---------- */
+
+.lv_pick_list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.lv_pick {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    width: 100%;
+    min-height: 60px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+    font-family: var(--font-family);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.lv_pick:hover:not(:disabled),
+.lv_pick.is-busy {
+    border-color: var(--utility-brand-200);
+    background: var(--utility-brand-50);
+}
+
+.lv_pick:disabled:not(.is-busy) {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.lv_pick:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.lv_pick_icon {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    color: var(--fg-tertiary);
+}
+
+.lv_pick_text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lv_pick_name {
+    font-size: 14px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lv_pick_hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.lv_pick_check {
+    flex: none;
+    display: flex;
+    color: var(--fg-brand);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.lv_pick:hover .lv_pick_check {
+    opacity: 1;
+}
+
+.lv_pick_empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xl) 0;
+    text-align: center;
+}
+
+.lv_pick_empty p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+}
+
+.lv_pick_empty > span:last-child {
+    max-width: 320px;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--text-tertiary);
+}
+
+.lv_spinner {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--utility-brand-200);
+    border-top-color: var(--fg-brand);
+    border-radius: 50%;
+    animation: lv-spin .7s linear infinite;
+}
+
+/* ---------- animatsiyalar ---------- */
+
+@keyframes lv-enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes lv-ping {
+    0% { transform: scale(1); opacity: .7; }
+    80%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+@keyframes lv-wave {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes lv-fresh {
+    0%, 30% { box-shadow: 0 0 0 3px var(--fg-brand), var(--shadow-lg); }
+    100% { box-shadow: 0 0 0 0 transparent, var(--shadow-xs); }
+}
+
+@keyframes lv-alarm {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(240, 68, 56, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(240, 68, 56, .45); }
+}
+
+@keyframes lv-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+
+@keyframes lv-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lv_panel,
+    .lv_panel--wanted.is-alarm,
+    .lv_panel.is-fresh:not(.lv_panel--wanted),
+    .lv_live_dot::after,
+    .lv_empty_art--live .lv_empty_icon--cam::after {
+        animation: none;
+    }
+}
+
+/* ---------- kichik ekranlar: to'r skroll bo'ladi ---------- */
+
+@media (max-width: 1280px) {
+    .lv_title h1 {
+        display: none;
+    }
+
+    .lv_stepper_label span,
+    .lv_stepper_label {
+        margin-right: 4px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .lv {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .lv_grid {
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        grid-template-rows: none;
+        grid-auto-rows: minmax(540px, auto);
+    }
+
+    .lv_clock,
+    .lv_clock + .shell-top__sep {
+        display: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .lv_top {
+        grid-template-columns: minmax(0, 1fr) max-content;
+    }
+
+    .lv_title,
+    .lv_stepper_label {
+        display: none;
+    }
+
+    .lv_login {
+        padding: 0 var(--spacing-lg);
+    }
+}

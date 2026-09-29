@@ -1,7 +1,7 @@
 /* Davlat raqami belgisi (PlateNumber.jsx) — O'zbekiston raqamiga o'xshash:
    qalin qora ramka + ichki oq hoshiya, chapda hudud kodi (ajratgich bilan), o'ngda bayroq va "UZ".
    Belgi haqiqiy raqam kabi doim yorug' — mavzu (qorong'i rejim) unga ta'sir qilmaydi.
-   O'lchamlar: sm 26px (ro'yxatlar), md 34px, lg 40px (xodim kartasi). */
+   O'lchamlar: sm 28px, md 34px (jadvallar, ro'yxatlar), lg 40px (xodim kartasi). */
 
 .plate {
     --plate-h: 34px;
@@ -32,14 +32,14 @@
     align-items: center;
     justify-content: center;
     min-width: calc(var(--plate-h) * .95);
-    padding: 0 7px;
+    padding: 0 var(--plate-pad-region, 7px);
     border-right: 2px solid var(--plate-ink);
 }
 
 .plate__text {
     display: flex;
     align-items: center;
-    padding: 0 10px;
+    padding: 0 var(--plate-pad-text, 10px);
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -100,10 +100,15 @@
 
 /* o'lchamlar */
 .plate--sm {
-    --plate-h: 26px;
-    --plate-fs: 13px;
+    --plate-h: 28px;
+    --plate-fs: 14px;
+    --plate-pad-region: 5px;
+    --plate-pad-text: 8px;
     border-width: 1.5px;
     border-radius: 5px;
+    box-shadow: inset 0 0 0 1px #FFFFFF, 0 1px 2px rgba(0, 0, 0, .2);
+    font-weight: 700;
+    letter-spacing: .06em;
 }
 
 .plate--sm .plate__region {

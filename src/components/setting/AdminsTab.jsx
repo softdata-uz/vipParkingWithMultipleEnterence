@@ -173,7 +173,6 @@ const AdminsTab = ({tabs}) => {
             <div className="admin_header">
                 <div className="admin_header_left">
                     <p>{t("Sozlamalar")}</p>
-                    {tabs}
                 </div>
                 <div className="admin_header_right">
                     <div className="admin_header_search">
@@ -188,6 +187,9 @@ const AdminsTab = ({tabs}) => {
             </div>
 
             <div className="admin_body">
+                <div className="admin_toolbar">
+                    <div className="admin_toolbar_left">{tabs}</div>
+                </div>
                 <div className="admin_body_table">
                     <Table
                         columns={columns}

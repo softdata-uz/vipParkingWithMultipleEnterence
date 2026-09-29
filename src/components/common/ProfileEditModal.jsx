@@ -8,7 +8,7 @@ import {ip} from "../../ip";
 import {getMeAction} from "../../redux/action/action";
 import {EditIcon, LockIcon, UserIcon} from "../../design-system/icons";
 import {AvatarUpload, ModalField, ModalShell} from "./ModalShell";
-import Loader from "../loading/Loader";
+import {Spinner} from "../loading/Loader";
 
 /* Tizimga kirgan adminning o'z profilini tahrirlash — Monitoring.jsx dagi oyna bilan 1:1.
    API: PUT /api/edit/admin/:id (FormData, eski parol bilan tekshiriladi) — "VipParking Camera and Card"
@@ -77,7 +77,6 @@ const ProfileEditModal = ({open, onClose, user}) => {
 
     return (
         <>
-            {loading && <Loader/>}
             <ModalShell
                 open={open}
                 onClose={cancel}
@@ -90,6 +89,7 @@ const ProfileEditModal = ({open, onClose, user}) => {
                         </button>
                         <button type="submit" form="profile_form" className="dsm-btn dsm-btn--primary"
                                 disabled={loading}>
+                            {loading && <Spinner/>}
                             {t("Saqlash")}
                         </button>
                     </>
