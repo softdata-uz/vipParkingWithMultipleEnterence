@@ -48,7 +48,11 @@ const auth = () => ({'x-access-token': localStorage.getItem('vipparking-token')}
 const DatabaseBlack = () => {
     const {t} = useTranslation();
     const navigate = useNavigate();
-    const openGroup = (group) => navigate(`/employees/${group.id}`);
+    // staff berilsa — guruh sahifasi shu xodim bo'yicha qidiruv bilan ochiladi (raqam, bo'lmasa F.I.Sh)
+    const openGroup = (group, staff) => {
+        const q = (staff?.vehicle_number || staff?.fullname || '').trim();
+        navigate(`/employees/${group.id}${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+    };
 
     const [groups, setGroups] = useState(null);      // null — yuklanmoqda; barcha guruhlar
     const [expiry, setExpiry] = useState(null);      // {expiring: [...], expired: [...]} | null
@@ -402,9 +406,9 @@ const DatabaseBlack = () => {
                 open={expiringOpen}
                 data={expiry}
                 onClose={() => setExpiringOpen(false)}
-                onOpenGroup={(group) => {
+                onOpenGroup={(group, staff) => {
                     setExpiringOpen(false);
-                    openGroup(group);
+                    openGroup(group, staff);
                 }}
             />
             <ConfirmDeleteModal

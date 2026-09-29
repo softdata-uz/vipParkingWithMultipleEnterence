@@ -62,7 +62,7 @@ const Report = () => {
     const [total, setTotal] = useState(null);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(PAGE_SIZES[0]);
-    const [period, setPeriod] = useState('month30');
+    const [period, setPeriod] = useState('today');
     const [customRange, setCustomRange] = useState(null);   // [dayjs, dayjs] — "Oraliq" tanlanganda
     const [dbType, setDbType] = useState('all');
     const [search, setSearch] = useState('');

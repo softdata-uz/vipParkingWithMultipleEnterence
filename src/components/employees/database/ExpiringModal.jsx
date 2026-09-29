@@ -59,7 +59,7 @@ const ExpiringModal = ({open, data, onClose, onOpenGroup}) => {
                         const badge = periodBadge(item.period, t);
                         return (
                             <li key={item.id}>
-                                <button type="button" className="exp_row" onClick={() => onOpenGroup(item.group)}>
+                                <button type="button" className="exp_row" onClick={() => onOpenGroup(item.group, item)}>
                                     <span className="exp_row_main">
                                         <span className="exp_row_name">{item.fullname || '—'}</span>
                                         <span className="exp_row_group">

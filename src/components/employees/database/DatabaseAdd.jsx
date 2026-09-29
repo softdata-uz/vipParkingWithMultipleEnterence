@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Checkbox, Image, message} from "antd";
 import {useTranslation} from "react-i18next";
 import axios from "axios";
-import {useNavigate, useParams} from "react-router-dom";
+import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 import {ip} from "../../../ip";
 import {
     AlertCircleIcon,
@@ -127,8 +127,10 @@ const StaffList = ({group, onBack, onGroupChanged}) => {
     // sahifa hajmi = ekranga sig'adigan kartalar (ustun × qator) yoki uning karralari
     const grid = useFitGrid(CARD);
     const {page, setPage, limit, sizeOptions, onChange: onPagingChange} = useGridPaging(grid.perPage);
-    const [search, setSearch] = useState('');
-    const [searchInput, setSearchInput] = useState('');
+    // qidiruv manzilda (?q=) — "Ruxsat muddati" oynasidan aynan shu xodim bo'yicha ochiladi va F5 da ham saqlanadi
+    const [params, setParams] = useSearchParams();
+    const [search, setSearch] = useState(() => (params.get('q') || '').trim());
+    const [searchInput, setSearchInput] = useState(() => params.get('q') || '');
 
     const [editStaff, setEditStaff] = useState(null);     // {} — yangi, {..} — tahrir
     const [deleteTarget, setDeleteTarget] = useState(null);
@@ -202,6 +204,12 @@ const StaffList = ({group, onBack, onGroupChanged}) => {
         }, 400);
         return () => clearTimeout(timer);
     }, [searchInput, search, setPage]);
+
+    // qidiruv o'zgarsa — manzil ham yangilanadi (tarixga yangi yozuv qo'shmasdan)
+    useEffect(() => {
+        if ((params.get('q') || '') === search) return;
+        setParams(search ? {q: search} : {}, {replace: true});
+    }, [search, params, setParams]);
 
     const onPageChange = (nextPage, nextSize) => {
         onPagingChange(nextPage, nextSize);

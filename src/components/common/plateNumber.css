@@ -15,8 +15,8 @@
     border: 2px solid var(--plate-ink);
     border-radius: 6px;
     background: #FFFFFF;
-    /* ichki oq hoshiya + yengil soya — haqiqiy raqamdagi bo'rtiq chekka */
-    box-shadow: inset 0 0 0 1.5px #FFFFFF, inset 0 0 0 2.5px rgba(11, 15, 20, .18), 0 1px 2px rgba(0, 0, 0, .25);
+    /* faqat qora ramka + yengil tashqi soya (ichki kulrang hoshiya olib tashlandi) */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
     color: var(--plate-ink);
     font-family: var(--font-family);
     font-size: var(--plate-fs);
@@ -39,6 +39,7 @@
 .plate__text {
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 0 var(--plate-pad-text, 10px);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -53,24 +54,36 @@
     padding: 0 7px 0 2px;
 }
 
-.plate__flag i {
+/* rasmiy O'zbekiston bayrog'i (PlateNumber.jsx → UzFlag), 2:1 */
+.plate__flag-svg {
     display: block;
     width: calc(var(--plate-h) * .44);
-    height: calc(var(--plate-h) * .09);
+    height: calc(var(--plate-h) * .22);
     border-radius: 1px;
+    overflow: hidden;
 }
-
-.plate__flag i:nth-child(1) { background: #0099B5; }
-.plate__flag i:nth-child(2) { background: #FFFFFF; box-shadow: 0 -1px 0 #CE1126, 0 1px 0 #CE1126; }
-.plate__flag i:nth-child(3) { background: #1EB53A; }
 
 .plate__flag b {
     margin-top: 1px;
     font-size: calc(var(--plate-h) * .22);
     line-height: 1;
+    /* matn qutisi bosh harf balandligiga qirqiladi — bayroq + "UZ" optik jihatdan ham markazda
+       (aks holda shriftning yuqoridagi bo'sh joyi guruhni ko'zga tepaga siljitardi) */
+    text-box: trim-both cap alphabetic;
     font-weight: 800;
     letter-spacing: .02em;
     color: #0077A0;
+}
+
+/* oddiy raqamlar bir xil kenglikda (haqiqiy raqamdagidek) — "S 001 AA" va "151 LBA" bir o'lchamda,
+   matn o'rtada. Kenglik balandlikka mutanosib: md 175px, lg 206px, sm 144px */
+.plate--standard {
+    width: calc(var(--plate-h) * 5.15);
+}
+
+.plate--standard .plate__text {
+    flex: 1;
+    min-width: 0;
 }
 
 /* maxsus raqamlar */
@@ -106,7 +119,7 @@
     --plate-pad-text: 8px;
     border-width: 1.5px;
     border-radius: 5px;
-    box-shadow: inset 0 0 0 1px #FFFFFF, 0 1px 2px rgba(0, 0, 0, .2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .2);
     font-weight: 700;
     letter-spacing: .06em;
 }
