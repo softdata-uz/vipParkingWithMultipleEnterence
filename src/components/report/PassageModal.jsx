@@ -24,26 +24,30 @@ import './passageModal.css';
 
 /* Hisobot → "Avtomobil rasmi" bosilganda: avtomobilning kirgandagi va chiqqandagi suratlari.
    Ikki kartochka yonma-yon (Kirish | Chiqish), tepada — kirish → turgan vaqti → chiqish chizig'i.
-   Surat bosilsa — to'liq ekran (kirish va chiqish suratlari orasida ← → bilan o'tiladi). */
+   Surat bosilsa — to'liq ekran (kirish va chiqish suratlari orasida ← → bilan o'tiladi).
+   Joriy holat sahifasida ham shu oyna ishlatiladi: `entryOnly` — faqat Kirish kartochkasi (avtomobil hali ichkarida,
+   chiqish surati bo'lishi mumkin emas), oyna torroq. */
 
 /* Suratlar: GET /api/image/event/:id/:type/:direction
      type      — plate_image | full_image (vehicle_image ham shu fayl)
      direction — enter (entering_time dagi surat) | exit (exiting_time dagi surat)
    Avtomobil hali chiqmagan bo'lsa exit — 404, shuning uchun exiting_time bo'lmasa so'ralmaydi.
-   Kamera nomlari: record.entering_camera / record.exiting_camera (hozircha server qaytarmaydi). */
+   Kamera: record.entering_camera_name / exiting_camera_name (+ ..._ip) — vehicle_log javobida keladi. */
 const photoUrl = (id, type, direction) => `${ip}/api/image/event/${id}/${type}/${direction}`;
 
 export const passagePhotos = (record) => ({
     entry: {
         vehicle: photoUrl(record.id, 'full_image', 'enter'),
         plate: photoUrl(record.id, 'plate_image', 'enter'),
-        camera: record.entering_camera || null,
+        camera: record.entering_camera_name || record.entering_camera_ip || null,
+        cameraIp: record.entering_camera_ip || null,
         time: record.entering_time,
     },
     exit: record.exiting_time ? {
         vehicle: photoUrl(record.id, 'full_image', 'exit'),
         plate: photoUrl(record.id, 'plate_image', 'exit'),
-        camera: record.exiting_camera || null,
+        camera: record.exiting_camera_name || record.exiting_camera_ip || null,
+        cameraIp: record.exiting_camera_ip || null,
         time: record.exiting_time,
     } : null,
 });
@@ -118,8 +122,10 @@ const PassageCard = ({kind, side, plateValue, t}) => {
                     ) : <span className="pm_card_time"><span>—</span></span>}
                 </div>
                 {side?.camera && (
-                    <span className="pm_chip" title={t("Kamera")}>
-                        <CctvIcon size={14}/>{side.camera}
+                    <span className="pm_chip"
+                          title={side.cameraIp && side.cameraIp !== side.camera
+                              ? `${t("Kamera")}: ${side.cameraIp}` : t("Kamera")}>
+                        <CctvIcon size={14}/><span className="pm_chip_text">{side.camera}</span>
                     </span>
                 )}
             </header>
@@ -159,7 +165,7 @@ const PassageCard = ({kind, side, plateValue, t}) => {
     );
 };
 
-export const PassageModal = ({record, onClose}) => {
+export const PassageModal = ({record, onClose, entryOnly = false}) => {
     const {t} = useTranslation();
     const open = Boolean(record);
 
@@ -179,8 +185,8 @@ export const PassageModal = ({record, onClose}) => {
         <Modal
             isOpen={open}
             onRequestClose={onClose}
-            contentLabel={t("Kirish va chiqish suratlari")}
-            className={{base: 'dsm dsm--xl pm', afterOpen: 'dsm--open', beforeClose: 'dsm--closing'}}
+            contentLabel={entryOnly ? t("Kirish surati") : t("Kirish va chiqish suratlari")}
+            className={{base: `dsm dsm--xl pm${entryOnly ? ' pm--single' : ''}`, afterOpen: 'dsm--open', beforeClose: 'dsm--closing'}}
             overlayClassName={{base: 'dsm-overlay', afterOpen: 'dsm-overlay--open', beforeClose: 'dsm-overlay--closing'}}
             closeTimeoutMS={180}
             ariaHideApp={false}
@@ -225,7 +231,8 @@ export const PassageModal = ({record, onClose}) => {
                 <Image.PreviewGroup>
                     <div className="pm_grid">
                         <PassageCard kind="entry" side={photos.entry} plateValue={shown.vehicle_number} t={t}/>
-                        <PassageCard kind="exit" side={photos.exit} plateValue={shown.vehicle_number} t={t}/>
+                        {!entryOnly &&
+                            <PassageCard kind="exit" side={photos.exit} plateValue={shown.vehicle_number} t={t}/>}
                     </div>
                 </Image.PreviewGroup>
             </div>
@@ -234,17 +241,17 @@ export const PassageModal = ({record, onClose}) => {
 };
 
 /** Jadval katagi: raqam surati; bosilsa — kirish/chiqish oynasi */
-export const PassageThumb = ({record, onOpen, t}) => {
+export const PassageThumb = ({record, onOpen, t, entryOnly = false}) => {
     const [broken, setBroken] = useState(false);
     const {entry, exit} = passagePhotos(record);
     return (
         <button type="button" className={`pm_thumb${broken ? ' is-empty' : ''}`} onClick={() => onOpen(record)}
-                title={t("Kirish va chiqish suratlari")}>
+                title={entryOnly ? t("Kirish surati") : t("Kirish va chiqish suratlari")}>
             {broken
                 ? <CameraIcon size={18}/>
                 : <img src={entry.plate} alt="" loading="lazy" onError={() => setBroken(true)}/>}
             <span className="pm_thumb_mask"><CameraIcon size={16}/></span>
-            <span className="pm_thumb_count">{exit ? 2 : 1}</span>
+            {!entryOnly && <span className="pm_thumb_count">{exit ? 2 : 1}</span>}
         </button>
     );
 };

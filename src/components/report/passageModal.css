@@ -7,6 +7,15 @@
     max-width: 1080px;
 }
 
+/* Joriy holat: bitta (Kirish) kartochka — oyna torroq */
+.dsm--xl.pm--single {
+    max-width: 640px;
+}
+
+.pm--single .pm_grid {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 /* --- sarlavha: raqam + shaxs --- */
 .pm_head {
     display: flex;
@@ -251,6 +260,12 @@
     font-weight: var(--weight-medium);
     color: var(--text-secondary);
     white-space: nowrap;
+    overflow: hidden;
+}
+
+/* uzun kamera nomi "…" bilan kesiladi (to'liq nomi va IP — tooltipda) */
+.pm_chip_text {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }

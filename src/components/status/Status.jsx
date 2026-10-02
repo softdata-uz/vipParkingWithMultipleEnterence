@@ -7,7 +7,8 @@ import {ip} from "../../ip";
 import {ClockIcon, InboxIcon, SearchIcon} from "../../design-system/icons";
 import PagePagination from "../common/PagePagination";
 import PlateNumber from "../common/PlateNumber";
-import {PersonCell, personColumnWidth, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+import {PersonCell, personColumnWidth, TimeCell, formatDuration} from "../common/VehicleCells";
+import {PassageModal, PassageThumb} from "../report/PassageModal";
 import {GroupTypeBadge} from "../employees/database/groupTypes";
 
 import '../../design-system/ui.css';
@@ -19,7 +20,7 @@ import './status.css';
    API: GET /api/event/:limit/:page?searched_data=  -> {data, count, current_page}
         ⚠ table_name/order_by ni server e'tiborsiz qoldiradi — ustun bo'yicha saralash yo'q (Hisobotdagi kabi).
         ⚠ searched_data (bo'sh bo'lsa ham) doim yuborilishi kerak — busiz server bo'sh ro'yxat qaytaradi.
-        GET /api/image/event/:id/:type/enter — kirgandagi raqam (plate_image) va avtomobil (full_image) rasmlari */
+        GET /api/image/event/:id/:type/enter — kirgandagi raqam va avtomobil rasmlari (oyna — report/PassageModal.jsx, entryOnly) */
 
 const PAGE_SIZES = [15, 30, 50, 100];
 const LIVE_INTERVAL = 30 * 1000;           // jonli sahifa — har 30 soniyada jim yangilanadi
@@ -33,6 +34,7 @@ const Status = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(PAGE_SIZES[0]);
     const [search, setSearch] = useState('');
+    const [passage, setPassage] = useState(null);    // kirish surati oynasidagi yozuv
     const [searchInput, setSearchInput] = useState('');
     const [now, setNow] = useState(() => Date.now());
     const requestIdRef = useRef(0);
@@ -72,6 +74,11 @@ const Status = () => {
         return () => clearInterval(timer);
     }, [load]);
 
+    // jonli yangilanishda ochiq oynadagi yozuv ham yangilanadi; avtomobil chiqib ketsa (ro'yxatdan yo'qolsa) — oxirgi holati qoladi
+    useEffect(() => {
+        setPassage(current => (current && rows ? rows.find(r => r.id === current.id) || current : current));
+    }, [rows]);
+
     // qidiruv 400ms kechiktirib yuboriladi va 1-sahifadan boshlanadi
     useEffect(() => {
         const value = searchInput.trim();
@@ -91,6 +98,9 @@ const Status = () => {
             setPage(nextPage);
         }
     };
+
+    console.log(rows);
+    
 
     const columns = [
         {
@@ -152,9 +162,8 @@ const Status = () => {
             align: 'center',
             width: 170,
             render: (_, record) => (
-                <VehicleImage t={t}
-                              src={`${ip}/api/image/event/${record.id}/plate_image/enter`}
-                              previewSrc={`${ip}/api/image/event/${record.id}/full_image/enter`}/>
+                // rasm bo'lmasa ham bosiladi — oynada kirish vaqti, turgan vaqti va kamera ko'rinadi (Hisobotdagi kabi)
+                <PassageThumb record={record} onOpen={setPassage} t={t} entryOnly/>
             ),
         },
     ];
@@ -202,6 +211,8 @@ const Status = () => {
                 <PagePagination total={total} current={page} pageSize={limit} onChange={onPageChange}
                                 pageSizeOptions={PAGE_SIZES}/>
             </div>
+
+            <PassageModal record={passage} onClose={() => setPassage(null)} entryOnly/>
         </div>
     );
 };
