@@ -1,5 +1,7 @@
 import React, {createContext, useContext, useEffect, useMemo, useState} from 'react';
 import {ConfigProvider, message, theme as antdTheme} from 'antd';
+import i18n from '../i18n';
+import {applyLocale} from '../utils/antdLocale';
 import '../styles/toast.css';
 
 const ThemeContext = createContext(null);
@@ -78,17 +80,27 @@ export const ThemeProvider = ({children}) => {
 
     const antdConfig = useMemo(() => buildAntdConfig(theme), [theme]);
 
+    // til: antd komponentlari (sana tanlagich va h.k.), dayjs va <html lang> ilova tili bilan birga almashadi
+    const [lang, setLang] = useState(() => localStorage.getItem('i18nextLng') || i18n.language || 'uz');
+    useEffect(() => {
+        i18n.on('languageChanged', setLang);
+        return () => i18n.off('languageChanged', setLang);
+    }, []);
+    const antdLocale = useMemo(() => applyLocale(lang), [lang]);
+
     // `message.success(...)` kabi statik chaqiruvlar React daraxtidan tashqarida
     // chiziladi va ConfigProvider'ni ko'rmaydi — shu orqali ularga ham mavzu beriladi
     useEffect(() => {
         ConfigProvider.config({
-            holderRender: (children) => <ConfigProvider theme={antdConfig}>{children}</ConfigProvider>,
+            holderRender: (children) => (
+                <ConfigProvider theme={antdConfig} locale={antdLocale}>{children}</ConfigProvider>
+            ),
         });
-    }, [antdConfig]);
+    }, [antdConfig, antdLocale]);
 
     return (
         <ThemeContext.Provider value={{theme, mode, setMode}}>
-            <ConfigProvider theme={antdConfig}>
+            <ConfigProvider theme={antdConfig} locale={antdLocale}>
                 {children}
             </ConfigProvider>
         </ThemeContext.Provider>

@@ -614,6 +614,7 @@
 }
 
 .lv_person_name.is-muted {
+    font-weight: var(--weight-bold);
     color: var(--text-tertiary);
 }
 

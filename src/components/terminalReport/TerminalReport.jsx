@@ -108,7 +108,7 @@ const TerminalReport = () => {
             render: (_, record) => (
                 <div className="table_report_cell">
                     <img className="table_report_cell_img"
-                         src={`${ip}/api/image/event/${record.id}/plate_image`}
+                         src={`${ip}/api/image/event/${record.id}/plate_image/enter`}
                          alt=""/>
                 </div>
             ),

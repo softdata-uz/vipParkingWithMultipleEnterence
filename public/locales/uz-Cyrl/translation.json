@@ -178,7 +178,8 @@
   "Bu davrda kirish-chiqish yo'q": "Бу даврда кириш-чиқиш йўқ",
   "Joriy filtr bo'yicha Excel fayl": "Жорий филтр бўйича Excel файл",
   "Joriy filtr bo'yicha PDF fayl": "Жорий филтр бўйича PDF файл",
-  "Server faylni o'z vaqtida tayyorlamadi. Qisqaroq davr tanlab qayta urinib ko'ring.": "Сервер файлни ўз вақтида тайёрламади. Қисқароқ давр танлаб қайта уриниб кўринг.",
+  "Server faylni tayyorlay olmadi. Keyinroq urinib ko'ring yoki administratorga murojaat qiling.": "Сервер файлни тайёрлай олмади. Кейинроқ уриниб кўринг ёки администраторга мурожаат қилинг.",
+  "Eksport uchun ma'lumot yo'q": "Экспорт учун маълумот йўқ",
   "Faylni yuklab bo'lmadi": "Файлни юклаб бўлмади",
   "Rasm yo'q": "Расм йўқ",
   "Admin": "Админ",
@@ -253,5 +254,12 @@
   "Turi noma'lum": "Тури номаълум",
   "Ma'lumot olinmadi": "Маълумот олинмади",
   "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "Сервер билан алоқа тикланганда ойна ўзи янгиланади",
-  "DB turi": "МБ тури"
+  "DB turi": "МБ тури",
+  "Kirish va chiqish suratlari": "Кириш ва чиқиш суратлари",
+  "Avtomobil hali ichkarida": "Автомобиль ҳали ичкарида",
+  "Chiqish surati avtomobil chiqqanda paydo bo'ladi": "Чиқиш сурати автомобиль чиққанда пайдо бўлади",
+  "Aniqlangan raqam": "Аниқланган рақам",
+  "Yuklab olish": "Юклаб олиш",
+  "Kamera": "Камера",
+  "Sessiya muddati tugadi. Qaytadan kiring.": "Сессия муддати тугади. Қайтадан киринг."
 }

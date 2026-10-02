@@ -178,7 +178,8 @@
   "Bu davrda kirish-chiqish yo'q": "Bu davrda kirish-chiqish yo'q",
   "Joriy filtr bo'yicha Excel fayl": "Joriy filtr bo'yicha Excel fayl",
   "Joriy filtr bo'yicha PDF fayl": "Joriy filtr bo'yicha PDF fayl",
-  "Server faylni o'z vaqtida tayyorlamadi. Qisqaroq davr tanlab qayta urinib ko'ring.": "Server faylni o'z vaqtida tayyorlamadi. Qisqaroq davr tanlab qayta urinib ko'ring.",
+  "Server faylni tayyorlay olmadi. Keyinroq urinib ko'ring yoki administratorga murojaat qiling.": "Server faylni tayyorlay olmadi. Keyinroq urinib ko'ring yoki administratorga murojaat qiling.",
+  "Eksport uchun ma'lumot yo'q": "Eksport uchun ma'lumot yo'q",
   "Faylni yuklab bo'lmadi": "Faylni yuklab bo'lmadi",
   "Rasm yo'q": "Rasm yo'q",
   "Admin": "Admin",
@@ -253,5 +254,12 @@
   "Turi noma'lum": "Turi noma'lum",
   "Ma'lumot olinmadi": "Ma'lumot olinmadi",
   "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "Server bilan aloqa tiklanganda oyna o'zi yangilanadi",
-  "DB turi": "MB turi"
+  "DB turi": "MB turi",
+  "Kirish va chiqish suratlari": "Kirish va chiqish suratlari",
+  "Avtomobil hali ichkarida": "Avtomobil hali ichkarida",
+  "Chiqish surati avtomobil chiqqanda paydo bo'ladi": "Chiqish surati avtomobil chiqqanda paydo bo'ladi",
+  "Aniqlangan raqam": "Aniqlangan raqam",
+  "Yuklab olish": "Yuklab olish",
+  "Kamera": "Kamera",
+  "Sessiya muddati tugadi. Qaytadan kiring.": "Sessiya muddati tugadi. Qaytadan kiring."
 }

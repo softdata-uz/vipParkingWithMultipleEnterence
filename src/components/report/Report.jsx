@@ -15,7 +15,8 @@ import {
 } from "../../design-system/icons";
 import PagePagination from "../common/PagePagination";
 import PlateNumber from "../common/PlateNumber";
-import {PersonCell, personColumnWidth, TimeCell, VehicleImage, formatDuration} from "../common/VehicleCells";
+import {PersonCell, personColumnWidth, TimeCell, formatDuration} from "../common/VehicleCells";
+import {PassageModal, PassageThumb} from "./PassageModal";
 import {GroupTypeBadge} from "../employees/database/groupTypes";
 
 import '../../design-system/ui.css';
@@ -28,7 +29,7 @@ import './report.css';
           ⚠ fromDate/toDate bo'lmasa server bo'sh ro'yxat qaytaradi — davr doim yuboriladi.
           ⚠ table_name/order_by ni server e'tiborsiz qoldiradi — ustun bo'yicha saralash yo'q.
         POST /api/report/vehicle_log/excel | pdf  (shu filtr + lang bilan) -> fayl (blob)
-        GET  /api/image/event/:id/plate_image | vehicle_image */
+        GET  /api/image/event/:id/:type/:direction  (kirish/chiqish suratlari — PassageModal.jsx) */
 
 const PAGE_SIZES = [15, 30, 50, 100];
 const DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";          // server kutadigan format
@@ -68,6 +69,7 @@ const Report = () => {
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [exporting, setExporting] = useState(null);       // 'excel' | 'pdf' | null
+    const [passage, setPassage] = useState(null);           // kirish/chiqish suratlari oynasidagi yozuv
     const requestIdRef = useRef(0);
 
     const range = useMemo(
@@ -116,6 +118,11 @@ const Report = () => {
         return () => clearInterval(timer);
     }, [load]);
 
+    // jim yangilanishda ochiq oynadagi yozuv ham yangilanadi (masalan, avtomobil chiqib ketsa — chiqish surati paydo bo'ladi)
+    useEffect(() => {
+        setPassage(current => (current && rows ? rows.find(r => r.id === current.id) || current : current));
+    }, [rows]);
+
     // filtr o'zgarsa — 1-sahifa
     useEffect(() => {
         setPage(1);
@@ -138,9 +145,10 @@ const Report = () => {
         }
     };
 
-    // Excel / PDF — joriy filtr bilan; tugma yuklanish holatida, xato bo'lsa xabar
+    // Excel / PDF — joriy filtr bilan; ro'yxat bo'sh bo'lsa o'chiq (bo'sh fayl foydasiz)
+    const canExport = Boolean(range) && total > 0;
     const exportFile = async (kind) => {
-        if (exporting || !range) return;
+        if (exporting || !canExport) return;
         setExporting(kind);
         try {
             const lang = localStorage.getItem('i18nextLng');
@@ -153,7 +161,7 @@ const Report = () => {
             saveBlob(res.data, kind === 'pdf' ? `${name}.pdf` : `${name}.xlsx`);
         } catch (err) {
             message.error(err?.code === 'ECONNABORTED'
-                ? t("Server faylni o'z vaqtida tayyorlamadi. Qisqaroq davr tanlab qayta urinib ko'ring.")
+                ? t("Server faylni tayyorlay olmadi. Keyinroq urinib ko'ring yoki administratorga murojaat qiling.")
                 : t("Faylni yuklab bo'lmadi"));
         } finally {
             setExporting(null);
@@ -242,11 +250,7 @@ const Report = () => {
             key: 'image',
             align: 'center',
             width: 170,
-            render: (_, record) => (
-                <VehicleImage t={t}
-                              src={`${ip}/api/image/event/${record.id}/plate_image`}
-                              previewSrc={`${ip}/api/image/event/${record.id}/vehicle_image`}/>
-            ),
+            render: (_, record) => <PassageThumb record={record} onOpen={setPassage} t={t}/>,
         },
     ];
 
@@ -264,14 +268,14 @@ const Report = () => {
                                onChange={e => setSearchInput(e.target.value)}/>
                     </div>
                     <button type="button" className={`admin_header_btn rp_export${exporting === 'excel' ? ' is-loading' : ''}`}
-                            onClick={() => exportFile('excel')} disabled={!!exporting || !range}
-                            title={t("Joriy filtr bo'yicha Excel fayl")}>
+                            onClick={() => exportFile('excel')} disabled={!!exporting || !canExport}
+                            title={canExport ? t("Joriy filtr bo'yicha Excel fayl") : t("Eksport uchun ma'lumot yo'q")}>
                         {exporting === 'excel' ? <span className="rp_spinner"/> : <DownloadIcon size={18}/>}
                         Excel
                     </button>
                     <button type="button" className={`admin_header_btn rp_export${exporting === 'pdf' ? ' is-loading' : ''}`}
-                            onClick={() => exportFile('pdf')} disabled={!!exporting || !range}
-                            title={t("Joriy filtr bo'yicha PDF fayl")}>
+                            onClick={() => exportFile('pdf')} disabled={!!exporting || !canExport}
+                            title={canExport ? t("Joriy filtr bo'yicha PDF fayl") : t("Eksport uchun ma'lumot yo'q")}>
                         {exporting === 'pdf' ? <span className="rp_spinner"/> : <FileTextIcon size={18}/>}
                         PDF
                     </button>
@@ -353,6 +357,8 @@ const Report = () => {
                 <PagePagination total={range ? total : 0} current={page} pageSize={limit} onChange={onPageChange}
                                 pageSizeOptions={PAGE_SIZES}/>
             </div>
+
+            <PassageModal record={passage} onClose={() => setPassage(null)}/>
         </div>
     );
 };

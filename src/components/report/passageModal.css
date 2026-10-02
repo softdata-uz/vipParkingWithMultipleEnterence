@@ -1,0 +1,551 @@
+/* ============================================================================
+   Hisobot → kirish/chiqish suratlari oynasi (PassageModal.jsx).
+   Modal qobig'i — styles/modal.css (.dsm), bu yerda faqat ichki qism.
+   ========================================================================== */
+
+.dsm--xl {
+    max-width: 1080px;
+}
+
+/* --- sarlavha: raqam + shaxs --- */
+.pm_head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-xl);
+    flex: none;
+    padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-xl);
+}
+
+.pm_identity {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    min-width: 0;
+}
+
+.pm_who {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.pm_who_name {
+    font-size: 16px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+}
+
+.pm_who_name.is-muted {
+    color: var(--text-tertiary);
+}
+
+.pm_who_meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.pm_who_meta:empty {
+    display: none;
+}
+
+/* --- kirish → turgan vaqti → chiqish --- */
+.pm_track {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    margin: 0 var(--spacing-3xl);
+    padding: 12px 16px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    font-size: 13px;
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.pm_track_node {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.pm_track_node b {
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+}
+
+.pm_track_node i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--fg-brand);
+    box-shadow: 0 0 0 4px var(--utility-brand-50);
+}
+
+.pm_track_node--exit i {
+    background: var(--utility-blue-700);
+    box-shadow: 0 0 0 4px var(--utility-blue-50);
+}
+
+.pm_track_line {
+    flex: 1;
+    min-width: 16px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--fg-brand), var(--utility-blue-700));
+    opacity: .35;
+}
+
+.pm_track_line + .pm_track_duration + .pm_track_line {
+    background: linear-gradient(90deg, var(--utility-blue-700), var(--utility-blue-700));
+}
+
+.pm_track_duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-full);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+.pm_track_duration svg {
+    color: var(--fg-quaternary);
+}
+
+/* avtomobil hali ichkarida — chiqish nuqtasi "tirik", chiziq uzuq */
+.pm_track.is-inside .pm_track_duration + .pm_track_line {
+    opacity: 1;
+    background: repeating-linear-gradient(90deg, var(--border-primary) 0 6px, transparent 6px 12px);
+}
+
+.pm_track.is-inside .pm_track_node--exit {
+    color: var(--text-brand-secondary);
+}
+
+.pm_track.is-inside .pm_track_node--exit i {
+    background: var(--fg-brand);
+    box-shadow: 0 0 0 4px var(--utility-brand-50);
+    animation: pm-pulse 1.6s var(--ease-out) infinite;
+}
+
+@keyframes pm-pulse {
+    0% { box-shadow: 0 0 0 0 var(--utility-brand-200); }
+    100% { box-shadow: 0 0 0 8px transparent; }
+}
+
+/* --- kartochkalar --- */
+.pm_body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--spacing-xl) var(--spacing-3xl) var(--spacing-3xl);
+}
+
+.pm_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-xl);
+}
+
+.pm_card {
+    --pm-accent: var(--fg-brand);
+    --pm-accent-bg: var(--utility-brand-50);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xs);
+}
+
+.pm_card--exit {
+    --pm-accent: var(--utility-blue-700);
+    --pm-accent-bg: var(--utility-blue-50);
+}
+
+.pm_card_head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-top: 3px solid var(--pm-accent);
+}
+
+.pm_card_icon {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--pm-accent-bg);
+    color: var(--pm-accent);
+}
+
+.pm_card_title {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+}
+
+.pm_card_label {
+    font-size: 12px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--pm-accent);
+}
+
+.pm_card_time {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    height: 22px;                    /* vaqt yo'q ("—") bo'lsa ham sarlavha balandligi bir xil */
+    line-height: 22px;
+    font-variant-numeric: tabular-nums;
+}
+
+.pm_card_time b {
+    font-size: 16px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+}
+
+.pm_card_time span {
+    font-size: 13px;
+    color: var(--text-quaternary);
+}
+
+.pm_chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 45%;
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-full);
+    background: var(--bg-secondary);
+    font-size: 12px;
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pm_chip svg {
+    flex: none;
+    color: var(--fg-quaternary);
+}
+
+/* --- katta surat --- */
+.pm_stage {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: #0A0D12;
+}
+
+/* surat maydonni cho'zib yubormaydi: o'lchami qanday bo'lmasin, maydon 16:10 bo'lib qoladi */
+.pm_stage > .pm_photo {
+    position: absolute;
+    inset: 0;
+}
+
+.pm_stage_actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.pm_stage:hover .pm_stage_actions,
+.pm_stage:focus-within .pm_stage_actions {
+    opacity: 1;
+}
+
+.pm_icon_btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: var(--radius-md);
+    background: rgba(10, 13, 18, .55);
+    backdrop-filter: blur(6px);
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.pm_icon_btn:hover {
+    background: rgba(10, 13, 18, .8);
+}
+
+.pm_icon_btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* chiqish hali yo'q — surat bilan bir xil 16:10 maydon, chiziqlar qo'shni kartochka bilan tekis */
+.pm_stage--waiting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    text-align: center;
+    background: repeating-linear-gradient(135deg, var(--bg-secondary) 0 12px, var(--bg-primary) 12px 24px);
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.pm_stage--waiting b {
+    font-size: 15px;
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+}
+
+.pm_waiting_icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--utility-brand-200);
+    border-radius: 50%;
+    background: var(--utility-brand-50);
+    color: var(--fg-brand);
+    animation: pm-pulse 1.6s var(--ease-out) infinite;
+}
+
+/* --- surat (umumiy): shimmer → rasm | bo'sh holat --- */
+.pm_photo {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.pm_photo .ant-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.pm_photo .ant-image-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;               /* maydonni to'liq to'ldiradi; kesilgan chetlari to'liq ekranda ko'rinadi */
+    transition: opacity 240ms var(--ease-out), transform 400ms var(--ease-out);
+}
+
+.pm_photo.is-loading .ant-image-img {
+    opacity: 0;
+}
+
+.pm_photo.is-loading::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .08) 50%, transparent 80%) 0 0 / 200% 100%;
+    animation: pm-shimmer 1.2s linear infinite;
+}
+
+@keyframes pm-shimmer {
+    to { background-position: -200% 0; }
+}
+
+.pm_photo--vehicle.is-ready {
+    cursor: zoom-in;
+}
+
+.pm_photo--vehicle.is-ready:hover .ant-image-img {
+    transform: scale(1.02);
+}
+
+.pm_photo_empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, .5);
+}
+
+/* raqam hali yo'q — surat o'lchamidagi uzuq chiziqli joy */
+.pm_plate_slot {
+    width: 168px;
+    height: 44px;
+    border: 1px dashed var(--border-primary);
+    border-radius: var(--radius-sm);
+}
+
+/* --- aniqlangan raqam (kesilgan surat) --- */
+.pm_plate_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border-secondary);
+    background: var(--bg-secondary);
+}
+
+.pm_plate_label {
+    font-size: 12px;
+    font-weight: var(--weight-medium);
+    color: var(--text-tertiary);
+}
+
+.pm_photo--plate {
+    width: 168px;
+    height: 44px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+}
+
+.pm_photo--plate .ant-image-img {
+    object-fit: cover;
+}
+
+.pm_photo--plate .pm_photo_empty {
+    color: var(--fg-quinary);
+}
+
+.pm_photo--plate.is-loading::before {
+    background-image: linear-gradient(100deg, transparent 20%, var(--bg-primary) 50%, transparent 80%);
+}
+
+/* --- jadval katagi --- */
+.pm_thumb {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    height: 48px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-tertiary);
+    color: var(--fg-quinary);
+    vertical-align: middle;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.pm_thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pm_thumb:hover {
+    border-color: var(--border-brand);
+}
+
+.pm_thumb:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+.pm_thumb_mask {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 13, 18, .45);
+    color: #FFFFFF;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.pm_thumb:hover .pm_thumb_mask,
+.pm_thumb:focus-visible .pm_thumb_mask {
+    opacity: 1;
+}
+
+.pm_thumb.is-empty .pm_thumb_mask {
+    display: none;
+}
+
+/* nechta tomon surati bor: 1 — faqat kirish, 2 — kirish + chiqish */
+.pm_thumb_count {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-full);
+    background: rgba(10, 13, 18, .7);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: var(--weight-semibold);
+    line-height: 18px;
+}
+
+/* --- tor ekran --- */
+@media (max-width: 760px) {
+    .pm_grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pm_head,
+    .pm_body {
+        padding-left: var(--spacing-xl);
+        padding-right: var(--spacing-xl);
+    }
+
+    .pm_track {
+        margin: 0 var(--spacing-xl);
+    }
+
+    .pm_identity {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pm_track_node i,
+    .pm_waiting_icon,
+    .pm_photo.is-loading::before {
+        animation: none;
+    }
+}

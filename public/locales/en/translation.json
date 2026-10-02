@@ -178,7 +178,8 @@
   "Bu davrda kirish-chiqish yo'q": "No entries or exits in this period",
   "Joriy filtr bo'yicha Excel fayl": "Excel for the current filter",
   "Joriy filtr bo'yicha PDF fayl": "PDF for the current filter",
-  "Server faylni o'z vaqtida tayyorlamadi. Qisqaroq davr tanlab qayta urinib ko'ring.": "The server did not prepare the file in time. Choose a shorter period and try again.",
+  "Server faylni tayyorlay olmadi. Keyinroq urinib ko'ring yoki administratorga murojaat qiling.": "The server could not prepare the file. Try again later or contact the administrator.",
+  "Eksport uchun ma'lumot yo'q": "No data to export",
   "Faylni yuklab bo'lmadi": "Could not download the file",
   "Rasm yo'q": "No photo",
   "Admin": "Admin",
@@ -253,5 +254,12 @@
   "Turi noma'lum": "Unknown type",
   "Ma'lumot olinmadi": "Could not load data",
   "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "The window refreshes automatically once the server is reachable",
-  "DB turi": "DB type"
+  "DB turi": "DB type",
+  "Kirish va chiqish suratlari": "Entry and exit photos",
+  "Avtomobil hali ichkarida": "Vehicle is still inside",
+  "Chiqish surati avtomobil chiqqanda paydo bo'ladi": "The exit photo will appear once the vehicle leaves",
+  "Aniqlangan raqam": "Recognized plate",
+  "Yuklab olish": "Download",
+  "Kamera": "Camera",
+  "Sessiya muddati tugadi. Qaytadan kiring.": "Your session has expired. Please sign in again."
 }

@@ -1,0 +1,76 @@
+/* Global tooltip (GlobalTooltip.jsx) — Untitled UI "tooltip" uslubida:
+   yorug' rejimda to'q, qorong'ida — ko'tarilgan kulrang sirt + chegara. */
+
+.gtip {
+    --gtip-bg: var(--gray-950, #0C111D);
+    --gtip-fg: #FFFFFF;
+    --gtip-border: transparent;
+
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 3000;                   /* modal (100), antd preview (1080) ustida */
+    max-width: 280px;
+    padding: 8px 12px;
+    border: 1px solid var(--gtip-border);
+    border-radius: 8px;
+    background: var(--gtip-bg);
+    color: var(--gtip-fg);
+    box-shadow: 0 12px 16px -4px rgba(10, 13, 18, .12), 0 4px 6px -2px rgba(10, 13, 18, .06);
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px) scale(.97);
+    transition: opacity 120ms ease, transform 160ms var(--ease-out, ease-out);
+}
+
+.gtip[data-side="bottom"] {
+    transform: translateY(-4px) scale(.97);
+}
+
+.gtip.is-open {
+    opacity: 1;
+    transform: none;
+}
+
+.gtip__arrow {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    background: var(--gtip-bg);
+    border: 1px solid var(--gtip-border);
+    border-radius: 0 0 2px 0;
+    transform: rotate(45deg);
+}
+
+.gtip[data-side="top"] .gtip__arrow {
+    bottom: -6px;
+    border-top-color: transparent;
+    border-left-color: transparent;
+}
+
+.gtip[data-side="bottom"] .gtip__arrow {
+    top: -6px;
+    transform: rotate(225deg);
+    border-top-color: transparent;
+    border-left-color: transparent;
+}
+
+:root[data-theme="dark"] .gtip {
+    --gtip-bg: var(--gray-dark-800, #22262F);
+    --gtip-fg: var(--gray-dark-50, #F7F7F7);
+    --gtip-border: var(--gray-dark-700, #373A41);
+    box-shadow: 0 12px 16px -4px rgba(0, 0, 0, .5), 0 4px 6px -2px rgba(0, 0, 0, .3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gtip {
+        transition: none;
+    }
+}

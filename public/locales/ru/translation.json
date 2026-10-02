@@ -178,7 +178,8 @@
   "Bu davrda kirish-chiqish yo'q": "За этот период нет въездов и выездов",
   "Joriy filtr bo'yicha Excel fayl": "Excel по текущему фильтру",
   "Joriy filtr bo'yicha PDF fayl": "PDF по текущему фильтру",
-  "Server faylni o'z vaqtida tayyorlamadi. Qisqaroq davr tanlab qayta urinib ko'ring.": "Сервер не успел подготовить файл. Выберите более короткий период и попробуйте снова.",
+  "Server faylni tayyorlay olmadi. Keyinroq urinib ko'ring yoki administratorga murojaat qiling.": "Сервер не смог подготовить файл. Попробуйте позже или обратитесь к администратору.",
+  "Eksport uchun ma'lumot yo'q": "Нет данных для экспорта",
   "Faylni yuklab bo'lmadi": "Не удалось скачать файл",
   "Rasm yo'q": "Нет фото",
   "Admin": "Админ",
@@ -253,5 +254,12 @@
   "Turi noma'lum": "Тип неизвестен",
   "Ma'lumot olinmadi": "Данные не получены",
   "Server bilan aloqa tiklanganda oyna o'zi yangilanadi": "Окно обновится само, когда связь с сервером восстановится",
-  "DB turi": "Тип БД"
+  "DB turi": "Тип БД",
+  "Kirish va chiqish suratlari": "Фото въезда и выезда",
+  "Avtomobil hali ichkarida": "Автомобиль ещё на территории",
+  "Chiqish surati avtomobil chiqqanda paydo bo'ladi": "Фото выезда появится, когда автомобиль выедет",
+  "Aniqlangan raqam": "Распознанный номер",
+  "Yuklab olish": "Скачать",
+  "Kamera": "Камера",
+  "Sessiya muddati tugadi. Qaytadan kiring.": "Срок сессии истёк. Войдите снова."
 }

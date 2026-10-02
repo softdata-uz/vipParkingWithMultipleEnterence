@@ -11,10 +11,12 @@ import './i18n';
 import Loader from "./components/loading/Loader";
 import App from "./App";
 import {ThemeProvider} from "./context/ThemeContext";
+import GlobalTooltip from "./components/common/GlobalTooltip";
 
 
 ReactDOM.render(
     <ThemeProvider>
+        <GlobalTooltip/>
         <ReduxProvider store={store}>
             <Suspense fallback={<Loader/>}>
                 <App/>

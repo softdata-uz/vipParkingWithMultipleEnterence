@@ -16,9 +16,10 @@ import '../../styles/page.css';
 import './status.css';
 
 /* Joriy holat — hozir turargoh ichidagi avtomobillar.
-   API: GET /api/event/:limit/:page?searched_data=&table_name=&order_by=  -> {data, count, current_page}
+   API: GET /api/event/:limit/:page?searched_data=  -> {data, count, current_page}
+        ⚠ table_name/order_by ni server e'tiborsiz qoldiradi — ustun bo'yicha saralash yo'q (Hisobotdagi kabi).
         ⚠ searched_data (bo'sh bo'lsa ham) doim yuborilishi kerak — busiz server bo'sh ro'yxat qaytaradi.
-        GET /api/image/event/:id/plate_image | vehicle_image — raqam va avtomobil rasmlari */
+        GET /api/image/event/:id/:type/enter — kirgandagi raqam (plate_image) va avtomobil (full_image) rasmlari */
 
 const PAGE_SIZES = [15, 30, 50, 100];
 const LIVE_INTERVAL = 30 * 1000;           // jonli sahifa — har 30 soniyada jim yangilanadi
@@ -31,7 +32,6 @@ const Status = () => {
     const [total, setTotal] = useState(null);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(PAGE_SIZES[0]);
-    const [sort, setSort] = useState({field: '', order: ''});
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [now, setNow] = useState(() => Date.now());
@@ -42,7 +42,7 @@ const Status = () => {
         const requestId = ++requestIdRef.current;
         return axios.get(`${ip}/api/event/${limit}/${page}`, {
             headers: auth(),
-            params: {searched_data: search, table_name: sort.field, order_by: sort.order},
+            params: {searched_data: search},
         })
             .then(({data}) => {
                 if (requestId !== requestIdRef.current) return false;
@@ -58,7 +58,7 @@ const Status = () => {
                 if (!silent) message.error(err?.response?.data?.msg || t("Xatolik"));
                 return false;
             });
-    }, [limit, page, search, sort.field, sort.order, t]);
+    }, [limit, page, search, t]);
 
     useEffect(() => {
         load();
@@ -92,15 +92,6 @@ const Status = () => {
         }
     };
 
-    // saralash: eski kodda holat ketma-ket ikki marta o'rnatilib, maydon nomi yo'qolardi
-    const onTableChange = (_, __, sorter) => {
-        const order = sorter?.order ? sorter.order.replace('end', '') : '';
-        setSort({field: order ? sorter.field : '', order});
-        setPage(1);
-    };
-
-    const sortOrderOf = (field) => (sort.field === field && sort.order ? `${sort.order}end` : null);
-
     const columns = [
         {
             title: t("T/r"),
@@ -115,16 +106,12 @@ const Status = () => {
             dataIndex: 'fullname',
             key: 'fullname',
             width: personColumnWidth(rows, t),   // eng uzun ismga moslanadi (280px .. ekranning 30%)
-            sorter: true,
-            sortOrder: sortOrderOf('fullname'),
             render: (_, record) => <PersonCell record={record} t={t}/>,
         },
         {
             title: t("Boshqarma"),
             dataIndex: 'position',
             key: 'position',
-            sorter: true,
-            sortOrder: sortOrderOf('position'),
             ellipsis: true,
             render: (value) => value || <span className="tc-muted">—</span>,
         },
@@ -141,16 +128,12 @@ const Status = () => {
             title: t("Davlat raqami"),
             dataIndex: 'vehicle_number',
             key: 'vehicle_number',
-            sorter: true,
-            sortOrder: sortOrderOf('vehicle_number'),
             render: (value) => <PlateNumber value={value}/>,
         },
         {
             title: t("Kirgan vaqti"),
             dataIndex: 'entering_time',
             key: 'entering_time',
-            sorter: true,
-            sortOrder: sortOrderOf('entering_time'),
             render: (value) => <TimeCell value={value}/>,
         },
         {
@@ -170,8 +153,8 @@ const Status = () => {
             width: 170,
             render: (_, record) => (
                 <VehicleImage t={t}
-                              src={`${ip}/api/image/event/${record.id}/plate_image`}
-                              previewSrc={`${ip}/api/image/event/${record.id}/vehicle_image`}/>
+                              src={`${ip}/api/image/event/${record.id}/plate_image/enter`}
+                              previewSrc={`${ip}/api/image/event/${record.id}/full_image/enter`}/>
             ),
         },
     ];
@@ -202,9 +185,7 @@ const Status = () => {
                         columns={columns}
                         dataSource={rows || []}
                         loading={rows === null}
-                        onChange={onTableChange}
                         pagination={false}
-                        showSorterTooltip={false}
                         locale={{
                             emptyText: (
                                 <div className="page_empty">

@@ -3,15 +3,9 @@ import {Routes, Route, Navigate} from 'react-router-dom'
 import Status from "../components/status/Status";
 import Report from "../components/report/Report";
 import Setting from "../components/setting/Setting";
-import TerminalReport from '../components/terminalReport/TerminalReport';
 import DatabaseBlack from "../components/employees/database/DatabaseBlack";
 import DatabaseAdd from "../components/employees/database/DatabaseAdd";
-import {LightZone} from "../context/ThemeContext";
 import {canAccess, ROLE_HOME} from "../utils/roleAccess";
-
-/* Qorong'i rejimga hali o'tkazilmagan sahifalar yorug' zonada (LightZone izohiga qarang).
-   Sahifa yangilanganda o'rami olib tashlanadi — Xodimlar, Joriy holat, Hisobot va Sozlamalar allaqachon yangilangan. */
-const legacy = (page) => <LightZone>{page}</LightZone>;
 
 /* RBAC: manzilga to'g'ridan-to'g'ri kirilsa ham (nav'da havola bo'lmasa ham) ruxsatsiz rol
    o'zi uchun mos boshlang'ich sahifaga qaytariladi (backend API'lar allaqachon rol bo'yicha
@@ -27,7 +21,8 @@ const RootPage = ({role}) => {
             <Route path="/employees/:groupId" element={<Guard role={role} path="/employees"><DatabaseAdd/></Guard>}/>
             <Route path="/status" element={<Status/>}/>
             <Route path="/report" element={<Report/>}/>
-            <Route path="/terminal-report" element={legacy(<TerminalReport/>)}/>
+            {/* eski "Terminal hisoboti" sahifasi Hisobot bilan almashtirilgan (u sanasiz so'rov yuborib, doim bo'sh chiqardi) */}
+            <Route path="/terminal-report" element={<Navigate to="/report" replace/>}/>
             <Route path="/setting" element={<Guard role={role} path="/setting"><Setting/></Guard>}/>
             <Route path='*' element={<Navigate to={ROLE_HOME[role] || '/status'}/>}/>
         </Routes>
