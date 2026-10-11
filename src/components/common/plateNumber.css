@@ -1,5 +1,5 @@
 /* Davlat raqami belgisi (PlateNumber.jsx) — O'zbekiston raqamiga o'xshash:
-   qalin qora ramka + ichki oq hoshiya, chapda hudud kodi (ajratgich bilan), o'ngda bayroq va "UZ".
+   qalin qora ramka, chapda hudud kodi (ajratgich bilan), o'ngda bayroq va "UZ"; maxsus turlar rangli fonda.
    Belgi haqiqiy raqam kabi doim yorug' — mavzu (qorong'i rejim) unga ta'sir qilmaydi.
    O'lchamlar: sm 28px, md 34px (jadvallar, ro'yxatlar), lg 40px (xodim kartasi). */
 
@@ -75,40 +75,100 @@
     color: #0077A0;
 }
 
-/* oddiy raqamlar bir xil kenglikda (haqiqiy raqamdagidek) — "S 001 AA" va "151 LBA" bir o'lchamda,
-   matn o'rtada. Kenglik balandlikka mutanosib: md 175px, lg 206px, sm 144px */
-.plate--standard {
+/* PAA raqami: bayroq chapda, kattaroq, "UZ" yozuvisiz */
+.plate__flag--lead {
+    padding: 0 0 0 7px;
+}
+
+.plate__flag--lead .plate__flag-svg {
+    width: calc(var(--plate-h) * .96);
+    height: calc(var(--plate-h) * .48);
+    border-radius: 2px;
+}
+
+/* 6 raqamli PAA ham sig'ishi uchun matn chetlari torroq */
+.plate__flag--lead + .plate__text {
+    padding: 0 6px;
+}
+
+/* barcha davlat raqamlari bir xil o'lchamda (haqiqiy raqam 520 x 112 mm) — "S 001 AA", "CMD 01-234" va
+   "UN 1234" bir kenglikda, matn o'rtada. Kenglik balandlikka mutanosib: md 175px, lg 206px, sm 144px */
+.plate--standard,
+.plate--green,
+.plate--blue,
+.plate--yellow {
     width: calc(var(--plate-h) * 5.15);
 }
 
-.plate--standard .plate__text {
+.plate--standard .plate__text,
+.plate--green .plate__text,
+.plate--blue .plate__text,
+.plate--yellow .plate__text {
     flex: 1;
     min-width: 0;
 }
 
-/* maxsus raqamlar */
-.plate--green {
-    --plate-ink: #064E2B;
-    background: #0E8A4A;
-    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5), 0 1px 2px rgba(0, 0, 0, .25);
+/* vaqtinchalik raqam: hudud kodi o'ng tomonda */
+.plate__region--end {
+    border-right: 0;
+    border-left: 2px solid var(--plate-ink);
+}
+
+/* maxsus raqamlar: rangli fon, chetidan sal ichkarida oq hoshiya, oq yozuv (namunadagidek) */
+.plate--green,
+.plate--blue {
+    --plate-ink: #FFFFFF;
+    position: relative;
+    border-color: var(--plate-bg);
+    background: var(--plate-bg);
     color: #FFFFFF;
+}
+
+.plate--green::after,
+.plate--blue::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid #FFFFFF;
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.plate--green {
+    --plate-bg: #1FAA4B;
 }
 
 .plate--blue {
-    --plate-ink: #13367E;
-    background: #1570EF;
-    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5), 0 1px 2px rgba(0, 0, 0, .25);
-    color: #FFFFFF;
+    --plate-bg: #3D48CC;
+}
+
+/* hudud katagi ajratgichi oq hoshiya bilan bir xil qalinlikda */
+.plate--green .plate__region {
+    border-right-width: 1.5px;
 }
 
 .plate--yellow {
-    --plate-ink: #7A2E0E;
-    background: #FDB022;
+    background: #FFC61A;
     color: #0B0F14;
 }
 
+/* aniqlanmagan format: haqiqiy raqam emas — punktir ramka, xira matn, fon yo'q.
+   Mavzuga moslashadi (boshqa turlar doim yorug' bo'lib qoladi) */
 .plate--plain {
-    --plate-ink: #344054;
+    /* kengligi kamida boshqa raqamlardek; uzun matn kesilmasligi uchun kengayishi mumkin */
+    min-width: calc(var(--plate-h) * 5.15);
+    border: 1.5px dashed var(--border-primary, #D5D7DA);
+    background: var(--bg-secondary, transparent);
+    box-shadow: none;
+    color: var(--text-tertiary, #717680);
+    font-weight: 600;
+    letter-spacing: .03em;
+}
+
+/* matn o'rtada */
+.plate--plain .plate__text {
+    flex: 1;
+    padding: 0 12px;
 }
 
 /* o'lchamlar */

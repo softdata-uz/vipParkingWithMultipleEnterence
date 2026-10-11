@@ -877,10 +877,12 @@
     line-height: 16px;
 }
 
-/* tor ma'lumot ustunida raqam qat'iy kenglikdan voz kechadi va ichki bo'shliqlar qisqaradi —
-   matn kesilmasin (12 oynada ustun ~167px) */
-.lv_panel.is-mini .plate--standard {
-    width: auto;
+/* kichik oynada ham barcha turdagi raqamlar bir xil kenglikda (aniqlanmagani ham); ustun raqamdan tor
+   bo'lsa (12 oynada ~167px) hammasi birdek ustun kengligigacha qisiladi, ichki bo'shliqlar qisqaradi —
+   matn kesilmasin */
+.lv_panel.is-mini .plate {
+    width: calc(var(--plate-h) * 5.15);
+    min-width: 0;
     --plate-pad-region: 5px;
     --plate-pad-text: 7px;
 }

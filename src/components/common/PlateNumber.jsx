@@ -2,39 +2,48 @@ import React from 'react';
 import './plateNumber.css';
 
 /**
- * Davlat raqami belgisi. Qoidalar eski DatabaseAdd.jsx dagi bilan bir xil:
- *   8 belgi  — oddiy: "01 A 777 AA" (3-4 belgilar harf) yoki "01 777 AAA" (raqam), bayroq bilan
- *   PAA...   — oq, bayroq bilan: "PAA 123456"
- *   CMD...   — yashil: "CMD 01-234"
- *   D/T/X + 6 raqam — yashil: "D 123456"
- *   9 belgi, 3-belgi M — yashil: "01 M 123456"
- *   6 belgi, U bilan boshlanadi — ko'k: "UN 1234"
- *   9 belgi, 3-belgi H — sariq: "01 H 123456"
- *   boshqalari — o'zgarishsiz
+ * Davlat raqami belgisi (AIS-NewUI-Version, Parking Control modulidagi bilan bir xil). Har bir tur qat'iy andoza bilan tekshiriladi —
+ * belgilar soni emas, har bir o'rindagi belgi turi (raqam yoki harf) mos kelishi shart:
+ *   oddiy      — 2 raqam + harf + 3 raqam + 2 harf: "01 A 777 AA"; yoki 2 raqam + 3 raqam + 3 harf: "01 777 AAA"
+ *   PAA        — PAA + 3..6 raqam: "PAA 123456" (oq; bayroq chapda, kattaroq va "UZ" yozuvisiz)
+ *   CMD        — CMD + 4..6 raqam: "CMD 01-234" (yashil, oq ichki hoshiya)
+ *   D / T / X  — harf + 6 raqam: "D 123456" (yashil)
+ *   M          — 2 raqam + M + 6 raqam: "01 | M 123456" (yashil, hudud kodi alohida katakda)
+ *   UN         — U + harf + 4 raqam: "UN 1234" (ko'k)
+ *   H          — 2 raqam + H + 6 raqam: "01 | H 123456" (sariq, hudud kodi alohida katakda)
+ *   vaqtinchalik — T + 6 raqam + 2 raqam: "T 123456 | 01" (oq, hudud kodi o'ngda)
+ * Ko'rinishi O'zbekiston davlat raqamlari namunalariga mos (uz.wikipedia.org — "O'zbekiston avtomobil raqamlari indeksi").
+ * Hech bir andozaga tushmasa — aniqlanmagan: matn o'zgarishsiz, punktir ramkada. Shunday qilib kamera
+ * noto'g'ri o'qigan yoki chet el raqami ("A123BC77") haqiqiy O'zbekiston raqamidek ko'rinmaydi.
  */
-const isNum = (s) => s !== '' && !isNaN(s);
+// Kirill harflari lotinchaga o'giriladi (AIS'dagi eski VehicleNumber qoidasi): kamera yoki operator raqamni
+// kirillcha yozgan bo'lsa ham tur to'g'ri aniqlanadi (masalan "01М123456" — yashil raqam)
+const CYRILLIC = {А: 'A', В: 'B', Е: 'E', К: 'K', М: 'M', Н: 'H', О: 'O', Р: 'P', С: 'C', Т: 'T', Х: 'X'};
 
 export const parsePlate = (raw) => {
-    const tex = (raw || '').toString().trim().toUpperCase();
-    const s = (from, len) => tex.substr(from, len);
-
-    // prefiksli raqamlar birinchi: "CMD01234" ham 8 belgi — aks holda oddiy raqam deb o'qilardi
-    if (s(0, 3) === 'PAA') return {kind: 'standard', text: `PAA ${s(3)}`, flag: true};
-    if (s(0, 3) === 'CMD') return {kind: 'green', text: `CMD ${s(3, 2)}-${s(5)}`};
-    if (tex.length === 8) {
-        const region = s(0, 2);
-        const rest = isNum(s(2, 2))
-            ? `${s(2, 3)} ${s(5)}`
-            : `${s(2, 1)} ${s(3, 3)} ${s(6)}`;
-        return {kind: 'standard', region, text: rest, flag: true};
+    // bo'shliq va chiziqchalar olib tashlanadi: "01 A 777 AA" yoki "CMD 01-234" deb saqlangan raqam ham taniladi
+    const tex = (raw || '').toString().toUpperCase()
+        .replace(/[\s\-_.]/g, '')
+        .replace(/[АВЕКМНОРСТХ]/g, (char) => CYRILLIC[char]);
+    // hudud kodi 01..99 (00 bo'lmaydi) — hudud kodi bor barcha turlar uchun
+    if (/^00/.test(tex)) return {kind: 'plain', text: (raw || '').toString().trim() || '—'};
+    let m;
+    if ((m = tex.match(/^(\d{2})([A-Z])(\d{3})([A-Z]{2})$/))) {
+        return {kind: 'standard', region: m[1], text: `${m[2]} ${m[3]} ${m[4]}`, flag: true};
     }
-    if (tex.length === 7 && ['D', 'T', 'X'].includes(s(0, 1)) && isNum(s(1))) {
-        return {kind: 'green', text: `${s(0, 1)} ${s(1)}`};
+    if ((m = tex.match(/^(\d{2})(\d{3})([A-Z]{3})$/))) {
+        return {kind: 'standard', region: m[1], text: `${m[2]} ${m[3]}`, flag: true};
     }
-    if (tex.length === 9 && s(2, 1) === 'M' && isNum(s(3))) return {kind: 'green', text: `${s(0, 2)} M ${s(3)}`};
-    if (tex.length === 6 && s(0, 1) === 'U') return {kind: 'blue', text: `${s(0, 2)} ${s(2)}`};
-    if (tex.length === 9 && s(2, 1) === 'H' && isNum(s(3))) return {kind: 'yellow', text: `${s(0, 2)} H ${s(3)}`};
-    return {kind: 'plain', text: tex || '—'};
+    if ((m = tex.match(/^PAA(\d{3,6})$/))) return {kind: 'standard', text: `PAA ${m[1]}`, flag: 'lead'};
+    if ((m = tex.match(/^CMD(\d{2})(\d{2,4})$/))) return {kind: 'green', text: `CMD ${m[1]}-${m[2]}`};
+    if ((m = tex.match(/^([DTX])(\d{6})$/))) return {kind: 'green', text: `${m[1]} ${m[2]}`};
+    if ((m = tex.match(/^(\d{2})M(\d{6})$/))) return {kind: 'green', region: m[1], text: `M ${m[2]}`};
+    if ((m = tex.match(/^(U[A-Z])(\d{4})$/))) return {kind: 'blue', text: `${m[1]} ${m[2]}`};
+    if ((m = tex.match(/^(\d{2})H(\d{6})$/))) return {kind: 'yellow', region: m[1], text: `H ${m[2]}`};
+    // vaqtinchalik raqam: hudud kodi o'ng tomonda (diplomatik "T 123456" dan oxiridagi ikki raqam bilan farqlanadi)
+    if ((m = tex.match(/^T(\d{6})(\d{2})$/)) && m[2] !== '00') return {kind: 'standard', text: `T ${m[1]}`, regionEnd: m[2]};
+    // noma'lum format — kamera qanday o'qigan bo'lsa shunday (harflar katta-kichikligi ham) ko'rsatiladi
+    return {kind: 'plain', text: (raw || '').toString().trim() || '—'};
 };
 
 /* O'zbekiston bayrog'i — Vikimedia'dagi rasmiy "Flag_of_Uzbekistan.svg" geometriyasi (1000×500):
@@ -61,13 +70,17 @@ const PlateNumber = ({value, size = 'md'}) => {
     return (
         <span className={`plate plate--${plate.kind} plate--${size}`} title={value || ''}>
             {plate.region ? <span className="plate__region">{plate.region}</span> : null}
+            {plate.flag === 'lead' ? (
+                <span className="plate__flag plate__flag--lead" aria-hidden="true"><UzFlag/></span>
+            ) : null}
             <span className="plate__text">{plate.text}</span>
-            {plate.flag ? (
+            {plate.flag === true ? (
                 <span className="plate__flag" aria-hidden="true">
                     <UzFlag/>
                     <b>UZ</b>
                 </span>
             ) : null}
+            {plate.regionEnd ? <span className="plate__region plate__region--end">{plate.regionEnd}</span> : null}
         </span>
     );
 };

@@ -99,8 +99,7 @@ const Status = () => {
         }
     };
 
-    console.log(rows);
-    
+      
 
     const columns = [
         {
