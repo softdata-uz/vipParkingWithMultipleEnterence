@@ -1,3 +1,11 @@
+// npm start (development) — lokal backend manzili
+let local = '192.168.10.136:11000';
+
+// Build (production) — frontend qaysi manzildan ochilsa, so'rovlar o'sha manzilga ketadi
+export const ip = process.env.NODE_ENV === 'development'
+    ? `http://${local}`
+    : window.location.origin;
+
 
 
 // for build ip samarkand city
@@ -20,8 +28,8 @@
 
 // let local= "172.27.24.140:11000";
 
-let local= "192.168.10.136:11000";
-export const ip = `http://${local}`;
+// let local= "192.168.10.136:11000";
+// export const ip = `http://${local}`;
 
 
 // export const ip = `${window.location.protocol}//${window.location.hostname}:5050`
