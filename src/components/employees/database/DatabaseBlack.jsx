@@ -1,9 +1,18 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Checkbox, message} from "antd";
+import {Checkbox, Dropdown, message} from "antd";
 import {useTranslation} from "react-i18next";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
-import {TbAlarm, TbCar, TbClearAll} from "react-icons/tb";
+import {
+    TbAlarm,
+    TbBan,
+    TbCar,
+    TbClearAll,
+    TbDotsVertical,
+    TbHelpCircle,
+    TbShieldCheck,
+    TbUserSearch,
+} from "react-icons/tb";
 
 import {ip} from "../../../ip";
 import {
@@ -15,7 +24,6 @@ import {
     RefreshIcon,
     SearchIcon,
     TrashIcon,
-    UsersIcon,
 } from "../../../design-system/icons";
 import {ConfirmDeleteModal, ModalShell} from "../../common/ModalShell";
 import PagePagination from "../../common/PagePagination";
@@ -42,8 +50,13 @@ import './employees.css';
         DELETE /api/delete/staff-group, DELETE /api/clear/staff-group — body: [id] */
 
 const ALL = 1000;                             // bitta so'rovda olinadigan guruhlar/xodimlar chegarasi
-const CARD = {minWidth: 300, rows: 2};        // ustunlar kartaning eng kichik kengligidan; sahifada 2 qator
+// sahifada 5 ustun × 3 qator = 15 ta karta; tor ekranda ustunlar kamayadi (karta 220px dan torayib ketmasin), hajm baribir 15
+const COLS = 5;
+const ROWS = 3;
+const PER_PAGE = COLS * ROWS;
 const auth = () => ({'x-access-token': localStorage.getItem('vipparking-token')});
+// kartadagi belgi guruh turiga qarab (rangi — groupTypes.jsx'dagi tone)
+const TYPE_ICONS = {white: TbShieldCheck, black: TbBan, wanted: TbUserSearch};
 
 const DatabaseBlack = () => {
     const {t} = useTranslation();
@@ -61,8 +74,9 @@ const DatabaseBlack = () => {
     const [selected, setSelected] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
 
-    const grid = useFitGrid(CARD);
-    const {page, setPage, limit, sizeOptions, onChange: onPagingChange} = useGridPaging(grid.perPage);
+    const fit = useFitGrid({minWidth: 220, rows: ROWS});
+    const grid = {ref: fit.ref, cols: fit.cols ? Math.min(COLS, fit.cols) : 0, perPage: PER_PAGE};
+    const {page, setPage, limit, sizeOptions, onChange: onPagingChange} = useGridPaging(PER_PAGE);
 
     const [editGroup, setEditGroup] = useState(null);   // GroupModal: {} — yangi, {..} — tahrir
     const [cameraGroup, setCameraGroup] = useState(null);
@@ -298,7 +312,8 @@ const DatabaseBlack = () => {
                 </div>
 
                 <div className="admin_body_table" ref={grid.ref}>
-                    <div className="page_grid emp_grid" style={gridStyle(grid)}>
+                    <div className={`page_grid emp_grid${visible?.length === 0 ? '' : ' emp_grid--fill'}`}
+                         style={gridStyle(grid)}>
                         {!visible && Array.from({length: grid.perPage || 6}).map((_, i) => (
                             <div key={i} className="page_skeleton_card"/>
                         ))}
@@ -318,15 +333,12 @@ const DatabaseBlack = () => {
                         {visible?.map(group => {
                             const checked = selected.includes(group.id);
                             const tone = groupType(group.type).tone;
-                            const stop = (fn) => (e) => {
-                                e.stopPropagation();
-                                fn();
-                            };
+                            const TypeIcon = TYPE_ICONS[tone] || TbHelpCircle;
                             return (
                                 <div
                                     key={group.id}
                                     className={`emp_card${checked ? ' is-selected' : ''}`}
-                                    role="button"
+                                    role="link"
                                     tabIndex={0}
                                     onClick={() => openGroup(group)}
                                     onKeyDown={(e) => {
@@ -336,49 +348,64 @@ const DatabaseBlack = () => {
                                         }
                                     }}
                                 >
+                                    {/* tepada: tur rangidagi belgi, guruh nomi va tur yorlig'i; o'ngda belgilash va amallar */}
                                     <div className="emp_card_top">
-                                        <span className="emp_card_check" onClick={e => e.stopPropagation()}>
-                                            <Checkbox checked={checked} onChange={() => toggle(group.id)}
-                                                      aria-label={group.name}/>
-                                        </span>
                                         <span className={`emp_card_icon grp_icon--${tone}`}>
-                                            <UsersIcon size={24}/>
+                                            <TypeIcon size={20} strokeWidth={1.8}/>
                                         </span>
                                         <div className="emp_card_heading">
-                                            <h2 className="emp_card_name" title={group.name}>{group.name}</h2>
+                                            <h2 className="emp_card_name" title={group.name}>{group.name || '—'}</h2>
                                             <GroupTypeBadge type={group.type} t={t} className="emp_card_type"/>
                                         </div>
-                                        <div className="tc-actions">
-                                            <button type="button" className="tc-icon-btn"
-                                                    onClick={stop(() => setEditGroup(group))}
-                                                    title={t("Tahrirlash")} aria-label={t("Tahrirlash")}>
-                                                <EditIcon size={18}/>
-                                            </button>
-                                            <button type="button" className="tc-icon-btn tc-icon-btn--danger"
-                                                    onClick={stop(() => setDeleteTarget({ids: [group.id], name: group.name}))}
-                                                    title={t("O'chirish")} aria-label={t("O'chirish")}>
-                                                <TrashIcon size={18}/>
-                                            </button>
+                                        {/* karta ichidagi boshqaruvlar bosilganda kartaning o'zi ochilmasin */}
+                                        <div className="emp_card_tools" onClick={e => e.stopPropagation()}>
+                                            <Checkbox checked={checked} onChange={() => toggle(group.id)}
+                                                      aria-label={group.name}/>
+                                            <Dropdown
+                                                trigger={['click']}
+                                                placement="bottomRight"
+                                                overlayClassName="emp_menu"
+                                                menu={{
+                                                    items: [
+                                                        {key: 'edit', icon: <span className="emp_menu_icon"><EditIcon size={15}/></span>, label: t("Tahrirlash")},
+                                                        {key: 'cameras', icon: <span className="emp_menu_icon"><CameraIcon size={15}/></span>, label: t("Kamera biriktirish")},
+                                                        {type: 'divider'},
+                                                        {key: 'delete', icon: <span className="emp_menu_icon"><TrashIcon size={15}/></span>, label: t("O'chirish"), danger: true},
+                                                    ],
+                                                    onClick: ({key, domEvent}) => {
+                                                        domEvent.stopPropagation();
+                                                        if (key === 'edit') setEditGroup(group);
+                                                        else if (key === 'cameras') setCameraGroup(group);
+                                                        else setDeleteTarget({ids: [group.id], name: group.name});
+                                                    },
+                                                }}
+                                            >
+                                                <button type="button" className="emp_card_more" title={t("Amallar")}
+                                                        aria-label={t("Amallar")}>
+                                                    <TbDotsVertical size={18}/>
+                                                </button>
+                                            </Dropdown>
                                         </div>
                                     </div>
 
+                                    {/* pastda: ikki ko'rsatkich katagi. Avtomobillar — guruhni ochadi (kartaning o'zi kabi),
+                                        kameralar — biriktirish oynasini ochadi */}
                                     <div className="emp_card_stats">
-                                        <span className="emp_card_stat" title={t("Avtomobillar")}>
-                                            <TbCar size={18} strokeWidth={1.6}/>
-                                            <b>{group.item_count ?? 0}</b> {t("avtomobil")}
-                                        </span>
-                                        <span className="emp_card_stat" title={t("Kameralar")}>
-                                            <CameraIcon size={18}/>
-                                            <b>{group.cameras?.length ?? 0}</b> {t("kamera")}
-                                        </span>
-                                    </div>
-
-                                    <div className="emp_card_bottom">
-                                        <button type="button" className="emp_card_cam_btn"
-                                                onClick={stop(() => setCameraGroup(group))}>
-                                            <CameraIcon size={16}/>{t("Kamera biriktirish")}
+                                        <div className="emp_card_stat is-open">
+                                            <span><TbCar size={14} strokeWidth={1.8}/>{t("Avtomobillar")}</span>
+                                            <b>{group.item_count ?? 0}</b>
+                                            <i><ChevronRightIcon size={16}/></i>
+                                        </div>
+                                        <button type="button" className="emp_card_stat is-action"
+                                                title={t("Kamera biriktirish")}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCameraGroup(group);
+                                                }}>
+                                            <span><CameraIcon size={14}/>{t("Kameralar")}</span>
+                                            <b>{group.cameras?.length ?? 0}</b>
+                                            <i><PlusIcon size={15}/></i>
                                         </button>
-                                        <span className="emp_card_open"><ChevronRightIcon size={20}/></span>
                                     </div>
                                 </div>
                             );

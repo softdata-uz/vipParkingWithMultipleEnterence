@@ -5,8 +5,21 @@
    ========================================================================== */
 
 .emp_grid {
-    --page-card-min: 300px;
-    --page-skeleton-h: 196px;
+    --page-card-min: 220px;
+    --page-skeleton-h: 146px;
+}
+
+/* guruhlar: 3 qator sohaning butun balandligini teng bo'lib to'ldiradi (AIS New UI — pdb-grid).
+   Soha past bo'lsa qator 146px dan kichraymaydi — .admin_body_table skrollga o'tadi */
+.emp_grid--fill {
+    box-sizing: border-box;
+    height: 100%;
+    grid-template-rows: repeat(3, minmax(146px, 1fr));
+    align-content: stretch;
+}
+
+.emp_grid--fill .page_skeleton_card {
+    height: auto;
 }
 
 .emp_grid--staff {
@@ -21,7 +34,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 36px;
+    height: 40px;
     padding: 0 var(--spacing-md) 0 var(--spacing-lg);
     border: 1px solid var(--border-secondary);
     border-radius: var(--radius-md);
@@ -229,22 +242,25 @@
 }
 
 
-/* ---------- guruh kartasi ---------- */
+/* ---------- guruh kartasi ----------
+   AIS New UI — Avtoturargoh nazorati / Ma'lumotlar bazasi kartasi (pdb-b) bilan bir xil:
+   tepada tur belgisi + nom + tur yorlig'i + belgilash/amallar, pastda ikki ko'rsatkich katagi */
 
 .emp_card {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
     min-width: 0;
-    gap: var(--spacing-xl);
-    padding: var(--spacing-2xl);
+    padding: 16px;
     border: 1px solid var(--border-secondary);
     border-radius: var(--radius-xl);
     background: var(--bg-primary);
     box-shadow: var(--shadow-xs);
     cursor: pointer;
-    transition: border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+    transition: box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
 }
 
 .emp_card:hover {
@@ -255,7 +271,6 @@
 
 .emp_card:focus-visible {
     outline: none;
-    border-color: var(--border-brand);
     box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
@@ -265,51 +280,44 @@
     box-shadow: 0 0 0 1px var(--border-brand), var(--shadow-xs);
 }
 
+.emp_card.is-selected:hover {
+    box-shadow: 0 0 0 1px var(--border-brand), var(--shadow-md);
+}
+
 .emp_card_top {
     display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-lg);
+    align-items: center;
+    gap: 12px;
     min-width: 0;
-}
-
-.emp_card_check {
-    display: flex;
-    padding-top: 14px;
-}
-
-.emp_card_top .tc-actions {
-    flex: none;
-    margin: -4px -6px 0 0;
 }
 
 .emp_card_icon {
     flex: none;
-    width: 48px;
-    height: 48px;
-    display: flex;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--utility-success-200);
     border-radius: var(--radius-lg);
     background: var(--utility-success-50);
-    border: 1px solid var(--utility-success-200);
     color: var(--utility-success-700);
 }
 
-
 .emp_card_heading {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
+    gap: 4px;
 }
 
 .emp_card_name {
     max-width: 100%;
     margin: 0;
-    font-size: 17px;
-    line-height: 24px;
+    font-size: 16px;
+    line-height: 22px;
     font-weight: var(--weight-semibold);
     color: var(--text-primary);
     white-space: nowrap;
@@ -325,87 +333,216 @@
     font-size: 13px;
 }
 
+.emp_card_tools {
+    flex: none;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    cursor: default;
+}
+
+.emp_card_more {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--fg-quaternary);
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.emp_card_more:hover,
+.emp_card_more.ant-dropdown-open {
+    border-color: var(--border-secondary);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.emp_card_more:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--focus-ring);
+}
+
+/* ikki ko'rsatkich katagi yonma-yon */
 .emp_card_stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-md);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
 }
 
 .emp_card_stat {
+    position: relative;
     display: flex;
-    align-items: center;
-    justify-content: center;            /* ikonka + son + yozuv qutining o'rtasida */
-    gap: var(--spacing-sm);
-    height: 35px;
-    padding: 0 var(--spacing-lg);
-    line-height: 1;
-    border-radius: var(--radius-md);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    height: auto;                       /* index.css dagi global button { height: 40px } ni bekor qiladi */
+    margin: 0;
+    padding: 8px 12px 9px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
     background: var(--bg-secondary);
-    font-size: 13px;
-    color: var(--text-tertiary);
-    white-space: nowrap;
-    overflow: hidden;
+    font-family: var(--font-family);
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    text-align: left;
+    transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
 }
 
-.emp_card_stat svg {
+.emp_card_stat span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+    line-height: 17px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.emp_card_stat span svg {
     flex: none;
     color: var(--fg-quaternary);
 }
 
 .emp_card_stat b {
-    font-size: 15px;
+    font-size: 22px;
     font-weight: var(--weight-semibold);
+    line-height: 28px;
+    letter-spacing: -.01em;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
 }
 
-.emp_card_bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-md);
-    margin-top: auto;
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--border-secondary);
-}
-
-.emp_card_cam_btn {
-    height: 40px;
+/* katak burchagidagi amal belgisi: strelka — ochish, plyus — kamera biriktirish */
+.emp_card_stat i {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 26px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: 0 var(--spacing-lg);
-    border: 1px solid var(--utility-brand-200);
-    border-radius: var(--radius-md);
-    background: var(--utility-brand-50);
-    font-family: var(--font-family);
-    font-size: 13px;
-    font-weight: var(--weight-semibold);
-    color: var(--utility-brand-700);
+    justify-content: center;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--fg-quaternary);
+    transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out), transform var(--duration-base) var(--ease-out);
+}
+
+/* avtomobillar: karta ustiga borilganda belgi yashil bo'lib o'ngga siljiydi */
+.emp_card:hover .emp_card_stat.is-open i {
+    border-color: var(--bg-brand-solid);
+    background: var(--bg-brand-solid);
+    color: #FFFFFF;
+    transform: translateX(2px);
+}
+
+.emp_card_stat.is-action {
     cursor: pointer;
-    transition: background var(--duration-fast) var(--ease-out);
 }
 
-.emp_card_cam_btn:hover {
-    background: var(--bg-brand-secondary);
+.emp_card_stat.is-action:hover {
+    border-color: var(--utility-brand-200);
+    background: var(--utility-brand-50);
 }
 
-.emp_card_cam_btn:focus-visible {
+.emp_card_stat.is-action:hover i {
+    border-color: var(--bg-brand-solid);
+    background: var(--bg-brand-solid);
+    color: #FFFFFF;
+}
+
+.emp_card_stat.is-action:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-.emp_card_open {
-    display: flex;
-    flex: none;
-    color: var(--fg-quinary);
-    transition: color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+/* kameralar ustida turganda avtomobillar belgisi tinch holatda qoladi */
+.emp_card:has(.emp_card_stat.is-action:hover) .emp_card_stat.is-open i {
+    border-color: var(--border-primary);
+    background: var(--bg-primary);
+    color: var(--fg-quaternary);
+    transform: none;
 }
 
-.emp_card:hover .emp_card_open {
+/* amallar menyusi (antd Dropdown, overlayClassName="emp_menu") */
+.emp_menu .ant-dropdown-menu {
+    min-width: 188px;
+    padding: 4px;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-lg);
+}
+
+.emp_menu .ant-dropdown-menu-item {
+    height: 40px;
+    padding: 0 10px 0 6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    transition: background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.emp_menu .ant-dropdown-menu-item:hover,
+.emp_menu .ant-dropdown-menu-item-active {
+    border-color: var(--border-secondary);
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary);
+}
+
+.emp_menu .ant-dropdown-menu-item-divider {
+    margin: 4px 6px;
+    background: var(--border-secondary);
+}
+
+.emp_menu_icon {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--fg-quaternary);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+.emp_menu .ant-dropdown-menu-item:hover .emp_menu_icon {
     color: var(--fg-brand);
-    transform: translateX(2px);
+}
+
+.emp_menu .ant-dropdown-menu-item-danger,
+.emp_menu .ant-dropdown-menu-item-danger:hover {
+    color: var(--text-error) !important;
+}
+
+.emp_menu .ant-dropdown-menu-item-danger:hover {
+    border-color: var(--utility-error-200);
+    background: var(--bg-error-primary) !important;
+}
+
+.emp_menu .ant-dropdown-menu-item-danger .emp_menu_icon,
+.emp_menu .ant-dropdown-menu-item-danger:hover .emp_menu_icon {
+    border-color: var(--utility-error-200);
+    background: var(--utility-error-50);
+    color: var(--utility-error-700);
 }
 
 

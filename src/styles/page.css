@@ -296,7 +296,7 @@
 
 /* ommaviy amal tugmasi (kichik) */
 .admin_toolbar_btn {
-    height: 36px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm);
